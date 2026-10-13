@@ -57,7 +57,8 @@
     "filter": "Filter",
     "empty": "Nothing to show here yet.",
     "all": "All",
-    "offline_saved_data": "You're offline. Showing saved results."
+    "offline_saved_data": "You're offline. Showing saved results.",
+    "back_to_top": "Back to top"
   },
   "errors": {
     "no_internet": "No internet connection. Check your network and try again.",

@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
+import 'package:flutter_real_estate_assessment/core/widget/app_bottom_nav_bar.dart';
 import 'package:flutter_real_estate_assessment/core/widget/favorite_button.dart';
+import 'package:flutter_real_estate_assessment/core/widget/scroll_to_top_button.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/cubit/home_cubit.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/cubit/home_state.dart';
@@ -19,6 +21,7 @@ import '../../../../helpers/fake_favorites_repository.dart';
 import '../../../../helpers/fake_home_repository.dart';
 import '../../../../helpers/layout_expectations.dart';
 import '../../../../helpers/pump_app.dart';
+import '../../../../helpers/pump_widget.dart';
 import '../../../../helpers/translations.dart';
 import '../../../../helpers/home_screen_finders.dart';
 
@@ -290,5 +293,58 @@ void main() {
       expect(find.byType(FeaturedPropertyCard), findsWidgets);
       expect(find.text(translate(_ar, 'home.refresh_failed')), findsNothing);
     });
+  });
+
+  group('back to top', () {
+    final longPage = [
+      for (var id = 100; id < 120; id++)
+        PropertyEntity(
+          id: id,
+          title: 'Listing $id',
+          price: id.toDouble(),
+          rating: 4,
+          category: 'beauty',
+        ),
+    ];
+
+    bool isShown(WidgetTester tester) =>
+        tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale == 1;
+
+    for (final locale in AppLocalization.supportedLocales) {
+      testWidgets('appears at the end side above the nav bar and returns to '
+          'the top (${locale.languageCode})', (tester) async {
+        await pumpApp(
+          tester,
+          locale: locale,
+          repository: FakeHomeRepository(firstPage: Right(pageOf(longPage))),
+        );
+        expect(isShown(tester), isFalse);
+
+        await scrollHomeToEnd(tester);
+        expect(isShown(tester), isTrue);
+
+        final button = tester.getRect(find.byType(ScrollToTopButton));
+        final screenCenter = tester.view.physicalSize.width / 2;
+        if (directionOf(locale) == TextDirection.ltr) {
+          expect(button.center.dx, greaterThan(screenCenter));
+        } else {
+          expect(button.center.dx, lessThan(screenCenter));
+        }
+        expect(
+          button.bottom,
+          lessThanOrEqualTo(tester.getTopLeft(find.byType(AppBottomNavBar)).dy),
+        );
+
+        await tester.tap(find.byType(ScrollToTopButton));
+        await tester.pumpAndSettle();
+
+        final position = tester
+            .state<ScrollableState>(homePageScrollable)
+            .position;
+        expect(position.pixels, 0);
+        expect(isShown(tester), isFalse);
+        expectNoLayoutErrors(tester);
+      });
+    }
   });
 }

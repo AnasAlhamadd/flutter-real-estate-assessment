@@ -50,6 +50,7 @@ abstract final class AppTextKeys {
   static const String commonEmpty = 'common.empty';
   static const String commonAll = 'common.all';
   static const String commonOfflineSavedData = 'common.offline_saved_data';
+  static const String commonBackToTop = 'common.back_to_top';
 
   static const String errorsNoInternet = 'errors.no_internet';
   static const String errorsTimeout = 'errors.timeout';

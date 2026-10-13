@@ -12,6 +12,7 @@ import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_real_estate_assessment/core/widget/favorite_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/load_more_error_view.dart';
 import 'package:flutter_real_estate_assessment/core/widget/load_more_scroll_listener.dart';
+import 'package:flutter_real_estate_assessment/core/widget/scroll_to_top_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/section_header.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/presentation/widget/favorites_failure_listener.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/presentation/widget/property_favorite_button.dart';
@@ -44,15 +45,29 @@ class HomeScreen extends StatelessWidget {
 }
 
 /// Home content for a [HomeCubit] provided above it.
-class HomeView extends StatelessWidget {
+class HomeView extends StatefulWidget {
   const HomeView({this.clock = DateTime.now, super.key});
 
   final DateTime Function() clock;
 
   @override
+  State<HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cubit = context.read<HomeCubit>();
     return Scaffold(
+      floatingActionButton: ScrollToTopButton(controller: _scrollController),
       body: SafeArea(
         bottom: false,
         child: FavoritesFailureListener(
@@ -62,7 +77,10 @@ class HomeView extends StatelessWidget {
               onRefresh: cubit.refresh,
               child: LoadMoreScrollListener(
                 onLoadMore: cubit.loadMore,
-                child: _HomeScrollView(clock: clock),
+                child: _HomeScrollView(
+                  controller: _scrollController,
+                  clock: widget.clock,
+                ),
               ),
             ),
           ),
@@ -73,14 +91,16 @@ class HomeView extends StatelessWidget {
 }
 
 class _HomeScrollView extends StatelessWidget {
-  const _HomeScrollView({required this.clock});
+  const _HomeScrollView({required this.controller, required this.clock});
 
+  final ScrollController controller;
   final DateTime Function() clock;
 
   @override
   Widget build(BuildContext context) {
     final horizontal = AppSizes.screenHorizontalPadding.w;
     return CustomScrollView(
+      controller: controller,
       physics: const AlwaysScrollableScrollPhysics(),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: [
