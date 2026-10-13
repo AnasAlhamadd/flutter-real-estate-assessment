@@ -42,10 +42,10 @@ class NoParams extends Equatable { @override List<Object?> get props => []; }
 Use cases stay thin (delegate + pure domain logic such as local filtering). No Dio/JSON here.
 
 ## Errors
-- Data sources **throw** typed exceptions (`ServerException`, `NetworkException`, `RequestTimeoutException`, `ParsingException`, `CacheException`).
+- Data sources **throw** typed exceptions (`ServerException`, `NetworkException`, `RequestTimeoutException`, `ParsingException`, `CacheException`, `RequestCancelledException`, `UnknownException`); `failureFromException` maps them to `Failure`.
 - Repositories **catch** them and **return** `Left(Failure)`. Nothing above data throws.
 - Presentation maps `Failure` → localized message key (never show raw exception text).
 
 ## DI order in `injection_container.dart`
-1. External (`Dio`, `SharedPreferences`, connection checker) → 2. Core (`NetworkInfo`, `DioClient`) → 3. Data sources → 4. Repositories → 5. Use cases → 6. Cubits.
+1. External (`Dio`, `SharedPreferences`, `Connectivity`) → 2. Core (`NetworkInfo`, `DioClient`) → 3. Data sources → 4. Repositories → 5. Use cases → 6. Cubits.
 `registerLazySingleton` for 1–5, `registerFactory` for Cubits (app-wide cubits like favorites: lazySingleton).

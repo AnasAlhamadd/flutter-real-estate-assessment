@@ -1,7 +1,7 @@
 # PROJECT_REFERENCE: Flutter Real Estate Assessment
 
 > **Single source of truth for this project.** Agent rules live in `.cursor/rules/*.mdc` and point here.
-> Last updated: 2026-10-13 · Status: **Phase 1 complete (screens + color set approved). Implementation not started. Phase 2 waits for your go-ahead.**
+> Last updated: 2026-10-13 · Status: **Phase 2 (Foundation) committed on `feature/foundation`. Phase 3 decisions approved (Q4 partly, Q6, cache option B, listing modes, Featured sort). `feature/properties-data` created; Phase 3 implementation waits for your go-ahead.**
 
 ---
 
@@ -186,20 +186,24 @@ lib/
 │   │   ├── app_sizes.dart            # spacing, radii, shadows
 │   │   ├── image_path.dart           # asset paths
 │   │   ├── api_constants.dart        # baseUrl (--dart-define) + endpoints
-│   │   └── storage_keys.dart         # SharedPreferences keys
+│   │   └── storage_keys.dart         # SharedPreferences keys (approved: first page + categories only)
 │   ├── network/
 │   │   ├── dio_client.dart           # timeouts, LogInterceptor (debug only)
 │   │   └── network_info.dart
 │   ├── error/
-│   │   ├── exceptions.dart           # Server/Network/RequestTimeout/Parsing/Cache exceptions
+│   │   ├── exceptions.dart           # Server/Network/RequestTimeout/Parsing/Cache/Cancelled/Unknown
 │   │   ├── failures.dart             # Failure + subtypes
+│   │   ├── exception_failure_mapper.dart # AppException → Failure (used by repositories)
 │   │   └── failure_message.dart      # Failure → translation key
+│   ├── localization/app_localization.dart # locales, EasyLocalization wrapper
 │   ├── usecase/usecase.dart          # UseCase<T, Params>, NoParams
 │   ├── enums/request_status.dart
 │   ├── function/show_snack_bar.dart
 │   ├── utils/{debouncer, formatters, bidi_text}.dart
 │   └── widget/                       # AppButton, SectionHeader, AppNetworkImage, LoadingView,
 │                                     # ErrorView, EmptyView, AppSearchField, AppBackButton, LanguageSwitcher
+│                                     # Phase 2 temporary: app_shell.dart (Material NavigationBar),
+│                                     # placeholder_screen.dart (replaced in Phases 4–5)
 └── feature/
     └── properties/                   # final screen names come from Phase 1
         ├── domain/
@@ -229,15 +233,16 @@ If Figma has favorites, add `feature/favorites/` (local-only data source, app-wi
 ```text
 User types "villa"
  → SearchScreen: AppSearchField.onChanged
- → SearchCubit.onQueryChanged(q)       debounce 400 ms, ignore unchanged query, cancel previous CancelToken
- → emit(status: loading)
- → SearchPropertiesUseCase(SearchParams(q, skip: 0))
+ → SearchCubit.onQueryChanged(q)       debounce 400 ms, trim, ignore unchanged query, cancel previous CancelToken
+ → emit(status: loading)                search text present → full-set mode (§4.5.1)
+ → SearchPropertiesUseCase(SearchParams(q))
  → PropertiesRepository.search(...)     (domain contract)
  → PropertiesRepositoryImpl             NetworkInfo.isConnected? no → Left(NetworkFailure)
- → PropertiesRemoteDataSource.search    GET /products/search?q=villa&limit=20&skip=0
+ → PropertiesRemoteDataSource.search    GET /products/search?q=villa&limit=0&select=<listing fields>
       DioException → typed exception    200 → PropertiesResponseModel.fromJson
  → model.toEntity() → Right(PropertiesPageEntity)
- → Cubit: items.isEmpty ? empty : success  |  Left(f) → failure(f)
+ → FilterPropertiesUseCase              category + price applied locally to the full set (no new request)
+ → Cubit: items.isEmpty ? empty : success  |  Left(f) → failure(f)  |  CancelledFailure → ignored
  → BlocBuilder renders PropertyList / EmptyView / ErrorView(onRetry: cubit.retry)
 ```
 
@@ -263,34 +268,79 @@ User types "villa"
 
 ### 4.5 Remote + local strategy
 
+✅ Approved 2026-10-13 (cache option B, search/filter strategy, Featured sort). `<listing fields>` = `select=title,price,rating,category,brand,thumbnail` (§4.6).
+
 | Operation | Remote | Local | Strategy |
 | --- | --- | --- | --- |
-| Listing, page 0 (default sort/category) | `GET /products?limit=20&skip=0&select=…` | cache JSON + `cachedAt` (TTL 10 min) | Online: remote → save → fresh. Offline/timeout: cache with `isFromCache: true` (UI shows an "offline: saved data" banner). No cache: `NetworkFailure` |
-| Listing, page > 0 | `skip = page * limit` | — | Remote only. Failure keeps existing items and shows a retry footer |
-| Search | `GET /products/search?q=` | — | Remote only, debounced, cancellable |
-| Categories | `GET /products/categories` | cache (TTL 24 h) + in-memory | Memory → valid cache → remote → save |
-| By category | `GET /products/category/{slug}` | — | Remote only |
-| Details | `GET /products/{id}` | last opened items | Remote → save. Failure: cached item, else `Failure` |
-| Sort | `sortBy`, `order` query params | — | Server-side |
-| Price range / other filters | not supported by API | — | Local pure function `FilterPropertiesUseCase` (unit-tested) |
-| Favorites (only if in Figma) | — | ids list | Local only, app-wide `FavoritesCubit` |
-| Language | — | `easy_localization` (`saveLocale`) | Automatic |
+| Listing "All", page 0 (default order, no search, no price filter) | `GET /products?limit=20&skip=0&select=<listing fields>` | **persisted** (§4.5.2) | Online: always remote → save → fresh. Remote fails (§4.5.2 fallback rule): cached page with `isFromCache: true` (UI shows an "offline: saved data" banner). No usable cache: the original `Failure` |
+| Listing pages > 0 | `skip = page * 20` | — | Remote only. Failure keeps existing items and shows a retry footer |
+| By category (paged mode) | `GET /products/category/{slug}?limit=20&skip=…&select=<listing fields>` | — | Remote only, paginated |
+| Search / price filter (full-set mode) | `GET /products/search?q=…&limit=0&select=<listing fields>` (or `GET /products?limit=0&select=…` when only a price filter is active) | in-memory only | Fetch the full matching set once, then category + price filters run locally (§4.5.1) |
+| Featured (Home) | `GET /products?sortBy=rating&order=desc&limit=<Q18>&select=<listing fields>` | — | Remote only (not in the approved persisted scope) |
+| Categories | `GET /products/categories` | **persisted** (§4.5.2) + in-memory | Memory → persisted if < 24 h old → remote → save. Remote fails: persisted copy of any age |
+| Details | `GET /products/{id}` (full object) | **in-memory only** (session, last 20) | Show the list item as initial data → remote → keep in memory. Failure: in-memory item, else `Failure`. Never persisted |
+| Sort | `sortBy`, `order` query params | — | Server-side (verified to work on `/products`, `/search`, `/category/{slug}` together with `select`) |
+| Price range | not supported by API (`minPrice`/`price_gte` are ignored, verified) | — | Local pure function `FilterPropertiesUseCase` (unit-tested), full-set mode only |
+| Favorites | — | — | **Not approved yet (Q8).** No storage key exists |
+| Language | — | `easy_localization` (`saveLocale`, key `locale`) | Automatic |
+
+#### 4.5.1 Listing modes (search, category, price)
+
+DummyJSON can't combine them server-side (verified 2026-10-13): `/products/search` ignores `category`, `/products/category/{slug}` ignores `q`, and no price parameters exist.
+
+| Mode | When | Request | Local work |
+| --- | --- | --- | --- |
+| **Paged** | Search text empty (after trim) **and** no price filter | "All" → `/products?limit=20&skip=…`; a category → `/products/category/{slug}?limit=20&skip=…` | None. `hasReachedMax` when `items.length >= total` |
+| **Full set** | Search text non-empty **or** a price filter is active | Text → `/products/search?q=<text>&limit=0&select=…`; no text → `/products?limit=0&select=…` | `FilterPropertiesUseCase`: category (slug equality) + price range (inclusive) on the full set |
+
+Rules:
+- **Fetched once:** in full-set mode, changing the category or price range only re-filters the in-memory set (no request). A new request happens only when the search text changes, or when entering full-set mode.
+- **Query changes:** 400 ms debounce, trimmed, unchanged text ignored; the previous request is cancelled (`CancelToken`) and its `CancelledFailure` is ignored; only the latest request may update the state.
+- **Mode switches** reset pagination. Clearing the text with no price filter returns to paged mode (page 0, with the persisted fallback for "All").
+- **Result count** ("Found {n}"): paged mode uses the API `total`; full-set mode uses the filtered list length.
+- **States:** loading while the full set is fetched; failure → `ErrorView` with retry of the same request; empty when nothing matches.
+- **Verified `limit=0` behavior:** returns every match and echoes `limit = total`. Worst case is the whole catalog: 194 items, **39.6 KB** with `<listing fields>`. Empty `q` and `q=a` both return all 194. Search is case-insensitive. Arabic text returns 0 results (the API is English-only, so the empty state applies). An unknown category slug returns HTTP 200 with `total: 0` (not 404).
+
+#### 4.5.2 Persisted cache boundaries (`shared_preferences`)
+
+Approved scope: **two keys only**, `StorageKeys.productsFirstPage` (`cache.products.first_page`) and `StorageKeys.categories` (`cache.categories`). Nothing else from the API is written to disk.
+
+| Rule | Value |
+| --- | --- |
+| Envelope | `{ "schemaVersion": <int>, "cachedAt": <ISO-8601 UTC>, "data": <JSON> }` |
+| Schema versioning | A version mismatch, missing field, or unparseable value counts as "no cache": the key is removed and the local data source throws `CacheException` |
+| Bounds | First page: exactly the "All" page 0, ≤ 20 items, `<listing fields>` only (measured **4.2 KB**). Categories: the `/products/categories` list (24 entries, measured **2.5 KB**). Writes larger than **32 KB** are skipped |
+| First-page fallback rule | Used only when the remote call fails with `NetworkFailure`, `TimeoutFailure`, `ServerFailure`, or `UnexpectedResponseFailure`, and the entry is < 24 h old. Never used for 4xx `RequestFailure`, pages > 0, categories, search, or price filtering |
+| Categories freshness | < 24 h old: served without a request. Older: refreshed from remote; if that fails, the stale copy is still used |
+| Write failures | Never fail the user's request (cache is best-effort; the README states writes aren't guaranteed to reach disk) |
+| Not persisted | Details, Featured, pages > 0, category pages, search/full-set results, favorites (Q8) |
+| API | The existing `SharedPreferences` instance (same store as easy_localization's `locale` key), behind `PropertiesLocalDataSource`, so a later move to `SharedPreferencesAsync`/`WithCache` is a one-file change |
 
 **Error mapping**
 
 | Source | Exception (data) | Failure (domain) | Translation key |
 | --- | --- | --- | --- |
-| `NetworkInfo` false / `connectionError` | `NetworkException` | `NetworkFailure` | `errors.no_internet` |
-| connect/send/receive timeout | `RequestTimeoutException` | `TimeoutFailure` | `errors.timeout` |
+| `NetworkInfo` false / `connectionError` / `badCertificate` / `SocketException` | `NetworkException` | `NetworkFailure` | `errors.no_internet` |
+| connect/send/receive/transform timeout | `RequestTimeoutException` | `TimeoutFailure` | `errors.timeout` |
 | HTTP 5xx | `ServerException(code)` | `ServerFailure` | `errors.server` |
 | HTTP 4xx (404 details) | `ServerException(code)` | `NotFoundFailure` / `RequestFailure` | `errors.not_found` / `errors.request` |
 | JSON shape/type errors | `ParsingException` | `UnexpectedResponseFailure` | `errors.unexpected_response` |
 | Cache empty/corrupt | `CacheException` | `CacheFailure` | `errors.no_cached_data` |
-| Anything else | — | `UnknownFailure` | `errors.unknown` |
+| `CancelToken` cancelled (superseded search) | `RequestCancelledException` | `CancelledFailure` (cubits ignore it, never shown) | `errors.request_cancelled` |
+| Anything else | `UnknownException` | `UnknownFailure` | `errors.unknown` |
+
+`NetworkInfo` (`connectivity_plus`) only reports whether a network interface is up. It is **not** proof the API is reachable, so real reachability problems still surface as timeouts or connection errors.
 
 ### 4.6 Data mapping (DummyJSON product → `PropertyEntity`)
 
 **API schema verified 2026-10-13** with `GET /products/1`. Product keys: `id, title, description, category, price, discountPercentage, rating, stock, tags, brand, sku, weight, dimensions{width,height,depth}, warrantyInformation, shippingInformation, availabilityStatus, reviews[{rating, comment, date, reviewerName, reviewerEmail}], returnPolicy, minimumOrderQuantity, meta, images, thumbnail`. A list response has `{products, total, skip, limit}` (`total` = 194). `GET /products/categories` returns 24 entries shaped `{slug, name, url}`, e.g. `beauty, fragrances, furniture, groceries, home-decoration, kitchen-accessories, laptops, …, vehicle, womens-watches`. `brand` is missing on some products, so treat it as nullable.
+
+**Coverage across all 194 products (verified 2026-10-13):** `brand` missing on **92** (47%) · `images` 1–6 per product · `reviews` exactly 3 on every product · `tags` 1–3 (English) · `availabilityStatus` ∈ {In Stock, Low Stock, Out of Stock} · `weight` is an integer **with no unit** · `price` 0.79–36,999.99 (always decimal) · titles ≤ 41 characters.
+
+**Requests and fields (✅ Q4 approved 2026-10-13)**
+- **Listing requests** (paged, full-set, Featured) send `select=title,price,rating,category,brand,thumbnail`; `id` is always included. `select` omits keys the product lacks (e.g. `brand`) and silently ignores unknown names, so the model must treat every listing field as optional. Listing items carry **only** these fields.
+- **Details** uses the full `GET /products/{id}` object and is the only source for the detail-only fields below.
+- **Entity superset (approved):** `id`, `title`, `description`, `price`, `discountPercentage`, `rating`, `category`, `brand?`, `stock`, `availabilityStatus`, `tags`, `thumbnailUrl`, `imageUrls`, `reviews`. Detail-only fields must be nullable or default-empty, because listing items don't have them. `weight`, `dimensions`, `sku`, `meta` and the shipping/warranty/return fields are **not** mapped.
 
 **Entity fields (the API provides them)**
 
@@ -306,14 +356,15 @@ User types "villa"
 | `imageUrls` | `images` (list; product 1 has 1 image) | Details hero carousel + dots, Gallery (3 tiles + "N+") | Defaults to `[]`. Fall back to `thumbnail` when empty |
 | `reviews` | `reviews[]` → `reviewerName`, `comment`, `date`, `rating` | Details reviews block (name, text, "6 days ago") | Review count = `reviews.length` (Figma's "1,275" is sample data). Relative date computed locally |
 | `total` (page entity) | `total` | "Found 182 Apartments" | Localized "Found {n} results" |
-| `discountPercentage`, `stock`, `brand`, `tags`, `availabilityStatus`, `weight`, `dimensions` | same | **not in design** | Candidates to replace missing fields (Q4) |
+| `brand` | `brand` (nullable, missing on 47%) | Card "location" line | See the location rule below |
+| `discountPercentage`, `stock`, `availabilityStatus`, `tags` | same (details only) | **not in design** | Kept in the entity. Must **not** be presented as bedrooms, bathrooms, or area |
 
 **Figma fields DummyJSON does not provide (decision Q4, never hard-coded, C0)**
 
-| Figma field | Screen(s) | Proposed handling |
+| Figma field | Screen(s) | Handling |
 | --- | --- | --- |
-| Location text ("New York, US", "Beijing, China") | Featured card, grid card, list card | Replace with `brand` (nullable → hide line) **or** category label. Q4 |
-| Beds / baths / sqft | Details stats row | Hide row, or replace with `stock` / `weight` / `availabilityStatus` using existing chip style. Q4 |
+| Location text ("New York, US", "Beijing, China") | Featured card, grid card, list card | ✅ **Approved:** `brand` when non-empty, else the category display name (`name` from `/products/categories` by slug; localized label per Q12 when available; raw slug as a last resort). The line is always filled, so card heights stay consistent |
+| Beds / baths / sqft | Details stats row | ✅ **Approved: hide the row.** DummyJSON has no property-equivalent data. `stock`, `weight`, and `availabilityStatus` must not be shown as bedrooms, bathrooms, or area |
 | Agent (name, role, avatar, chat, call) | Details "Agent" | Hide section (no data, and the chat/call actions have no backend) |
 | Facilities (8 icons + labels) | Details "Facilities" | Hide, or show `tags` as chips (the icons are facility-specific and can't map to tags). Q4 |
 | Address + map | Details "Location" | Hide section |
@@ -356,10 +407,10 @@ integration_test/app_test.dart                     # optional: browse → detail
 | --- | --- | --- |
 | T1 | One Equatable state per Cubit with a `RequestStatus` enum (+ `isLoadingMore`, `hasReachedMax`) | C3, E2 |
 | T2 | Defensive parsing; all shape/type errors → `UnexpectedResponseFailure` | C1, C5 |
-| T3 | Repository remote-first with local cache fallback (§4.5) | C5, C7 |
+| T3 | Repository remote-first; persisted fallback limited to the "All" first page + categories, details in memory (§4.5.2) | C5, C7 |
 | T4 | Shared `ErrorView` with retry, plus a retry footer for pagination failures | C4 |
 | T5 | Request dedupe: debounce, CancelToken, unchanged-query guard, no fetch in `build()`, pagination guard, category cache, `select=` | C7 |
-| T6 | Server-side search/category/sort; local price filter | C8, E4 |
+| T6 | Two listing modes (§4.5.1): paged server-side category listing; full-set fetch (`limit=0`) with local category + price filtering when search text or a price filter is active. Sort is server-side | C8, E4 |
 | T7 | `AppNetworkImage` with placeholder + error widget, null-safe | C6 |
 | T8 | `easy_localization` (persisted, instant), directional APIs only | B1–B4, B7, D2 |
 | T9 | Bidi isolation for prices/phones/Latin text; `intl` formatting | B6 |
@@ -382,7 +433,7 @@ integration_test/app_test.dart                     # optional: browse → detail
 | "colors" spec frame `1:4584` | Every swatch and the typography sample are labeled "Voog blue / #443DF6" [V, layer names]. These are placeholders that don't match the colors actually used. **Not used as a token source.** |
 | Frame size (ScreenUtil `designSize`) | All screen frames are **430 wide** [V]. Non-scrolling frames (Splash, Auth) are **430 × 932** [V]. The other frames are taller because they show scroll content (Home 1459, Details 2060). Status bar 44, home indicator 34 [V]. **Proposed `designSize: Size(430, 932)`** (iPhone 14/15 Pro Max viewport). Details content and hero use 428 instead of 430 [V], treated as a design inconsistency |
 | Fonts (Latin) | **Rubik** Regular 400 / Medium 500 / SemiBold 600 / Bold 700 for all UI text [V]. **Inter** Bold/SemiBold 12, only for the Filter stepper values and Building Size labels [V]. **Urbanist** Regular 10, only for the street labels inside the map art [V]. SF Pro Text belongs to the iOS status-bar mock only and won't be implemented |
-| Arabic glyph coverage | **Not verifiable in Figma.** The file has no Arabic text [V]. Outside Figma, Google Fonts lists Rubik's subsets as Latin, Cyrillic, and Hebrew, **with no Arabic** [U, check in Phase 4]. An Arabic font is needed (Q6) |
+| Arabic glyph coverage | **Rubik covers Arabic** (corrected 2026-10-13; the earlier "no Arabic" note was outdated). Google Fonts metadata for `ofl/rubik` lists the subsets `arabic, cyrillic, cyrillic-ext, hebrew, latin, latin-ext` (OFL). The font file `Rubik[wght].ttf` was parsed directly: 36/36 Arabic letters, 8/8 harakat, 10/10 Arabic-Indic digits, Arabic punctuation (، ؛ ؟ ٫ ٬), all 37 non-ASCII characters in `ar.json`, an `arab` script with `init`/`medi`/`fina`/`rlig` substitutions and `mark`/`mkmk` positioning. Variable `wght` axis 300–900 covers 400/500/600/700; Flutter's `FontWeight` drives the `wght` axis of variable fonts (per the `dart:ui` docs). The Figma file has no Arabic text [V], so **rendered Arabic quality is unverified until Phase 4**. ✅ Q6: Rubik for both locales |
 | Designed states | **Only populated (success) states exist.** There are no loading, empty, error, or offline frames [V, metadata]. Those states will be built from tokens (C3) |
 
 ### 5.1 Screens
@@ -391,7 +442,7 @@ integration_test/app_test.dart                     # optional: browse → detail
 
 | Screen | Node ID | Purpose | Components | Entry → Exit | Data (endpoint) | States designed? |
 | --- | --- | --- | --- | --- | --- | --- |
-| ★ **Home** | `1:4426` (430×1459) | Browse: featured carousel + recommendations grid | Header (avatar, greeting, name, bell), search bar (search + filter icons), section headers ×2 ("Featured", "Our Recommendation" + "See All"), featured cards ×2 (250×340, horizontal scroll), category chips (All, House, Villa, Apartments, Others), grid cards ×4 (2 columns), bottom nav (Home active) | App start / nav "Home" → Explore (search bar, See All, nav), Filter sheet (filter icon), Details (card), Profile (nav) | Featured: `GET /products?sortBy=rating&order=desc&limit=…` [proposal]. Grid: `GET /products?limit&skip` or `GET /products/category/{slug}`. Chips: `GET /products/categories` | Success only |
+| ★ **Home** | `1:4426` (430×1459) | Browse: featured carousel + recommendations grid | Header (avatar, greeting, name, bell), search bar (search + filter icons), section headers ×2 ("Featured", "Our Recommendation" + "See All"), featured cards ×2 (250×340, horizontal scroll), category chips (All, House, Villa, Apartments, Others), grid cards ×4 (2 columns), bottom nav (Home active) | App start / nav "Home" → Explore (search bar, See All, nav), Filter sheet (filter icon), Details (card), Profile (nav) | Featured: `GET /products?sortBy=rating&order=desc&limit=…` (✅ approved 2026-10-13; count is Q18). Grid: `GET /products?limit&skip` or `GET /products/category/{slug}`. Chips: `GET /products/categories` | Success only |
 | ★ **Explore (Search results)**: Figma "Search-v1" | `1:4120` (430×1041) | Search by text, filter by category, see result count | Header (back button, title "Search for Your Ideal Home", bell), search field (typed state "Beijing China \|" with primary-color caret), category chips, "Found 182 Apartments" heading, list cards ×4 (390×128), bottom nav (Explore active) | Nav "Explore" / Home search bar / See All → Details (card), Filter sheet (filter icon), Home (back, nav), Profile (nav) | `GET /products/search?q=` (debounced), `GET /products/category/{slug}`, `total` for the count | Success only |
 | ★ **Filter** (bottom sheet over Explore) | `1:3867` (430×955) | Narrow results | Dim overlay (black 30%), sheet with 24 top radius, title row (back, "Filter", "Reset"), Price Range (histogram + range slider + labels), Property Type chips (multi-select, wrap), Home Details (Bedrooms/Bathrooms steppers), Building Size (range slider), primary button "Set Filter" (390×54) | Filter icon on Home or Explore → back to the caller (back / Set Filter) | Local price filter on loaded items (`FilterPropertiesUseCase`). Category via API. Beds/baths/size have no data | Success only |
 | ★ **Property Details** | `1:4236` (430×2060) | Full property info + call to action | Hero image 428×460 with pagination dots, overlay app bar (back, heart, share), title, category tag, rating + review count, stats row (beds/bath/sqft), divider, Agent block (avatar, name, role, chat, call), Overview, Facilities grid (2×4), Gallery (3 tiles, "20+"), Location (address + map), Reviews (summary, "See All", one review), sticky bottom bar ("PRICE", price, "Booking Now") | Any card → back | `GET /products/{id}` (list item as initial data) | Success only |
@@ -419,7 +470,7 @@ Decision key: **implement** = real behavior. **local** = device-only state. **hi
 | Explore | Search field (`1:4142`) | Debounced server search, clear on empty | implement |
 | Filter | Back arrow (`1:3973`) | Close sheet without applying | implement |
 | Filter | "Reset" (`1:3977`) | Reset to defaults | implement |
-| Filter | Price range slider (`1:4004`) + histogram (`1:3982`) | Local min/max price filter. Histogram computed from loaded prices | implement (Q14) |
+| Filter | Price range slider (`1:4004`) + histogram (`1:3982`) | Local min/max price filter on the full matching set (§4.5.1). Histogram data source decided in Phase 5 | implement (Q14) |
 | Filter | Property Type chips (`1:4014`) | Category selection | implement (Q12/Q14) |
 | Filter | Bedrooms / Bathrooms steppers (`1:4030`, `1:4037`) | No API field | **hide** (Q4) |
 | Filter | Building Size slider (`1:4045`) | No API field | **hide** (Q4) |
@@ -469,7 +520,7 @@ Not exported. `download_assets` runs only in Phase 4 after this list is approved
 | `AppBottomNavBar` (3 tabs, bold/light icon pairs) | `1:4489` | Frame "Navbar" | Home, Explore, Profile | Code + 6 SVG |
 | `AppButton` primary pill | `1:4053`, `1:4425` | Component "Button / Primary / Rounded" | Filter, Details | Code |
 | `PropertyTag` | `1:4277` | Component "Tag / Inverted / Info" | Details | Code |
-| `StatChip` (icon circle + label) | `1:4282` | Frame | Details (if kept, Q4) | Code + 3 SVG |
+| `StatChip` (icon circle + label) | `1:4282` | Frame | Details: **not built** (stats row hidden, Q4) | **Skip** |
 | `RangeSlider` + histogram | `1:4004`, `1:3982` | Frames/vectors | Filter | Code (custom `SliderTheme`) |
 | `ProfileMenuRow` (icon, label, chevron) | `1:3842` | Frame | Profile | Code + 2 SVG |
 | `Divider` (Theme=Light) | `1:4307` | Instance | Details, Profile | Code |
@@ -488,14 +539,14 @@ Install in Phase 2 with `flutter pub add`, and only the packages confirmed by Ph
 
 | Package | Purpose | Why |
 | --- | --- | --- |
-| `flutter_bloc` | Cubit state management | Predictable, testable, consistent (E2) |
+| `flutter_bloc` | Cubit state management | Predictable, testable, consistent (E2). Pinned to 8.x (`^8.1.3`, per your constraint), so dev `bloc_test` must be 9.x |
 | `equatable` | Value equality for states/entities | Avoids redundant rebuilds |
 | `get_it` | Dependency injection | Decouples layers; easy mocking |
 | `go_router` | Declarative routing | Typed paths, deep-link ready (D1) |
 | `dio` | HTTP | Timeouts, interceptors, CancelToken (C5, C7) |
 | `dartz` | `Either<Failure, T>` | Explicit error flow (`fpdart` is a maintained alternative; note in README) |
 | `shared_preferences` | Local cache + favorites | Lightweight; already a dependency of easy_localization |
-| `internet_connection_checker_plus` (or equivalent) | `NetworkInfo` | Fail fast offline (C5). Check maintenance on pub.dev at install time |
+| `connectivity_plus` | `NetworkInfo` (`isConnected`, `onStatusChange`) | Fail fast offline (C5). Connectivity awareness only, not API reachability. Chosen by you in Phase 2 instead of `internet_connection_checker_plus` |
 | `easy_localization` + `flutter_localizations` (SDK) | Translations, instant switch, persisted locale, RTL delegates | B1–B4, B7 |
 | `intl` | Number/price formatting | B6 |
 | `flutter_screenutil` | Responsive sizing | A4 |
@@ -503,7 +554,7 @@ Install in Phase 2 with `flutter pub add`, and only the packages confirmed by Ph
 | `flutter_svg` | SVG icons from Figma | Only if icons are SVG (A2) |
 | dev: `bloc_test`, `mocktail` | Cubit tests, mocks | E4 |
 
-Fonts are bundled in `assets/fonts/` (no runtime `google_fonts`). Add an Arabic font if the Figma font lacks Arabic glyphs (Q6).
+Fonts are bundled in `assets/fonts/` (no runtime `google_fonts`). Only Rubik (`Rubik[wght].ttf`, OFL) is needed, for both English and Arabic (Q6). Inter and Urbanist appear only in elements hidden under Q4 (filter steppers, Building Size, map art), so they aren't bundled.
 
 ---
 
@@ -536,18 +587,19 @@ Environment audit, Figma MCP connected, brief analyzed, rules + this reference w
 ### Phase 3: Data layer, remote + local (~2 h) · C0, C1, C2, C5, C7, C8, E4
 Recipe steps 1–9 (§4.4) for `properties`:
 1. Fixtures from real responses + broken variants.
-2. Entities, repository contract, use cases (incl. `FilterPropertiesUseCase`).
-3. Models + tests.
-4. Remote data source + MockDio tests.
-5. Local data source (SharedPreferences, TTL) + tests.
-6. Repository impl with the §4.5 strategy + tests for every branch (online, offline with cache, offline without cache, timeout, 5xx, parsing).
+2. Entities (approved superset, §4.6), repository contract, use cases (incl. `FilterPropertiesUseCase` for category + price on the full set, §4.5.1).
+3. Models + tests (listing items with only `<listing fields>`, missing `brand`, wrong types).
+4. Remote data source + MockDio tests: paged, `limit=0` full set, search, category, Featured (`sortBy=rating&order=desc`), details, categories, cancellation.
+5. Local data source (SharedPreferences, two keys only, schema-versioned envelope, size bound, §4.5.2) + tests (round-trip, version mismatch, corrupt value, oversize write skipped).
+6. Repository impl with the §4.5 strategy + tests for every branch (online, first-page fallback by failure type and age, no cache, 4xx not falling back, categories freshness, details in-memory reuse, timeout, 5xx, parsing).
 7. DI registration.
+- **Dev dependency:** `mocktail` (approved stack). `bloc_test` waits for Phase 5 and must be 9.x (because of `flutter_bloc` 8.x).
 - **Done when:** all data/domain tests pass without network.
 - **Commits:** `feat(properties): add domain entities, contracts and use cases` · `feat(properties): add models and remote data source` · `feat(properties): add local cache data source` · `feat(properties): add repository with cache fallback` · `test(properties): cover parsing, data sources and repository`
 
 ### Phase 4: Design system & shared widgets (~2 h) · A2, A3, A5, B4, T7, T10
 1. `colors_app.dart`, `app_text_styles.dart`, `app_sizes.dart`, `app_theme.dart` from §5.3 only.
-2. Fonts + approved assets (`download_assets`) → `assets/` + `image_path.dart`.
+2. Rubik variable font (both locales, Q6) + approved assets (`download_assets`) → `assets/` + `image_path.dart`. **Verify rendered Arabic** (screenshots in EN and AR); consider IBM Plex Sans Arabic only if a real rendering issue is found.
 3. `core/widget/*` and `PropertyCard`.
 4. Widget tests: LTR/RTL, long text, 320×640 at 1.3 scale.
 - **Commits:** `feat(theme): add design tokens from Figma` · `feat(ui): add shared widgets` · `feat(properties): add property card` · `test(ui): add RTL/LTR widget tests`
@@ -597,6 +649,7 @@ Manual checklist:
 ## 8. Git workflow
 
 - One branch per phase (`feature/foundation`, `feature/properties-data`, `feature/design-system`, `feature/screens`, …) merged into `main`. Alternative: direct commits on `main` (P2).
+- Phase branches are created from the previous phase's committed branch until you approve merging into `main` (2026-10-13: `feature/properties-data` from `feature/foundation`).
 - Conventional Commits: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `build`.
 - **No commit or push without explicit approval.**
 - Never commit: the assessment PDF, secrets, build outputs.
@@ -610,22 +663,23 @@ Manual checklist:
 | **Q1** | Which **screens did the recruiter specify**? (The brief doesn't name them) | — | ✅ **Approved 2026-10-13:** Home `1:4426`, Explore/Search-v1 `1:4120`, Filter sheet `1:3867`, Property Details `1:4236`, Profile (reduced to the Language row) `1:3786`. Excluded: Splash, Auth, Search-v2, and the Orange/Purple sets (§5.1) |
 | **Q2** | Delivery repo: `AnasAlhamadd/...` (origin) or `anasAlhamd/...` (empty)? | Phase 9 | `AnasAlhamadd/...` |
 | **Q3** | Figma **Drafts duplicate** link | — | ✅ Answered: `idJrPCgmZTzih809HNpgnr` (§5) |
-| **Q4** | Figma fields missing from DummyJSON (location, beds/baths/sqft, agent, facilities, address/map, review avatar/likes, filter steppers/size): hide or replace with available fields? | Phase 3 | Card "location" line → `brand` (hidden when null). Details stats row → `stock` + `availabilityStatus` + `weight`, or hide. Facilities → `tags` chips, or hide. Agent, Location/map, review likes, Bedrooms/Bathrooms/Building Size → **hide**. Full table in §4.6 |
-| **Q5** | Default language on first launch | Phase 2 | Device language if `ar`/`en`, else `en` |
-| **Q6** | Arabic font. Rubik (the Figma font) appears to have **no Arabic glyphs** (Google Fonts subsets, unverified in Figma) | Phase 4 | Bundle a separate Arabic font for the `ar` locale only, and keep Rubik for `en`. Candidates: IBM Plex Sans Arabic, Noto Kufi Arabic, Cairo. Your choice |
+| **Q4** | Figma fields missing from DummyJSON (location, beds/baths/sqft, agent, facilities, address/map, review avatar/likes, filter steppers/size): hide or replace with available fields? | — | ✅ **Approved 2026-10-13 (partly):** product superset entity fields; card "location" line → `brand`, else category; Details stats row → **hidden** (stock/weight/availability must not pose as beds/baths/area). **Still proposed (Phase 5):** Facilities → hide; Agent, Location/map, review likes, Bedrooms/Bathrooms/Building Size → hide. Full table in §4.6 |
+| **Q5** | Default language on first launch | — | ✅ Implemented as proposed: saved choice → device language if `ar`/`en` → `en` (easy_localization `saveLocale: true`, `useOnlyLangCode: true`) |
+| **Q6** | Arabic font | — | ✅ **Approved 2026-10-13: Rubik for both English and Arabic.** The earlier "no Arabic glyphs" assumption was outdated; coverage verified from the font file (§5). Verify rendered Arabic in Phase 4; consider IBM Plex Sans Arabic only if a real rendering issue is found |
 | **Q7** | Digits in Arabic UI: Western (123) or Eastern Arabic (١٢٣)? | Phase 6 | Western for prices/phones |
-| **Q8** | Non-required buttons: hearts (cards + Details), share (Details) | Phase 5 | Hearts → **local favorites** (persisted, no favorites list screen because Figma has none). Share → **hide** (would need `share_plus`, which isn't in the approved stack) |
+| **Q8** | Non-required buttons: hearts (cards + Details), share (Details) | Phase 5 | Hearts → **local favorites** (persisted, no favorites list screen because Figma has none; would need a separately approved `shared_preferences` key, outside the approved cache scope in §4.5.2). Share → **hide** (would need `share_plus`, which isn't in the approved stack) |
 | **Q9** | Use DummyJSON POST/PATCH/DELETE? Specifically "Booking Now" on Details | Phase 5 | Option A: **hide** the button and keep the price bar. Option B: simulated `POST /carts/add` + success snackbar + C9 disclaimer. Proposed: A |
 | **Q10** | Which color set to implement: top-level blue (`#0061FF`), "New Orange" (`1:2188`), or "New Purple" (`1:2987`)? | — | ✅ **Approved 2026-10-13: top-level blue set** |
 | **Q11** | Home header and Profile show a user avatar and name ("Adrian Hajdin"), but there is no auth in scope | Phase 5 | Keep the localized time-based greeting. Replace the name with a localized welcome line and show a neutral avatar placeholder, so no fake user data is hard-coded (C0) |
 | **Q12** | Category chips: the design shows real-estate types (House, Villa, Apartments, Others / Townhomes, Condos…), but the API has 24 product categories | Phase 3 | Chips are **data-driven** from `GET /products/categories` ("All" + API names, localized where possible). Don't fake real-estate labels |
 | **Q13** | Notification bell (Home, Explore, Profile): no notifications feature | Phase 5 | **Hide** (D4) |
-| **Q14** | Filter sheet scope | Phase 5 | Keep: Price Range (local filter, histogram computed from loaded prices), category chips (Q12), Reset, Set Filter. Hide: Bedrooms, Bathrooms, Building Size. Optional: add sort (rating/price) via server `sortBy`/`order`, which isn't in Figma, so only with your approval |
+| **Q14** | Filter sheet scope | Phase 5 | Keep: Price Range (local filter on the full matching set, §4.5.1; the histogram's data source is decided in Phase 5), category chips (Q12), Reset, Set Filter. Hide: Bedrooms, Bathrooms, Building Size. Optional: add sort (rating/price) via server `sortBy`/`order`, which isn't in Figma, so only with your approval |
 | **Q15** | Explore results layout: Search-v1 list (`1:4120`) or Search-v2 grid (`1:4055`)? | Phase 5 | **Search-v1 list**. The Filter sheet is designed over it, and it adds a distinct reusable list card |
 | **Q16** | Explore's back arrow when Explore is a bottom-nav tab | Phase 5 | Back → Home tab (or pop when opened from the Home search bar / See All) |
 | **Q17** | Profile screen scope | Phase 5 | Keep title, Language row, and bottom nav. Hide every row without a feature (My Booking … Logout) and the edit badge. Avatar/name per Q11 |
+| **Q18** | Featured item count (`limit` for `sortBy=rating&order=desc`). Figma shows 2 cards in a horizontal scroll; the total isn't specified | Phase 5 | TODO(question). The repository takes `limit` as a parameter, so Phase 3 isn't blocked |
 | **P1** | `.cursorrules` replaced by `.cursor/rules/*.mdc` | — | ✅ Done 2026-10-13 |
-| **P2** | Branch per phase vs. direct commits on `main` | Phase 2 | Branch per phase |
+| **P2** | Branch per phase vs. direct commits on `main` | — | Branch per phase (default applied: `feature/foundation` created from `main`) |
 
 ---
 
@@ -635,6 +689,8 @@ Manual checklist:
 | --- | --- | --- | --- |
 | 2026-10-13 | 0: Setup & planning | ✅ | Env verified; Figma MCP authenticated; Community file access denied (needs duplicate); brief analyzed; rules rewritten in `.cursor/rules/` |
 | 2026-10-13 | 1: Figma | ✅ Screen list (Q1) and color set (Q10) approved | Drafts duplicate verified. Page `0:1` mapped: 3 color sets × 8 frames + spec frame. Inspected Home, Search-v1, Filters, Details, Profile (blue set). §5 (inventory, tappables, tokens, components/assets) and §4.6 (API mapping, verified against live DummyJSON) filled. Q3 answered. Q1/Q4/Q6/Q8/Q9 updated. Q10–Q17 added. No code, assets, packages, or commits. Figma calls in Phase 1: 7 (≈10 total this month) |
+| 2026-10-13 | 2: Foundation | ✅ Committed on `feature/foundation` (not merged into `main`) | Branch `feature/foundation`. Counter template removed. Deps via `flutter pub add` (resolved: flutter_screenutil 5.9.3, equatable 2.1.0, flutter_bloc 8.1.6, shared_preferences 2.5.6, connectivity_plus 6.1.5, easy_localization 3.0.8, get_it, go_router, dio, dartz, flutter_localizations). Core error model + mappers, `DioClient`, `NetworkInfo`, `UseCase`, `RequestStatus`, `ApiConstants`, `StorageKeys`, GetIt DI, en/ar translations, `CFBundleLocalizations`, `ScreenUtilInit(430×932)`, go_router shell with **placeholder** tabs (Home/Explore/Profile) + `/property/:id`, temporary `LanguageSwitcher`. `flutter analyze` 0 issues. `flutter test` 116/116, including a 64-case responsive matrix (4 tab/detail routes × 4 viewports × en/ar × text scale 1.0/1.3) **on placeholder screens only**. Fixed a real bug the tests found: `'key'.tr()` didn't rebuild kept-alive routes on locale change → `context.tr(key)` |
+| 2026-10-13 | Pre-Phase 3 decisions | ✅ Approved | Q6 → Rubik for both locales (Arabic coverage verified from the font file; rendering checked in Phase 4). Q4 → superset entity, location = `brand` else category, stats row hidden. Cache option B: `shared_preferences` for the "All" first page + categories only, schema-versioned, bounded; details in memory (§4.5.2). Listing modes: paged category endpoint vs. full set via `limit=0` with local category + price filters (§4.5.1, verified live). Featured `sortBy=rating&order=desc` (count = Q18). Removed unused `StorageKeys.productDetails`/`favoriteIds`. Rules updated (`00-project-core`, `data-layer`, `testing`, `clean-architecture`, `localization-rtl`) |
 
 ---
 
@@ -647,3 +703,5 @@ Manual checklist:
 | 2026-10-13 | Cursor Agent | Analyze brief, plan phases, architecture | This reference + `.cursor/rules/` | Each requirement mapped to an ID (§3) and a phase (§7) | **Rejected** reusing rules copied from another project (Laravel backend path, Firebase, 5 locales with `nl` fallback, fixed 360×800 design size) because they didn't match this assessment |
 | 2026-10-13 | Cursor Agent + Figma MCP | Verify access to the Drafts duplicate | §2 Figma rows | `create_session` + `get_metadata` (no node) returned page `0:1` "Page 1" | — |
 | 2026-10-13 | Cursor Agent + Figma MCP | Phase 1 design inventory: `get_metadata(0:1)`, `get_variable_defs(1:4426)`, `get_design_context` for `1:4426`, `1:4120`, `1:3867`, `1:4236`, `1:3786` | §5, §4.6, §9 Q10–Q17 | Each value traced to MCP output (evidence key [V]/[S]/[U] in §5). Product schema re-checked with `curl https://dummyjson.com/products/1` and `/products/categories` | **Rejected** the "colors" spec frame (all swatches labeled "Voog blue #443DF6", contradicting the `#0061FF` used on screens). **Rejected** the generated button shadow `rgba(112,79,56,.25)` in favor of the named variable `Button/Shadow 1`. Did not claim Rubik Arabic coverage (marked unverified) |
+| 2026-10-13 | Cursor Agent | Phase 2 foundation: core error/network/DI, l10n, router, responsive setup, shared test helpers + responsive matrix | `lib/core/**`, `lib/app.dart`, `lib/main.dart`, `lib/injection_container.dart`, `assets/translations/*`, `test/**` | `flutter analyze` 0; `flutter test` 116/116; `plutil -lint` on `Info.plist`; pubspec YAML parsed and asset paths checked; easy_localization/dio/connectivity_plus sources read in pub cache to confirm APIs | Added `DioExceptionType.transformTimeout` (new in dio 5.11, flagged by the analyzer). Replaced string `.tr()` with `context.tr()` after the language-switch test showed stale titles on kept-alive routes. Scoped nav-label finders to `NavigationBar` instead of loosening assertions. No overflow was hidden to make tests pass |
+| 2026-10-13 | Cursor Agent | Pre-Phase 3 decision review (font, field mapping, cache, filtering) | §4.3, §4.5 (+4.5.1, 4.5.2), §4.6, §4.8, §5, §6, §7, §9, rules | Google Fonts `METADATA.pb` + direct parsing of `Rubik[wght].ttf` (cmap/GSUB/GPOS) with plain Python; live `curl` checks of DummyJSON (`limit=0`, `select`, search/category combinations, price params, field coverage across 194 products); `shared_preferences` README; `dart:ui` `FontWeight` docs | **Rejected** the reference's own earlier claim that Rubik has no Arabic (the metadata and the font file show full Arabic support). **Rejected** using `weight` in the UI (no unit in the API). The user **narrowed** the proposed stats-row substitution to "hide" |

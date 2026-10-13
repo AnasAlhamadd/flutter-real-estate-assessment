@@ -9,31 +9,39 @@ alwaysApply: false
 ## Backend
 - API: DummyJSON (`https://dummyjson.com`), docs: https://dummyjson.com/docs/products
 - Base URL from `--dart-define=API_BASE_URL=...`, default `https://dummyjson.com` (`core/constant/api_constants.dart`).
-- Endpoints used: `GET /products?limit&skip&select&sortBy&order` · `GET /products/search?q=` · `GET /products/categories` · `GET /products/category/{slug}` · `GET /products/{id}`.
+- Endpoints used: `GET /products?limit&skip&select&sortBy&order` · `GET /products/search?q=&limit&select` · `GET /products/categories` · `GET /products/category/{slug}?limit&skip&select` · `GET /products/{id}`.
+- Listing requests send `select=title,price,rating,category,brand,thumbnail` (`id` is implicit). Details use the full object.
 - POST/PUT/PATCH/DELETE are **simulated** by DummyJSON (not persisted). Never claim persistence.
 - No price-range param exists → price filtering is local, pure, and unit-tested.
 
+## Listing modes (reference §4.5.1)
+- **Paged:** no search text and no price filter → "All" (`/products`) or category endpoint, `limit=20`, `skip`.
+- **Full set:** search text or a price filter → one request with `limit=0` (`/products/search?q=` or `/products`), then `FilterPropertiesUseCase` applies category + price locally. Changing category/price never refetches; only a new search text does.
+- The server can't combine search + category or filter by price. Don't send those params expecting them to work.
+- Featured: `/products?sortBy=rating&order=desc&limit=<n>`.
+
 ## Remote data source
 - Only class that touches `Dio`. Returns **models**, throws typed exceptions.
-- Map `DioException`: `connectionTimeout|sendTimeout|receiveTimeout` → `RequestTimeoutException`; `connectionError` → `NetworkException`; `badResponse` → `ServerException(statusCode)`; JSON/type errors → `ParsingException`.
+- Map `DioException`: `connectionTimeout|sendTimeout|receiveTimeout|transformTimeout` → `RequestTimeoutException`; `connectionError|badCertificate` (and `unknown` with `SocketException`) → `NetworkException`; `badResponse` → `ServerException(statusCode)`; `cancel` → `RequestCancelledException`; JSON/type errors → `ParsingException`; anything else → `UnknownException`. (Implemented in `core/network/dio_client.dart`.)
 - Search accepts a `CancelToken`; cancel the previous one on every new query.
 
-## Local data source
-- Backed by `SharedPreferences`; stores raw JSON strings + `cachedAt` timestamp.
-- Cached: categories (TTL 24h), first page of the default listing (TTL 10 min), last opened details, favorites ids (if the design has favorites).
-- Not cached: search results, pages > 0.
-- Throws `CacheException` when empty/corrupt.
+## Local data source (reference §4.5.2)
+- Backed by `SharedPreferences`. **Only two keys** (`StorageKeys.productsFirstPage`, `StorageKeys.categories`). Never add a key without approval.
+- Envelope `{schemaVersion, cachedAt, data}`. Version mismatch or corrupt value → remove the key and throw `CacheException`.
+- Bounds: first page = "All" page 0, ≤ 20 items, listing fields only; categories list; skip any write over 32 KB.
+- Not persisted: details (in-memory only, last 20 in the session), Featured, pages > 0, category pages, search/full-set results, favorites (Q8 not approved).
 
 ## Repository strategy (in `*_repository_impl.dart`)
 | Call | Strategy |
 | --- | --- |
-| Listing page 0 | Online → remote → save cache → return fresh. Offline/timeout → return cache with `isFromCache: true`; no cache → `Left(NetworkFailure)` |
-| Listing page > 0, search | Remote only; offline → `Left(NetworkFailure)` |
-| Categories | In-memory → local (valid TTL) → remote → save |
-| Details | Remote → save; on failure fall back to cached item |
-- Check `NetworkInfo.isConnected` before remote calls.
+| "All" page 0 | Always remote when online → save → fresh. Fails with Network/Timeout/Server/UnexpectedResponse failure → cached page (< 24 h) with `isFromCache: true`; otherwise return that failure. 4xx never falls back |
+| Pages > 0, category pages, search/full set, Featured | Remote only |
+| Categories | In-memory → persisted (< 24 h) → remote → save; remote failure → stale persisted copy if any |
+| Details | Remote → keep in memory; on failure, in-memory item, else the failure |
+- Check `NetworkInfo.isConnected` before remote calls (connectivity only, not proof the API is reachable).
+- Cache write failures never fail the request.
 - Never call the network from widgets, `build()`, or `initState` without a Cubit.
 
 ## Models
-- `fromJson` is defensive: `(json['price'] as num?)?.toDouble() ?? 0`, lists default to `const []`, nullable image URLs allowed.
-- `toEntity()` maps API product → `PropertyEntity`. Never invent fields the API lacks; see reference §4 (field mapping).
+- `fromJson` is defensive: `(json['price'] as num?)?.toDouble() ?? 0`, lists default to `const []`, nullable image URLs allowed. Every listing field may be missing (`select` omits absent keys such as `brand`).
+- `toEntity()` maps API product → `PropertyEntity` (approved superset, reference §4.6). Never invent fields the API lacks. `weight`/`dimensions` aren't mapped; `stock`/`availabilityStatus` must never be shown as bedrooms, bathrooms, or area.

@@ -15,13 +15,16 @@ test/
 │   ├── search_empty.json   product_missing_fields.json  product_wrong_types.json
 ├── helpers/
 │   ├── mocks.dart            # mocktail: MockDio, MockNetworkInfo, Mock*DataSource, Mock*Repository, Mock*UseCase
-│   └── pump_app.dart         # pumpApp(widget, {locale, textScale, size}) with EasyLocalization + ScreenUtil
+│   ├── pump_app.dart         # pumpApp(tester, {locale, viewport, textScale, initialLocation, preferences})
+│   ├── test_viewports.dart   # 320×568, 375×812, 430×932, 768×1024 with safe-area padding
+│   ├── layout_expectations.dart # no layout errors, direction, visible + tappable inside the safe area
+│   └── translations.dart     # reads assets/translations/*.json from disk for tests
 ├── core/                     # error/failure_message, utils/formatters, utils/debouncer, network/dio error mapping
 └── feature/<feature>/
     ├── data/model/           # fromJson/toEntity: valid, missing fields, wrong types
-    ├── data/datasource/      # remote (MockDio) + local (SharedPreferences.setMockInitialValues)
-    ├── data/repositories/    # online/offline/cache-fallback/exception→Failure paths
-    ├── domain/usecases/      # delegation + pure logic (local filters)
+    ├── data/datasource/      # remote (MockDio) + local (SharedPreferences.setMockInitialValues): round-trip, schema mismatch, corrupt value, oversize write
+    ├── data/repositories/    # online/offline/cache-fallback by failure type + age, 4xx no fallback, exception→Failure paths
+    ├── domain/usecases/      # delegation + pure logic (local category + price filters)
     └── presentation/
         ├── cubit/            # bloc_test: loading→success/empty/failure, retry, pagination, debounce
         ├── widget/           # LTR + RTL, long text, narrow width, no overflow
