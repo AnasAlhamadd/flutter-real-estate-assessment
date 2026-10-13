@@ -13,6 +13,7 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/usecase
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/get_properties_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/get_property_details_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/search_properties_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/presentation/cubit/home_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,5 +52,14 @@ Future<void> init() async {
     ..registerLazySingleton(() => GetFeaturedPropertiesUseCase(sl()))
     ..registerLazySingleton(() => GetCategoriesUseCase(sl()))
     ..registerLazySingleton(() => GetPropertyDetailsUseCase(sl()))
-    ..registerLazySingleton(FilterPropertiesUseCase.new);
+    ..registerLazySingleton(FilterPropertiesUseCase.new)
+    // Cubits
+    ..registerFactory(
+      () => HomeCubit(
+        getFeaturedProperties: sl(),
+        getCategories: sl(),
+        getProperties: sl(),
+        getPropertiesByCategory: sl(),
+      ),
+    );
 }
