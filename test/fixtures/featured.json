@@ -1,0 +1,50 @@
+{
+  "products": [
+    {
+      "id": 99,
+      "title": "Amazon Echo Plus",
+      "price": 99.99,
+      "rating": 4.99,
+      "category": "mobile-accessories",
+      "brand": "Amazon",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/mobile-accessories/amazon-echo-plus/thumbnail.webp"
+    },
+    {
+      "id": 80,
+      "title": "Huawei Matebook X Pro",
+      "price": 1399.99,
+      "rating": 4.98,
+      "category": "laptops",
+      "brand": "Huawei",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/laptops/huawei-matebook-x-pro/thumbnail.webp"
+    },
+    {
+      "id": 95,
+      "title": "Rolex Cellini Date Black Dial",
+      "price": 8999.99,
+      "rating": 4.97,
+      "category": "mens-watches",
+      "brand": "Rolex",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-date-black-dial/thumbnail.webp"
+    },
+    {
+      "id": 42,
+      "title": "Water",
+      "price": 0.99,
+      "rating": 4.96,
+      "category": "groceries",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/groceries/water/thumbnail.webp"
+    },
+    {
+      "id": 33,
+      "title": "Mulberry",
+      "price": 4.99,
+      "rating": 4.95,
+      "category": "groceries",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/groceries/mulberry/thumbnail.webp"
+    }
+  ],
+  "total": 194,
+  "skip": 0,
+  "limit": 5
+}

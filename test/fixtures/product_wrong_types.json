@@ -1,0 +1,30 @@
+{
+  "id": 7,
+  "title": "Odd Product",
+  "description": 12,
+  "category": ["beauty"],
+  "price": "9.99",
+  "discountPercentage": "10",
+  "rating": null,
+  "stock": 3.0,
+  "tags": "beauty",
+  "brand": "",
+  "availabilityStatus": false,
+  "reviews": [
+    "not a review",
+    {
+      "rating": 4,
+      "comment": "Fine",
+      "date": "not a date",
+      "reviewerName": "Ann"
+    },
+    {
+      "rating": "five",
+      "comment": null,
+      "date": "2025-04-30T09:41:02.053Z",
+      "reviewerName": 3
+    }
+  ],
+  "images": ["https://cdn.dummyjson.com/a.webp", 5, "", null],
+  "thumbnail": "   "
+}
