@@ -15,6 +15,7 @@ import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/h
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/featured_property_card.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_grid_card.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/sliver_property_grid.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/fake_favorites_repository.dart';
@@ -25,7 +26,6 @@ import '../../../../helpers/pump_widget.dart';
 import '../../../../helpers/translations.dart';
 import '../../../../helpers/home_screen_finders.dart';
 
-const Locale _en = AppLocalization.english;
 const Locale _ar = AppLocalization.arabic;
 
 final List<PropertyEntity> _more = [
@@ -127,10 +127,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(HomeScreen), findsOneWidget);
-      expect(
-        find.widgetWithText(AppBar, translate(_en, 'details.title')),
-        findsNothing,
-      );
+      expect(find.byType(PropertyDetailsScreen), findsNothing);
     });
   });
 

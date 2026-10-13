@@ -23,6 +23,7 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/reposit
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/filter_properties_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/get_property_details_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/search_properties_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/cubit/property_details_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -81,6 +82,7 @@ Future<void> init() async {
         connectivityChanges: sl<NetworkInfo>().onStatusChange,
       ),
     )
+    ..registerFactory(() => PropertyDetailsCubit(getPropertyDetails: sl()))
     ..registerFactory(
       () => FavoritesCubit(
         getFavorites: sl(),

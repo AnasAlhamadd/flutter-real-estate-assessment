@@ -5,6 +5,7 @@ import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/auth_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -163,9 +164,6 @@ void main() {
 
     expect(find.byType(SplashScreen), findsNothing);
     expect(find.byType(AuthScreen), findsNothing);
-    expect(
-      _appBarTitle(AppLocalization.english, 'details.title'),
-      findsOneWidget,
-    );
+    expect(find.byType(PropertyDetailsScreen), findsOneWidget);
   });
 }

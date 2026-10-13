@@ -7,6 +7,7 @@ import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
+import 'package:flutter_real_estate_assessment/core/widget/app_back_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_bottom_nav_bar.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_search_field.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_svg_icon.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_real_estate_assessment/feature/properties/presentation/w
 import 'package:flutter_real_estate_assessment/feature/home/presentation/widget/featured_property_list.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_grid_card.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/sliver_property_grid.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/fake_favorites_repository.dart';
@@ -345,17 +347,15 @@ void main() {
 
       await tester.tap(featuredCardTitled(sampleProperties.first.title));
       await tester.pumpAndSettle();
-      expect(
-        find.widgetWithText(AppBar, translate(_en, 'details.title')),
-        findsOneWidget,
-      );
+      expect(find.byType(PropertyDetailsScreen), findsOneWidget);
 
-      await tester.tap(find.byType(BackButton));
+      await tester.tap(find.byType(AppBackButton));
       await tester.pumpAndSettle();
       expect(find.byType(HomeScreen), findsOneWidget);
     });
 
-    testWidgets('a recommendation card opens its details', (tester) async {
+    testWidgets('a recommendation card opens its details with the card as '
+        'initial data', (tester) async {
       await pumpApp(tester);
       final card = gridCardTitled(sampleProperties[1].title);
       await scrollHomeTo(tester, card);
@@ -363,10 +363,11 @@ void main() {
       await tester.tap(card);
       await tester.pumpAndSettle();
 
-      expect(
-        find.widgetWithText(AppBar, translate(_en, 'details.title')),
-        findsOneWidget,
+      final details = tester.widget<PropertyDetailsScreen>(
+        find.byType(PropertyDetailsScreen),
       );
+      expect(details.id, sampleProperties[1].id);
+      expect(details.initialProperty, sampleProperties[1]);
     });
 
     testWidgets('a category chip reloads the grid for that category', (

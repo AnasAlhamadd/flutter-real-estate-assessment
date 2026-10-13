@@ -34,7 +34,6 @@ abstract final class AppTextKeys {
   static const String favoritesSaveFailed = 'favorites.save_failed';
 
   static const String exploreTitle = 'explore.title';
-  static const String detailsTitle = 'details.title';
   static const String profileTitle = 'profile.title';
 
   static const String detailsOverview = 'details.overview';

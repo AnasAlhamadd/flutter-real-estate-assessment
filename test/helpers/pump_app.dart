@@ -6,6 +6,7 @@ import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/domain/repositories/favorites_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/home/domain/repositories/home_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/repositories/properties_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,11 +34,13 @@ Future<void> pumpApp(
   Map<String, Object> preferences = const {},
   HomeRepository? repository,
   FavoritesRepository? favorites,
+  PropertiesRepository? properties,
   bool settle = true,
 }) async {
   registerScreenDependencies(
     repository ?? FakeHomeRepository(),
     favorites: favorites,
+    properties: properties,
   );
   tester.view
     ..physicalSize = viewport.size

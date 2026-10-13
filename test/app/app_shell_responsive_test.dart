@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
+import 'package:flutter_real_estate_assessment/core/widget/app_back_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_bottom_nav_bar.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -99,13 +101,10 @@ void main() {
 
           expectNoLayoutErrors(tester);
           expectDirectionFor(tester, locale);
-          expect(
-            find.widgetWithText(AppBar, translate(locale, 'details.title')),
-            findsOneWidget,
-          );
-          expectVisibleAndTappable(tester, find.byType(BackButton));
+          expect(find.byType(PropertyDetailsScreen), findsOneWidget);
+          expectVisibleAndTappable(tester, find.byType(AppBackButton));
 
-          await tester.tap(find.byType(BackButton));
+          await tester.tap(find.byType(AppBackButton));
           await tester.pumpAndSettle();
           expect(find.byType(HomeScreen), findsOneWidget);
         });
