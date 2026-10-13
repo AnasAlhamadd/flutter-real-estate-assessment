@@ -23,7 +23,8 @@ alwaysApply: false
 ## Remote data source
 - Only class that touches `Dio`. Returns **models**, throws typed exceptions.
 - Map `DioException`: `connectionTimeout|sendTimeout|receiveTimeout|transformTimeout` → `RequestTimeoutException`; `connectionError|badCertificate` (and `unknown` with `SocketException`) → `NetworkException`; `badResponse` → `ServerException(statusCode)`; `cancel` → `RequestCancelledException`; JSON/type errors → `ParsingException`; anything else → `UnknownException`. (Implemented in `core/network/dio_client.dart`.)
-- Search accepts a `CancelToken`; cancel the previous one on every new query.
+- Full-set calls (search, whole catalog) accept a pure-Dart `CancellationSignal` (`core/utils/cancellation_signal.dart`), so domain and presentation never import Dio. The remote data source converts it to a Dio `CancelToken`: an already cancelled signal throws `RequestCancelledException` without a request; cancelling in flight aborts it. Use one signal per request and cancel the previous one on every new query.
+- Paged responses: `hasReachedMax` is `skip + limit >= total` from the response (DummyJSON echoes the returned count in `limit`).
 
 ## Local data source (reference §4.5.2)
 - Backed by `SharedPreferences`. **Only two keys** (`StorageKeys.productsFirstPage`, `StorageKeys.categories`). Never add a key without approval.
@@ -43,5 +44,5 @@ alwaysApply: false
 - Never call the network from widgets, `build()`, or `initState` without a Cubit.
 
 ## Models
-- `fromJson` is defensive: `(json['price'] as num?)?.toDouble() ?? 0`, lists default to `const []`, nullable image URLs allowed. Every listing field may be missing (`select` omits absent keys such as `brand`).
+- `fromJson` is defensive via `model/json_readers.dart`: wrong types, blank strings, and non-finite numbers (`NaN`, `Infinity`, overflowing literals such as `1e400`) become `null`/defaults; lists default to `const []`; nullable image URLs allowed. Every listing field may be missing (`select` omits absent keys such as `brand`).
 - `toEntity()` maps API product → `PropertyEntity` (approved superset, reference §4.6). Never invent fields the API lacks. `weight`/`dimensions` aren't mapped; `stock`/`availabilityStatus` must never be shown as bedrooms, bathrooms, or area.

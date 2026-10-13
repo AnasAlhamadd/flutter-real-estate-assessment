@@ -1,7 +1,7 @@
 # PROJECT_REFERENCE: Flutter Real Estate Assessment
 
 > **Single source of truth for this project.** Agent rules live in `.cursor/rules/*.mdc` and point here.
-> Last updated: 2026-10-13 · Status: **Phase 2 (Foundation) committed on `feature/foundation`. Phase 3 decisions approved (Q4 partly, Q6, cache option B, listing modes, Featured sort). `feature/properties-data` created; Phase 3 implementation waits for your go-ahead.**
+> Last updated: 2026-10-13 · Status: **Phase 3 (Properties data) implemented on `feature/properties-data`, uncommitted, awaiting review. Phase 4 waits for your go-ahead.**
 
 ---
 
@@ -199,7 +199,7 @@ lib/
 │   ├── usecase/usecase.dart          # UseCase<T, Params>, NoParams
 │   ├── enums/request_status.dart
 │   ├── function/show_snack_bar.dart
-│   ├── utils/{debouncer, formatters, bidi_text}.dart
+│   ├── utils/{debouncer, formatters, bidi_text, cancellation_signal}.dart
 │   └── widget/                       # AppButton, SectionHeader, AppNetworkImage, LoadingView,
 │                                     # ErrorView, EmptyView, AppSearchField, AppBackButton, LanguageSwitcher
 │                                     # Phase 2 temporary: app_shell.dart (Material NavigationBar),
@@ -207,12 +207,14 @@ lib/
 └── feature/
     └── properties/                   # final screen names come from Phase 1
         ├── domain/
-        │   ├── entities/{property_entity, properties_page_entity, category_entity}.dart
+        │   ├── entities/{property_entity, properties_page_entity, category_entity,
+        │   │             review_entity, price_range}.dart
         │   ├── repositories/properties_repository.dart
-        │   └── usecases/{get_properties, search_properties, get_categories,
+        │   └── usecases/{get_properties, search_properties, get_categories, get_featured_properties,
         │                 get_properties_by_category, get_property_details, filter_properties}_usecase.dart
         ├── data/
-        │   ├── model/{property_model, properties_response_model, category_model}.dart
+        │   ├── model/{property_model, properties_response_model, category_model,
+        │   │          review_model, json_readers}.dart
         │   ├── datasource/{properties_remote_data_source, properties_local_data_source}.dart
         │   └── repositories/properties_repository_impl.dart
         └── presentation/
@@ -233,7 +235,7 @@ If Figma has favorites, add `feature/favorites/` (local-only data source, app-wi
 ```text
 User types "villa"
  → SearchScreen: AppSearchField.onChanged
- → SearchCubit.onQueryChanged(q)       debounce 400 ms, trim, ignore unchanged query, cancel previous CancelToken
+ → SearchCubit.onQueryChanged(q)       debounce 400 ms, trim, ignore unchanged query, cancel previous CancellationSignal
  → emit(status: loading)                search text present → full-set mode (§4.5.1)
  → SearchPropertiesUseCase(SearchParams(q))
  → PropertiesRepository.search(...)     (domain contract)
@@ -255,7 +257,7 @@ User types "villa"
 | 3 | domain | `usecases/*_usecase.dart` | One `call(Params)`, Params is Equatable |
 | 4 | test | `test/fixtures/*.json` | Real API response saved + broken variants |
 | 5 | data | `model/*_model.dart` | Defensive `fromJson`, `toJson` (for cache), `toEntity()`, **tests pass** |
-| 6 | data | `datasource/*_remote_data_source.dart` | Abstract + Dio impl, throws typed exceptions, **tests with MockDio** |
+| 6 | data | `datasource/*_remote_data_source.dart` | Abstract + Dio impl, throws typed exceptions, **tests through the real `DioClient` over a fake HTTP adapter** (`test/helpers/stub_http_adapter.dart`) |
 | 7 | data | `datasource/*_local_data_source.dart` | Abstract + SharedPreferences impl, TTL, `CacheException`, **tests** |
 | 8 | data | `repositories/*_repository_impl.dart` | Strategy from §4.5, exception → Failure, **tests for every branch** |
 | 9 | DI | `injection_container.dart` | Data sources, repo, use cases (lazySingleton), cubit (factory) |
@@ -290,12 +292,12 @@ DummyJSON can't combine them server-side (verified 2026-10-13): `/products/searc
 
 | Mode | When | Request | Local work |
 | --- | --- | --- | --- |
-| **Paged** | Search text empty (after trim) **and** no price filter | "All" → `/products?limit=20&skip=…`; a category → `/products/category/{slug}?limit=20&skip=…` | None. `hasReachedMax` when `items.length >= total` |
+| **Paged** | Search text empty (after trim) **and** no price filter | "All" → `/products?limit=20&skip=…`; a category → `/products/category/{slug}?limit=20&skip=…` | None. `hasReachedMax` when the response's `skip + limit >= total` (DummyJSON echoes the returned count in `limit`) |
 | **Full set** | Search text non-empty **or** a price filter is active | Text → `/products/search?q=<text>&limit=0&select=…`; no text → `/products?limit=0&select=…` | `FilterPropertiesUseCase`: category (slug equality) + price range (inclusive) on the full set |
 
 Rules:
 - **Fetched once:** in full-set mode, changing the category or price range only re-filters the in-memory set (no request). A new request happens only when the search text changes, or when entering full-set mode.
-- **Query changes:** 400 ms debounce, trimmed, unchanged text ignored; the previous request is cancelled (`CancelToken`) and its `CancelledFailure` is ignored; only the latest request may update the state.
+- **Query changes:** 400 ms debounce, trimmed, unchanged text ignored; the previous request is cancelled through its `CancellationSignal` (pure Dart, `core/utils/cancellation_signal.dart`; one signal per request) and its `CancelledFailure` is ignored. The remote data source converts the signal into a Dio `CancelToken`: an already cancelled signal sends no request, and cancelling in flight aborts it. A response that arrives just before cancellation can still succeed, so the Cubit must also check that the result belongs to the latest request before updating the state.
 - **Mode switches** reset pagination. Clearing the text with no price filter returns to paged mode (page 0, with the persisted fallback for "All").
 - **Result count** ("Found {n}"): paged mode uses the API `total`; full-set mode uses the filtered list length.
 - **States:** loading while the full set is fetched; failure → `ErrorView` with retry of the same request; empty when nothing matches.
@@ -326,7 +328,7 @@ Approved scope: **two keys only**, `StorageKeys.productsFirstPage` (`cache.produ
 | HTTP 4xx (404 details) | `ServerException(code)` | `NotFoundFailure` / `RequestFailure` | `errors.not_found` / `errors.request` |
 | JSON shape/type errors | `ParsingException` | `UnexpectedResponseFailure` | `errors.unexpected_response` |
 | Cache empty/corrupt | `CacheException` | `CacheFailure` | `errors.no_cached_data` |
-| `CancelToken` cancelled (superseded search) | `RequestCancelledException` | `CancelledFailure` (cubits ignore it, never shown) | `errors.request_cancelled` |
+| `CancellationSignal` cancelled (superseded search; Dio `cancel`) | `RequestCancelledException` | `CancelledFailure` (cubits ignore it, never shown) | `errors.request_cancelled` |
 | Anything else | `UnknownException` | `UnknownFailure` | `errors.unknown` |
 
 `NetworkInfo` (`connectivity_plus`) only reports whether a network interface is up. It is **not** proof the API is reachable, so real reachability problems still surface as timeouts or connection errors.
@@ -383,7 +385,8 @@ test/
 │   ├── products_page.json  product.json  categories.json  search_empty.json
 │   └── product_missing_fields.json  product_wrong_types.json
 ├── helpers/
-│   ├── mocks.dart          # MockDio, MockNetworkInfo, MockRemote/LocalDataSource, MockRepository, MockUseCases
+│   ├── mocks.dart          # mocktail: MockNetworkInfo, MockRemote/LocalDataSource, MockRepository, MockSharedPreferences (+ use-case mocks with the Cubits)
+│   ├── stub_http_adapter.dart # fake Dio HTTP adapter: records requests, returns a set status/body, or hangs (cancellation)
 │   └── pump_app.dart       # pumpApp(widget, {locale, textScale, size}) with EasyLocalization + ScreenUtil
 ├── core/
 │   ├── error/failure_message_test.dart
@@ -409,7 +412,7 @@ integration_test/app_test.dart                     # optional: browse → detail
 | T2 | Defensive parsing; all shape/type errors → `UnexpectedResponseFailure` | C1, C5 |
 | T3 | Repository remote-first; persisted fallback limited to the "All" first page + categories, details in memory (§4.5.2) | C5, C7 |
 | T4 | Shared `ErrorView` with retry, plus a retry footer for pagination failures | C4 |
-| T5 | Request dedupe: debounce, CancelToken, unchanged-query guard, no fetch in `build()`, pagination guard, category cache, `select=` | C7 |
+| T5 | Request dedupe: debounce, `CancellationSignal` (converted to a Dio `CancelToken` in the data layer), unchanged-query guard, no fetch in `build()`, pagination guard, category cache, `select=` | C7 |
 | T6 | Two listing modes (§4.5.1): paged server-side category listing; full-set fetch (`limit=0`) with local category + price filtering when search text or a price filter is active. Sort is server-side | C8, E4 |
 | T7 | `AppNetworkImage` with placeholder + error widget, null-safe | C6 |
 | T8 | `easy_localization` (persisted, instant), directional APIs only | B1–B4, B7, D2 |
@@ -589,7 +592,7 @@ Recipe steps 1–9 (§4.4) for `properties`:
 1. Fixtures from real responses + broken variants.
 2. Entities (approved superset, §4.6), repository contract, use cases (incl. `FilterPropertiesUseCase` for category + price on the full set, §4.5.1).
 3. Models + tests (listing items with only `<listing fields>`, missing `brand`, wrong types).
-4. Remote data source + MockDio tests: paged, `limit=0` full set, search, category, Featured (`sortBy=rating&order=desc`), details, categories, cancellation.
+4. Remote data source + tests through the real `DioClient` over a fake HTTP adapter: paged, `limit=0` full set, search, category, Featured (`sortBy=rating&order=desc`), details, categories, cancellation.
 5. Local data source (SharedPreferences, two keys only, schema-versioned envelope, size bound, §4.5.2) + tests (round-trip, version mismatch, corrupt value, oversize write skipped).
 6. Repository impl with the §4.5 strategy + tests for every branch (online, first-page fallback by failure type and age, no cache, 4xx not falling back, categories freshness, details in-memory reuse, timeout, 5xx, parsing).
 7. DI registration.
@@ -691,6 +694,7 @@ Manual checklist:
 | 2026-10-13 | 1: Figma | ✅ Screen list (Q1) and color set (Q10) approved | Drafts duplicate verified. Page `0:1` mapped: 3 color sets × 8 frames + spec frame. Inspected Home, Search-v1, Filters, Details, Profile (blue set). §5 (inventory, tappables, tokens, components/assets) and §4.6 (API mapping, verified against live DummyJSON) filled. Q3 answered. Q1/Q4/Q6/Q8/Q9 updated. Q10–Q17 added. No code, assets, packages, or commits. Figma calls in Phase 1: 7 (≈10 total this month) |
 | 2026-10-13 | 2: Foundation | ✅ Committed on `feature/foundation` (not merged into `main`) | Branch `feature/foundation`. Counter template removed. Deps via `flutter pub add` (resolved: flutter_screenutil 5.9.3, equatable 2.1.0, flutter_bloc 8.1.6, shared_preferences 2.5.6, connectivity_plus 6.1.5, easy_localization 3.0.8, get_it, go_router, dio, dartz, flutter_localizations). Core error model + mappers, `DioClient`, `NetworkInfo`, `UseCase`, `RequestStatus`, `ApiConstants`, `StorageKeys`, GetIt DI, en/ar translations, `CFBundleLocalizations`, `ScreenUtilInit(430×932)`, go_router shell with **placeholder** tabs (Home/Explore/Profile) + `/property/:id`, temporary `LanguageSwitcher`. `flutter analyze` 0 issues. `flutter test` 116/116, including a 64-case responsive matrix (4 tab/detail routes × 4 viewports × en/ar × text scale 1.0/1.3) **on placeholder screens only**. Fixed a real bug the tests found: `'key'.tr()` didn't rebuild kept-alive routes on locale change → `context.tr(key)` |
 | 2026-10-13 | Pre-Phase 3 decisions | ✅ Approved | Q6 → Rubik for both locales (Arabic coverage verified from the font file; rendering checked in Phase 4). Q4 → superset entity, location = `brand` else category, stats row hidden. Cache option B: `shared_preferences` for the "All" first page + categories only, schema-versioned, bounded; details in memory (§4.5.2). Listing modes: paged category endpoint vs. full set via `limit=0` with local category + price filters (§4.5.1, verified live). Featured `sortBy=rating&order=desc` (count = Q18). Removed unused `StorageKeys.productDetails`/`favoriteIds`. Rules updated (`00-project-core`, `data-layer`, `testing`, `clean-architecture`, `localization-rtl`) |
+| 2026-10-13 | 3: Properties data | 🟡 Implemented, uncommitted, awaiting review | Branch `feature/properties-data`. Domain: entities (approved superset + `ReviewEntity`, `PriceRange`), repository contract, 7 use cases (incl. Featured and a pure synchronous `FilterPropertiesUseCase`). Data: defensive models (only `id` required; wrong types → null/defaults; broken list entries skipped; top-level shape errors → `ParsingException`), remote data source (paged, `limit=0` full set, search, category, Featured rating sort, details, categories, cancellation via pure-Dart `CancellationSignal`), local data source (two keys, schema-versioned envelope, ≤ 20 items, 32 KB cap, corrupt entries removed), repository (§4.5 strategy, first-page fallback by failure type and age, categories memory → 24 h persisted → remote → stale, details in memory, last 20). Core: `DioClient.getJsonList`, URL-encoded category slugs, `ApiConstants.listingFields`. DI registered. Dev dep `mocktail ^1.0.5`. 12 fixtures (8 captured live; fake reviewer emails replaced with `@example.com`). Review fixes: non-finite numbers (`NaN`, `Infinity`, `1e400`) parse to `null` (`readInt(Infinity)` used to throw `UnsupportedError`), and an unencodable cache write becomes `CacheException`, so it can't fail a successful request. Docs/rules aligned (`CancellationSignal`, fake HTTP adapter, `skip + limit >= total`). `flutter analyze` 0; `flutter test` 226/226 (110 new). No UI, Cubits, favorites, or database |
 
 ---
 
@@ -705,3 +709,5 @@ Manual checklist:
 | 2026-10-13 | Cursor Agent + Figma MCP | Phase 1 design inventory: `get_metadata(0:1)`, `get_variable_defs(1:4426)`, `get_design_context` for `1:4426`, `1:4120`, `1:3867`, `1:4236`, `1:3786` | §5, §4.6, §9 Q10–Q17 | Each value traced to MCP output (evidence key [V]/[S]/[U] in §5). Product schema re-checked with `curl https://dummyjson.com/products/1` and `/products/categories` | **Rejected** the "colors" spec frame (all swatches labeled "Voog blue #443DF6", contradicting the `#0061FF` used on screens). **Rejected** the generated button shadow `rgba(112,79,56,.25)` in favor of the named variable `Button/Shadow 1`. Did not claim Rubik Arabic coverage (marked unverified) |
 | 2026-10-13 | Cursor Agent | Phase 2 foundation: core error/network/DI, l10n, router, responsive setup, shared test helpers + responsive matrix | `lib/core/**`, `lib/app.dart`, `lib/main.dart`, `lib/injection_container.dart`, `assets/translations/*`, `test/**` | `flutter analyze` 0; `flutter test` 116/116; `plutil -lint` on `Info.plist`; pubspec YAML parsed and asset paths checked; easy_localization/dio/connectivity_plus sources read in pub cache to confirm APIs | Added `DioExceptionType.transformTimeout` (new in dio 5.11, flagged by the analyzer). Replaced string `.tr()` with `context.tr()` after the language-switch test showed stale titles on kept-alive routes. Scoped nav-label finders to `NavigationBar` instead of loosening assertions. No overflow was hidden to make tests pass |
 | 2026-10-13 | Cursor Agent | Pre-Phase 3 decision review (font, field mapping, cache, filtering) | §4.3, §4.5 (+4.5.1, 4.5.2), §4.6, §4.8, §5, §6, §7, §9, rules | Google Fonts `METADATA.pb` + direct parsing of `Rubik[wght].ttf` (cmap/GSUB/GPOS) with plain Python; live `curl` checks of DummyJSON (`limit=0`, `select`, search/category combinations, price params, field coverage across 194 products); `shared_preferences` README; `dart:ui` `FontWeight` docs | **Rejected** the reference's own earlier claim that Rubik has no Arabic (the metadata and the font file show full Arabic support). **Rejected** using `weight` in the UI (no unit in the API). The user **narrowed** the proposed stats-row substitution to "hide" |
+| 2026-10-13 | Cursor Agent | Phase 3 data layer + tests | `lib/feature/properties/{domain,data}/**`, core additions, `test/feature/**`, `test/fixtures/**` | Fixtures captured from live DummyJSON with `curl`; remote data source tested through the real `DioClient` with a recording HTTP adapter (paths, query params, slug encoding, cancellation); repository branches tested with `mocktail`; `flutter analyze` 0; `flutter test` 216/216; boundary greps (no Flutter/Dio/prefs imports in domain; only the two approved keys written) | Fixed a test that compared lists wrapped in dartz `Right` (identity equality) by unwrapping. Chose a pure-Dart `CancellationSignal` instead of passing Dio's `CancelToken` through the domain. Kept `FilterPropertiesUseCase` synchronous instead of forcing it into `Future<Either>` |
+| 2026-10-13 | Cursor Agent | Phase 3 review fixes | `json_readers.dart`, `properties_local_data_source.dart`, model/local/repository tests, `product.json`, reference §4.3–§4.8 + §7, `data-layer.mdc`, `testing.mdc` | Confirmed with a Dart script that `double.tryParse("NaN")` returns NaN, that `jsonEncode(NaN)` throws `JsonUnsupportedObjectError` (an `Error`), and that `jsonDecode("1e400")` gives `Infinity`, whose `toInt()` throws `UnsupportedError`. Regression tests cover string and numeric non-finite values, overflowing literals, the local write, and the repository end-to-end with the real local data source; 226/226 | The AI review found the NaN path; the `readInt(Infinity)` crash was found while fixing it |
