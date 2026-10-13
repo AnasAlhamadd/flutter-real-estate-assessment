@@ -8,6 +8,10 @@ import 'package:flutter_real_estate_assessment/feature/home/domain/usecases/get_
 import 'package:flutter_real_estate_assessment/feature/home/domain/usecases/get_recommendations_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/data/datasource/properties_remote_data_source.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/repositories/properties_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/get_property_details_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/data/datasource/property_extras_mock_data_source.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/repositories/property_extras_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/usecases/get_property_extras_usecase.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,3 +40,15 @@ class MockGetRecommendationsUseCase extends Mock
 
 class MockFavoritesLocalDataSource extends Mock
     implements FavoritesLocalDataSource {}
+
+class MockGetPropertyDetailsUseCase extends Mock
+    implements GetPropertyDetailsUseCase {}
+
+class MockGetPropertyExtrasUseCase extends Mock
+    implements GetPropertyExtrasUseCase {}
+
+class MockPropertyExtrasRepository extends Mock
+    implements PropertyExtrasRepository {}
+
+class MockPropertyExtrasMockDataSource extends Mock
+    implements PropertyExtrasMockDataSource {}

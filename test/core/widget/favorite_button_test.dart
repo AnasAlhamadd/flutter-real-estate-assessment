@@ -56,6 +56,19 @@ void main() {
     }
   });
 
+  testWidgets('Details top bar: 28 px Black/01, Primary when selected', (
+    tester,
+  ) async {
+    const variant = FavoriteButtonVariant.detailsTopBar;
+    await _pump(tester, isFavorite: false, variant: variant);
+    expect(_icon(tester).color, ColorsApp.black01);
+    expect(_icon(tester).size, AppSizes.detailsTopBarIconSize);
+
+    await _pump(tester, isFavorite: true, variant: variant);
+    expect(_icon(tester).assetPath, ImagePath.heartBold);
+    expect(_icon(tester).color, ColorsApp.primary);
+  });
+
   testWidgets('has a 44 px tap target around the Figma-sized heart', (
     tester,
   ) async {

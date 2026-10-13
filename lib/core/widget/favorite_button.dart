@@ -20,6 +20,21 @@ enum FavoriteButtonVariant {
     iconSize: AppSizes.gridHeartSize,
     color: ColorsApp.black03,
     selectedColor: ColorsApp.primary,
+  ),
+
+  /// Explore list card (`1:4182`): 22 px, otherwise like [onSurface].
+  listCard(
+    iconSize: AppSizes.listHeartSize,
+    color: ColorsApp.black03,
+    selectedColor: ColorsApp.primary,
+  ),
+
+  /// Property Details top bar (`1:4270`): 28 px, Black/01 over the hero;
+  /// Primary when selected, like the grid card.
+  detailsTopBar(
+    iconSize: AppSizes.detailsTopBarIconSize,
+    color: ColorsApp.black01,
+    selectedColor: ColorsApp.primary,
   );
 
   const FavoriteButtonVariant({

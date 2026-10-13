@@ -20,15 +20,56 @@ void main() {
       'assets/svg',
     ).listSync().whereType<File>().map((file) => file.path).toSet();
 
-    expect({...ImagePath.icons, ImagePath.splashLogo, ImagePath.google}, files);
+    expect({
+      ...ImagePath.icons,
+      ImagePath.splashLogo,
+      ImagePath.google,
+      ImagePath.detailsMap,
+      ImagePath.mapPin,
+    }, files);
   });
 
-  test('assets/images holds only the Auth collage', () {
+  test('assets/images holds the Auth collage and the mock Details photos', () {
     final files = Directory(
       'assets/images',
     ).listSync().whereType<File>().map((file) => file.path).toSet();
 
-    expect(files, {ImagePath.authCollage});
+    expect(files, {
+      ImagePath.authCollage,
+      ImagePath.agentAvatar,
+      ImagePath.mapPinPhoto,
+    });
+  });
+
+  for (final (path, width, height) in [
+    (ImagePath.agentAvatar, 120, 120),
+    (ImagePath.mapPinPhoto, 66, 64),
+  ]) {
+    test('$path decodes at 2× its Figma size', () async {
+      final data = await rootBundle.load(path);
+      final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+      final image = (await codec.getNextFrame()).image;
+      addTearDown(() {
+        image.dispose();
+        codec.dispose();
+      });
+
+      expect((image.width, image.height), (width, height));
+    });
+  }
+
+  test('the Details map and pin keep their Figma sizes', () async {
+    final map = await _parsedSize(
+      await rootBundle.loadString(ImagePath.detailsMap),
+    );
+    final pin = await _parsedSize(
+      await rootBundle.loadString(ImagePath.mapPin),
+    );
+
+    expect(map.width, closeTo(437.011, 0.001));
+    expect(map.height, closeTo(926, 0.001));
+    expect(pin.width, closeTo(53.1365, 0.001));
+    expect(pin.height, closeTo(61.4796, 0.001));
   });
 
   test('the Auth collage decodes at 3× its Figma size', () async {

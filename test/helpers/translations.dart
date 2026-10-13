@@ -30,6 +30,28 @@ Map<String, String> flattenTranslations(
   return result;
 }
 
+const Set<String> _pluralForms = {'zero', 'one', 'two', 'few', 'many', 'other'};
+
+/// A plural group: only plural form names, `other` included. Languages
+/// need different forms (Arabic six, English two), so a group is one key.
+bool _isPluralGroup(Map<String, dynamic> node) =>
+    node.containsKey('other') && node.keys.every(_pluralForms.contains);
+
+/// Dotted translation keys as the app uses them: plural groups count as one
+/// key (e.g. `time.days_ago`), other nested maps are walked.
+Set<String> translationKeys(Map<String, dynamic> json, [String prefix = '']) {
+  final keys = <String>{};
+  json.forEach((key, value) {
+    final path = prefix.isEmpty ? key : '$prefix.$key';
+    if (value is Map<String, dynamic> && !_isPluralGroup(value)) {
+      keys.addAll(translationKeys(value, path));
+    } else {
+      keys.add(path);
+    }
+  });
+  return keys;
+}
+
 /// Resolves a dotted key straight from the JSON file, independent of the app.
 String translate(Locale locale, String key) {
   Object? node = readTranslations(locale);

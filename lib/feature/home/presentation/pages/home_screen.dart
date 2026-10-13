@@ -157,7 +157,7 @@ class _HomeScrollView extends StatelessWidget {
 }
 
 void _openDetails(BuildContext context, PropertyEntity property) =>
-    context.push(AppRouter.propertyDetailsPath(property.id));
+    context.push(AppRouter.propertyDetailsPath(property.id), extra: property);
 
 /// Snackbar when pull to refresh couldn't update what is already shown.
 class _RefreshFailureListener extends StatelessWidget {

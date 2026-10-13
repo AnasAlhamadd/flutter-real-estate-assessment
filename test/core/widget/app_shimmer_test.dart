@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_shimmer.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -48,5 +49,58 @@ void main() {
     await tester.pump();
 
     expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  group('SkeletonTextLine', () {
+    const style = TextStyle(fontSize: 20, height: 1);
+
+    Future<Rect> pumpLine(
+      WidgetTester tester, {
+      Locale locale = AppLocalization.english,
+      double textScale = 1,
+    }) async {
+      await pumpLocalizedWidget(
+        tester,
+        const Align(
+          alignment: AlignmentDirectional.topStart,
+          child: SizedBox(
+            width: 300,
+            child: SkeletonTextLine(
+              style: style,
+              widthFactor: 0.5,
+              radius: 4,
+              minHeight: 40,
+            ),
+          ),
+        ),
+        locale: locale,
+        textScale: textScale,
+        settle: false,
+      );
+      return tester.getRect(find.byType(SkeletonBox));
+    }
+
+    testWidgets('one text line tall, bottom-aligned in its slot', (
+      tester,
+    ) async {
+      final bar = await pumpLine(tester);
+
+      expect(bar.size, const Size(150, 20));
+      expect(tester.getSize(find.byType(SkeletonTextLine)).height, 40);
+      expect(bar.bottom, 40);
+      expect(bar.left, 0);
+    });
+
+    testWidgets('grows with the text scale', (tester) async {
+      final bar = await pumpLine(tester, textScale: 1.3);
+
+      expect(bar.height, closeTo(26, 0.01));
+    });
+
+    testWidgets('starts at the right in Arabic', (tester) async {
+      final bar = await pumpLine(tester, locale: AppLocalization.arabic);
+
+      expect(bar.right, tester.getRect(find.byType(SkeletonTextLine)).right);
+    });
   });
 }

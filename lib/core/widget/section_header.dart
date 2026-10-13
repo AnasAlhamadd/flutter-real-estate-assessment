@@ -7,18 +7,28 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Section title with an optional "See All" link.
 class SectionHeader extends StatelessWidget {
-  const SectionHeader({required this.title, this.onSeeAll, super.key});
+  const SectionHeader({
+    required this.title,
+    this.onSeeAll,
+    this.leading,
+    super.key,
+  });
 
   final String title;
 
   /// Hides the "See All" link when `null`.
   final VoidCallback? onSeeAll;
 
+  /// Shown before the title, e.g. the Details reviews star. Includes its own
+  /// gap to the title.
+  final Widget? leading;
+
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        ?leading,
         Expanded(
           child: CustomText.plain(
             title,

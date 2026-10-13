@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
 
@@ -74,6 +76,55 @@ class _SweepTransform extends GradientTransform {
     final offset = bounds.width * (progress * 2 - 1);
     final dx = textDirection == TextDirection.rtl ? -offset : offset;
     return Matrix4.translationValues(dx, 0, 0);
+  }
+}
+
+/// A [SkeletonBox] as tall as one line of [style] in the current font and
+/// text scale, bottom-aligned in at least [minHeight] (e.g. a price row as
+/// tall as its heart).
+class SkeletonTextLine extends StatelessWidget {
+  const SkeletonTextLine({
+    required this.style,
+    required this.widthFactor,
+    required this.radius,
+    this.minHeight = 0,
+    super.key,
+  });
+
+  final TextStyle style;
+  final double widthFactor;
+  final double radius;
+  final double minHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final lineHeight = _lineHeight(context);
+    return SizedBox(
+      height: math.max(lineHeight, minHeight),
+      child: Align(
+        alignment: AlignmentDirectional.bottomStart,
+        child: FractionallySizedBox(
+          widthFactor: widthFactor,
+          child: SkeletonBox(height: lineHeight, radius: radius),
+        ),
+      ),
+    );
+  }
+
+  /// Measured like `Text` lays it out, so it matches the real text.
+  double _lineHeight(BuildContext context) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: ' ',
+        style: DefaultTextStyle.of(context).style.merge(style),
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final height = painter.height;
+    painter.dispose();
+    return height;
   }
 }
 

@@ -126,12 +126,145 @@ abstract final class AppSizes {
   static const double listCardPaddingVertical = 14;
   static const double listImageContentGap = 14;
 
-  /// [S] Gap title → location row in list cards.
+  /// Gap title → location in list cards.
   static const double listTitleLocationGap = 10;
+
+  /// End column `1:4181`: heart on top, price at the bottom, 10 from the
+  /// card padding, 54 wide in Figma and 8 after the text.
+  static const double listHeartSize = 22;
+  static const double listEndColumnPadding = 10;
+  static const double listEndColumnMinWidth = 54;
+  static const double listContentEndGap = 8;
+
+  // Explore / Search (Figma `1:4120`).
+
+  /// Header top below the status bar (Figma: 60 from the frame top − 44).
+  static const double searchHeaderTop = 16;
+
+  /// Gap from the search field to "Found {n}" (Figma 24 to the chips, which
+  /// wait for the Filter task) and from it to the list.
+  static const double searchSectionGap = 24;
+
+  /// Skeleton cards shown while the first page loads (about one screen).
+  static const int searchSkeletonCount = 4;
 
   /// Not in Figma: minimum gap between two texts sharing a row, e.g. a long
   /// location next to the price.
   static const double inlineTextGap = 8;
+
+  // Property Details (Figma `1:4236`).
+
+  /// Hero `1:4239`. Figma draws the hero and body 428 wide in a 430 frame;
+  /// the app uses the full width.
+  static const double detailsHeroHeight = 460;
+
+  /// Hero scroll effects (not in Figma; your request 2026-10-13): blur once
+  /// the hero has scrolled fully away, and the bottom gradient's height.
+  static const double detailsHeroMaxBlur = 10;
+  static const double detailsHeroGradientHeight = 120;
+
+  /// Top bar `1:4266`: 16 below the status bar, 48 high, 24 side padding.
+  static const double detailsTopBarTop = 16;
+  static const double detailsTopBarHeight = 48;
+  static const double detailsTopBarPadding = 24;
+  static const double detailsTopBarIconSize = 28;
+
+  /// Hero page dots `1:4240`: 16 above the hero bottom.
+  static const double detailsDotsBottom = 16;
+  static const double detailsDotActiveWidth = 32;
+  static const double detailsDotSize = 8;
+  static const double detailsDotGap = 6;
+
+  /// Body `1:4273`: 20 × 24 padding, 30 between sections.
+  static const double detailsBodyVerticalPadding = 24;
+  static const double detailsSectionGap = 30;
+  static const double detailsTitleRowGap = 16;
+  static const double detailsTagRatingGap = 10;
+
+  /// Tag `1:4277`.
+  static const double detailsTagPaddingHorizontal = 10;
+  static const double detailsTagPaddingVertical = 6;
+  static const double radiusTag = 20;
+
+  /// Rating `1:4278`: star 20, gap 6.
+  static const double detailsRatingIconSize = 20;
+  static const double detailsRatingIconGap = 6;
+
+  /// Overview `1:4311`: title → text.
+  static const double detailsOverviewGap = 12;
+
+  /// Gallery `1:4366`: title → tiles, three 118 tiles spread over 388.
+  static const double detailsGalleryTitleGap = 20;
+  static const double detailsGalleryTileGap = 17;
+  static const int detailsGalleryTiles = 3;
+
+  /// Reviews `1:4400`: summary row → review, star 24, star → text 12.
+  static const double detailsReviewsGap = 24;
+  static const double detailsReviewsStarSize = 24;
+  static const double detailsReviewsStarGap = 12;
+
+  /// Review `1:4406`: avatar 40, avatar → name 10, rows 12 apart.
+  static const double detailsReviewAvatarSize = 40;
+  static const double detailsReviewAvatarGap = 10;
+  static const double detailsReviewContentGap = 12;
+
+  /// Stats row `1:4281`: icon 16 in a circle with 12 padding, icon → label 8,
+  /// 24 between stats.
+  static const double detailsStatsGap = 24;
+  static const double detailsStatIconSize = 16;
+  static const double detailsStatIconPadding = 12;
+  static const double detailsStatLabelGap = 8;
+
+  /// Agent `1:4308`: title → row 16, photo 60, photo → name 20, name → role
+  /// 4, info → actions 12, chat → call 20, action icons 28.
+  static const double detailsAgentTitleGap = 16;
+  static const double detailsAgentAvatarSize = 60;
+  static const double detailsAgentAvatarGap = 20;
+  static const double detailsAgentNameGap = 4;
+  static const double detailsAgentActionsGap = 12;
+  static const double detailsAgentActionGap = 20;
+  static const double detailsAgentActionIconSize = 28;
+
+  /// Facilities `1:4314`: title → grid 20, rows 20 apart, 4 per row 8 apart,
+  /// icon 28 in a circle with 16 padding, circle → label 8.
+  static const double detailsFacilitiesTitleGap = 20;
+  static const double detailsFacilitiesRowGap = 20;
+  static const int detailsFacilitiesPerRow = 4;
+  static const double detailsFacilityGap = 8;
+  static const double detailsFacilityIconSize = 28;
+  static const double detailsFacilityIconPadding = 16;
+
+  /// Location `1:4380`: title → address → map 20 apart, pin icon 20 + gap 8.
+  static const double detailsLocationGap = 20;
+  static const double detailsLocationIconSize = 20;
+  static const double detailsLocationIconGap = 8;
+
+  /// Map `1:4385`, drawn at 388 × 200 and scaled as one picture: corners 24,
+  /// map art `1:4387` (437.011 × 926) offset by (-24.505, -363), pin `1:4391`
+  /// (53.1365 × 61.4796) at (167.453, 69) with a 32.674 × 32 photo at
+  /// (177.663, 79) and a 3 px white border.
+  static const Size detailsMapSize = Size(388, 200);
+  static const double radiusMap = 24;
+  static const Size detailsMapArtSize = Size(437.011, 926);
+  static const Offset detailsMapArtOffset = Offset(-24.505, -363);
+  static const Size detailsMapPinSize = Size(53.1365, 61.4796);
+  static const Offset detailsMapPinOffset = Offset(167.453, 69);
+  static const Size detailsMapPhotoSize = Size(32.674, 32);
+  static const Offset detailsMapPhotoOffset = Offset(177.663, 79);
+  static const double detailsMapPhotoBorder = 3;
+
+  /// Review likes `1:4415`: heart 20, heart → count 6.
+  static const double detailsReviewLikeIconSize = 20;
+  static const double detailsReviewLikeGap = 6;
+
+  /// Price bar `1:4420`: padding 24 / 24 / 36, top corners 36,
+  /// "PRICE" → price 6, price → "Booking Now" 60.
+  static const double detailsPriceBarTop = 24;
+  static const double detailsPriceBarSide = 24;
+  static const double detailsPriceBarBottom = 36;
+  static const double detailsPriceLabelGap = 6;
+  static const double detailsPriceButtonGap = 60;
+  static const double radiusPriceBar = 36;
 
   // Rating badge: [S] padding, icon-text gap and inset from the image corner.
   static const double badgeLargePaddingHorizontal = 10;

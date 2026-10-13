@@ -1,9 +1,13 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_shell.dart';
 import 'package:flutter_real_estate_assessment/core/widget/language_switcher.dart';
 import 'package:flutter_real_estate_assessment/core/widget/placeholder_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/auth_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/pages/search_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
@@ -26,10 +30,7 @@ abstract final class AppRouter {
 
   static GoRouter create({String initialLocation = splash}) => GoRouter(
     initialLocation: initialLocation,
-    errorBuilder: (_, _) => const PlaceholderScreen(
-      titleKey: AppTextKeys.appTitle,
-      messageKey: AppTextKeys.errorsPageNotFound,
-    ),
+    errorBuilder: (_, _) => const _NotFoundScreen(),
     routes: [
       GoRoute(path: splash, builder: (_, _) => const SplashScreen()),
       GoRoute(path: auth, builder: (_, _) => const AuthScreen()),
@@ -44,11 +45,7 @@ abstract final class AppRouter {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: explore,
-                builder: (_, _) =>
-                    const PlaceholderScreen(titleKey: AppTextKeys.exploreTitle),
-              ),
+              GoRoute(path: explore, builder: (_, _) => const SearchScreen()),
             ],
           ),
           StatefulShellBranch(
@@ -64,11 +61,29 @@ abstract final class AppRouter {
           ),
         ],
       ),
-      GoRoute(
-        path: propertyDetails,
-        builder: (_, _) =>
-            const PlaceholderScreen(titleKey: AppTextKeys.detailsTitle),
-      ),
+      GoRoute(path: propertyDetails, builder: _propertyDetails),
     ],
+  );
+
+  /// `extra` may carry the tapped listing item as initial data; it is only
+  /// used when its id matches the path.
+  static Widget _propertyDetails(BuildContext _, GoRouterState state) {
+    final id = int.tryParse(state.pathParameters['id'] ?? '');
+    if (id == null) return const _NotFoundScreen();
+    final extra = state.extra;
+    return PropertyDetailsScreen(
+      id: id,
+      initialProperty: extra is PropertyEntity && extra.id == id ? extra : null,
+    );
+  }
+}
+
+class _NotFoundScreen extends StatelessWidget {
+  const _NotFoundScreen();
+
+  @override
+  Widget build(BuildContext context) => const PlaceholderScreen(
+    titleKey: AppTextKeys.appTitle,
+    messageKey: AppTextKeys.errorsPageNotFound,
   );
 }

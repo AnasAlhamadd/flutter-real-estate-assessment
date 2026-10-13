@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/auth_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/pages/search_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,9 +19,6 @@ import '../../../../helpers/translations.dart';
 final List<TestViewport> _viewports = testViewports
     .where((viewport) => const [320.0, 430.0].contains(viewport.size.width))
     .toList();
-
-Finder _appBarTitle(Locale locale, String key) =>
-    find.widgetWithText(AppBar, translate(locale, key));
 
 /// Lets the splash timer fire and the Auth route settle.
 Future<void> _finishSplash(WidgetTester tester) async {
@@ -107,10 +105,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expectNoLayoutErrors(tester);
-    expect(
-      _appBarTitle(AppLocalization.english, 'explore.title'),
-      findsOneWidget,
-    );
+    expect(find.byType(SearchScreen), findsOneWidget);
+    expect(find.byType(AuthScreen), findsNothing);
   });
 
   test('precacheLogo fills the SVG cache before runApp', () async {
@@ -163,9 +159,6 @@ void main() {
 
     expect(find.byType(SplashScreen), findsNothing);
     expect(find.byType(AuthScreen), findsNothing);
-    expect(
-      _appBarTitle(AppLocalization.english, 'details.title'),
-      findsOneWidget,
-    );
+    expect(find.byType(PropertyDetailsScreen), findsOneWidget);
   });
 }

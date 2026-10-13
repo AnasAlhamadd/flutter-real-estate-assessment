@@ -12,6 +12,62 @@ abstract final class AppTextStyles {
   static TextStyle get detailsTitle => _rubik(24, FontWeight.w700, 1.2);
   static TextStyle get sectionTitle => _rubik(20, FontWeight.w600, 1.2);
 
+  /// Property Details (Figma `1:4236`). The tag and "PRICE" are shown
+  /// uppercase.
+  static TextStyle get detailsTag =>
+      _rubik(10, FontWeight.w600, null, color: ColorsApp.primary);
+  static TextStyle get detailsRating =>
+      _rubik(14, FontWeight.w500, 1.4, color: ColorsApp.black02);
+
+  /// Overview text and review comments.
+  static TextStyle get detailsBody =>
+      _rubik(16, FontWeight.w400, 1.7, color: ColorsApp.black02);
+  static TextStyle get detailsGalleryMore =>
+      _rubik(20, FontWeight.w700, 1.2, color: ColorsApp.white);
+  static TextStyle get reviewerName => _rubik(16, FontWeight.w600, 1.4);
+  static TextStyle get reviewTime =>
+      _rubik(14, FontWeight.w400, null, color: ColorsApp.black03);
+
+  /// Not in Figma (the reviewer photo is replaced by initials, Q4).
+  static TextStyle get reviewerInitials =>
+      _rubik(14, FontWeight.w600, null, color: ColorsApp.white);
+  static TextStyle get detailsPriceLabel => _rubik(
+    12,
+    FontWeight.w500,
+    null,
+    color: ColorsApp.black02,
+    letterSpacing: 2,
+  );
+  static TextStyle get detailsPrice =>
+      _rubik(24, FontWeight.w600, 1.2, color: ColorsApp.primary);
+
+  /// Details body `1:4273`: stats, Agent, Facilities, Location, review likes.
+  static TextStyle get detailsStat => _rubik(14, FontWeight.w500, 1.4);
+  static TextStyle get agentName => _rubik(18, FontWeight.w600, 1.2);
+  static TextStyle get agentRole =>
+      _rubik(14, FontWeight.w500, 1.4, color: ColorsApp.black02);
+  static TextStyle get facilityLabel => _rubik(14, FontWeight.w400, 1.4);
+  static TextStyle get detailsAddress => _rubik(
+    14,
+    FontWeight.w500,
+    1.4,
+    color: ColorsApp.black02,
+    letterSpacing: 0.2,
+  );
+  static TextStyle get reviewLikes => _rubik(14, FontWeight.w500, null);
+
+  /// Street names drawn on the map art (Figma `body / xsmall / regular`).
+  /// Figma uses Urbanist, which isn't bundled, so Rubik keeps the size and
+  /// tracking. Not scaled with ScreenUtil or the text scale: the whole map
+  /// is scaled as one picture.
+  static const TextStyle mapLabel = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 10,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.2,
+    color: ColorsApp.black03,
+  );
+
   static TextStyle get featuredTitle =>
       _rubik(20, FontWeight.w700, 1.1, color: ColorsApp.white);
   static TextStyle get featuredPrice =>
@@ -23,6 +79,10 @@ abstract final class AppTextStyles {
     color: ColorsApp.white,
     letterSpacing: 0.2,
   );
+
+  /// Explore header title (`1:4120`). [U] Not verified: the Figma read was
+  /// lost and the MCP limit is reached; uses `Paragraph/Medium/P16 - LH 130%`.
+  static TextStyle get searchHeaderTitle => _rubik(16, FontWeight.w500, 1.3);
 
   static TextStyle get listTitle => _rubik(18, FontWeight.w600, 1.4);
   static TextStyle get listPrice =>

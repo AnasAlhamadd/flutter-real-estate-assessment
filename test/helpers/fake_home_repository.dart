@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
+import 'package:flutter_real_estate_assessment/core/services/phone_dialer.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/domain/repositories/favorites_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/presentation/cubit/favorites_cubit.dart';
 import 'package:flutter_real_estate_assessment/feature/home/domain/repositories/home_repository.dart';
@@ -10,10 +11,17 @@ import 'package:flutter_real_estate_assessment/feature/home/presentation/cubit/h
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/category_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/properties_page_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/repositories/properties_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/cubit/property_details_cubit.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/repositories/search_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/search_cubit.dart';
 import 'package:flutter_real_estate_assessment/injection_container.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fake_favorites_repository.dart';
+import 'fake_phone_dialer.dart';
+import 'fake_properties_repository.dart';
+import 'fake_search_repository.dart';
 import 'sample_properties.dart';
 
 export 'sample_properties.dart';
@@ -85,16 +93,30 @@ HomeCubit homeCubitFor(HomeRepository repository) => HomeCubit(
   getRecommendations: GetRecommendationsUseCase(repository),
 );
 
-/// Registers what routed screens resolve from GetIt, backed by [repository]
-/// and [favorites] (empty in memory by default). GetIt is reset after the
-/// test.
+/// Registers what routed screens resolve from GetIt, backed by [repository],
+/// [favorites] (empty in memory by default), [properties] (sample details by
+/// default) and [search] (sample matches by default). The phone dialer is
+/// [phoneDialer] or a fake that only records numbers. GetIt is reset after
+/// the test.
 void registerScreenDependencies(
   HomeRepository repository, {
   FavoritesRepository? favorites,
+  PropertiesRepository? properties,
+  SearchRepository? search,
+  PhoneDialer? phoneDialer,
 }) {
   final favoritesRepository = favorites ?? FakeFavoritesRepository();
+  final propertiesRepository = properties ?? FakePropertiesRepository();
+  final searchRepository = search ?? FakeSearchRepository();
   sl
+    ..registerLazySingleton<PhoneDialer>(() => phoneDialer ?? FakePhoneDialer())
     ..registerFactory<HomeCubit>(() => homeCubitFor(repository))
+    ..registerFactory<SearchCubit>(
+      () => searchCubitFor(searchRepository, repository),
+    )
+    ..registerFactory<PropertyDetailsCubit>(
+      () => propertyDetailsCubitFor(propertiesRepository),
+    )
     ..registerFactory<FavoritesCubit>(
       () => favoritesCubitFor(favoritesRepository),
     );

@@ -37,8 +37,80 @@
   "explore": {
     "title": "Search for Your Ideal Home"
   },
+  "search": {
+    "found": {
+      "one": "Found {} result",
+      "other": "Found {} results"
+    },
+    "no_results": "No results found. Try a different search.",
+    "refresh_failed": "Couldn't refresh right now. Showing the results you already have."
+  },
   "details": {
-    "title": "Property Details"
+    "overview": "Overview",
+    "gallery": "Gallery",
+    "price": "Price",
+    "rating_reviews": {
+      "one": "{rating} ({} review)",
+      "other": "{rating} ({} reviews)"
+    },
+    "image_position": "Image {index} of {total}",
+    "show_image": "Show image {index} of {total}",
+    "beds": {
+      "one": "{} Bed",
+      "other": "{} Beds"
+    },
+    "baths": {
+      "one": "{} bath",
+      "other": "{} baths"
+    },
+    "area": "{area} sqft",
+    "agent": "Agent",
+    "agent_role_owner": "Owner",
+    "chat_agent": "Chat with {name}",
+    "call_agent": "Call {name}",
+    "facilities": "Facilities",
+    "facility": {
+      "car_parking": "Car Parking",
+      "swimming_pool": "Swimming Pool",
+      "gym": "Gym & Fitness",
+      "restaurant": "Restaurant",
+      "wifi": "Wi-fi & Network",
+      "pet_center": "Pet Center",
+      "sport_center": "Sport Center",
+      "laundry": "Laundry"
+    },
+    "location": "Location",
+    "map": "Map of the property location",
+    "review_likes": {
+      "one": "{} like",
+      "other": "{} likes"
+    },
+    "booking_now": "Booking Now",
+    "not_available": "This isn't available yet",
+    "call_failed": "Couldn't open the phone app"
+  },
+  "time": {
+    "just_now": "Just now",
+    "minutes_ago": {
+      "one": "{} minute ago",
+      "other": "{} minutes ago"
+    },
+    "hours_ago": {
+      "one": "{} hour ago",
+      "other": "{} hours ago"
+    },
+    "days_ago": {
+      "one": "{} day ago",
+      "other": "{} days ago"
+    },
+    "months_ago": {
+      "one": "{} month ago",
+      "other": "{} months ago"
+    },
+    "years_ago": {
+      "one": "{} year ago",
+      "other": "{} years ago"
+    }
   },
   "profile": {
     "title": "Profile"

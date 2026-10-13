@@ -25,7 +25,7 @@ void main() {
 
   for (final locale in AppLocalization.supportedLocales) {
     test('declares exactly the keys of ${locale.languageCode}.json', () {
-      final keys = flattenTranslations(readTranslations(locale)).keys.toSet();
+      final keys = translationKeys(readTranslations(locale));
 
       expect(declared.difference(keys), isEmpty, reason: 'missing in JSON');
       expect(keys.difference(declared), isEmpty, reason: 'not in AppTextKeys');

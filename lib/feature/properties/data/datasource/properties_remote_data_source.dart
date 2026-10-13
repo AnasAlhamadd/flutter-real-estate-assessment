@@ -17,6 +17,14 @@ abstract interface class PropertiesRemoteDataSource {
     CancellationSignal? cancellation,
   });
 
+  /// [limit] products matching [query], starting at [skip].
+  Future<PropertiesResponseModel> searchProductsPage(
+    String query, {
+    required int skip,
+    required int limit,
+    CancellationSignal? cancellation,
+  });
+
   /// The whole catalog (`limit=0`).
   Future<PropertiesResponseModel> getAllProducts({
     CancellationSignal? cancellation,
@@ -37,6 +45,18 @@ class PropertiesRemoteDataSourceImpl implements PropertiesRemoteDataSource {
   }) => _getPage(ApiConstants.searchProducts, {
     'q': query,
     'limit': ApiConstants.allItems,
+  }, cancellation: cancellation);
+
+  @override
+  Future<PropertiesResponseModel> searchProductsPage(
+    String query, {
+    required int skip,
+    required int limit,
+    CancellationSignal? cancellation,
+  }) => _getPage(ApiConstants.searchProducts, {
+    'q': query,
+    'limit': limit,
+    'skip': skip,
   }, cancellation: cancellation);
 
   @override

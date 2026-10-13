@@ -4,8 +4,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_real_estate_assessment/app.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
+import 'package:flutter_real_estate_assessment/core/services/phone_dialer.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/domain/repositories/favorites_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/home/domain/repositories/home_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/repositories/properties_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/repositories/search_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,8 +25,9 @@ const TestViewport defaultViewport = TestViewport(
 /// Pumps the real app (EasyLocalization + ScreenUtil + router) on a simulated
 /// device. `preferences` seeds SharedPreferences, e.g. `{'locale': 'ar'}`.
 /// Screens get their data from [repository] (sample data by default) and
-/// [favorites] (empty by default). Pass `settle: false` while a skeleton is
-/// visible, because its shimmer never settles.
+/// [favorites] (empty by default); [phoneDialer] defaults to a recording
+/// fake. Pass `settle: false` while a skeleton is visible, because its
+/// shimmer never settles.
 Future<void> pumpApp(
   WidgetTester tester, {
   Locale locale = AppLocalization.english,
@@ -33,11 +37,17 @@ Future<void> pumpApp(
   Map<String, Object> preferences = const {},
   HomeRepository? repository,
   FavoritesRepository? favorites,
+  PropertiesRepository? properties,
+  SearchRepository? search,
+  PhoneDialer? phoneDialer,
   bool settle = true,
 }) async {
   registerScreenDependencies(
     repository ?? FakeHomeRepository(),
     favorites: favorites,
+    properties: properties,
+    search: search,
+    phoneDialer: phoneDialer,
   );
   tester.view
     ..physicalSize = viewport.size
