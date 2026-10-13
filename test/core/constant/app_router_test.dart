@@ -3,7 +3,7 @@ import 'package:flutter_real_estate_assessment/app.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/auth_screen.dart';
-import 'package:flutter_real_estate_assessment/feature/properties/presentation/pages/home_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';

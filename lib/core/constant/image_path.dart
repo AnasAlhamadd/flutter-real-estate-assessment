@@ -7,6 +7,13 @@ abstract final class ImagePath {
   static const String arrowLeft = '$_svg/arrow_left.svg';
   static const String arrowRight = '$_svg/arrow_right.svg';
   static const String filter = '$_svg/filter.svg';
+
+  /// Iconly Light-Outline Heart from the Home cards (`I1:4470;85001:13415`).
+  static const String heart = '$_svg/heart.svg';
+
+  /// Selected heart. Figma has no selected state, so this is the outer
+  /// contour of [heart] filled, with its highlight arc cut out.
+  static const String heartBold = '$_svg/heart_bold.svg';
   static const String homeBold = '$_svg/home_bold.svg';
   static const String homeLight = '$_svg/home_light.svg';
   static const String language = '$_svg/language.svg';
@@ -32,6 +39,8 @@ abstract final class ImagePath {
     arrowLeft,
     arrowRight,
     filter,
+    heart,
+    heartBold,
     homeBold,
     homeLight,
     language,

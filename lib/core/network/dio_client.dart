@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_real_estate_assessment/core/constant/api_constants.dart';
 import 'package:flutter_real_estate_assessment/core/error/exceptions.dart';
+import 'package:flutter_real_estate_assessment/core/network/api_log_interceptor.dart';
 
 class DioClient {
   const DioClient(this._dio);
@@ -21,7 +22,7 @@ class DioClient {
       ),
     );
     if (kDebugMode) {
-      dio.interceptors.add(LogInterceptor(responseBody: false));
+      dio.interceptors.add(ApiLogInterceptor());
     }
     return dio;
   }

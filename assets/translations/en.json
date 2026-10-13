@@ -25,7 +25,14 @@
     "good_evening": "Good Evening",
     "welcome_guest": "Welcome, Guest",
     "featured": "Featured",
-    "recommendation": "Our Recommendation"
+    "recommendation": "Our Recommendation",
+    "refresh_failed": "Couldn't refresh right now. Showing the results you already have."
+  },
+  "favorites": {
+    "add": "Add to favorites",
+    "remove": "Remove from favorites",
+    "limit_reached": "You've reached the maximum number of favorites.",
+    "save_failed": "Couldn't save your favorites on this device."
   },
   "explore": {
     "title": "Search for Your Ideal Home"

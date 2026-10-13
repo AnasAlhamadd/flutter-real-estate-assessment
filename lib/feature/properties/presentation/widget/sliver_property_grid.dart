@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
+import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_card_skeletons.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_grid_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -17,6 +20,7 @@ class SliverPropertyGrid extends StatelessWidget {
     required this.properties,
     required this.onTap,
     this.categoryNameFor,
+    this.favoriteButtonBuilder,
     super.key,
   });
 
@@ -25,6 +29,9 @@ class SliverPropertyGrid extends StatelessWidget {
 
   /// Category display name for the location fallback (Q4).
   final String? Function(String slug)? categoryNameFor;
+
+  /// Heart for each card; none when `null`.
+  final Widget Function(PropertyEntity property)? favoriteButtonBuilder;
 
   /// Columns that fit [width] with cards at least
   /// [AppSizes.gridCardMinWidth] wide, clamped to the design's range.
@@ -38,42 +45,76 @@ class SliverPropertyGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return _SliverGridRows(
+      itemCount: (_) => properties.length,
+      cellBuilder: (index) {
+        final property = properties[index];
+        return PropertyGridCard(
+          property: property,
+          categoryName: categoryNameFor?.call(property.category),
+          onTap: () => onTap(property),
+          favoriteButton: favoriteButtonBuilder?.call(property),
+        );
+      },
+    );
+  }
+}
+
+/// [rows] full rows of [PropertyGridCardSkeleton]s in the same columns as
+/// [SliverPropertyGrid], announced once as "Loading".
+class SliverPropertyGridSkeleton extends StatelessWidget {
+  const SliverPropertyGridSkeleton({this.rows = 2, super.key});
+
+  final int rows;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverSemantics(
+      label: context.tr(AppTextKeys.commonLoading),
+      excludeSemantics: true,
+      sliver: _SliverGridRows(
+        itemCount: (columns) => rows * columns,
+        cellBuilder: (_) => const PropertyGridCardSkeleton(),
+      ),
+    );
+  }
+}
+
+class _SliverGridRows extends StatelessWidget {
+  const _SliverGridRows({required this.itemCount, required this.cellBuilder});
+
+  final int Function(int columns) itemCount;
+  final Widget Function(int index) cellBuilder;
+
+  @override
+  Widget build(BuildContext context) {
     return SliverLayoutBuilder(
       builder: (context, constraints) {
         final gap = AppSizes.gridHorizontalGap.w;
-        final columns = columnsFor(constraints.crossAxisExtent, gap: gap);
-        final rowCount = (properties.length / columns).ceil();
+        final columns = SliverPropertyGrid.columnsFor(
+          constraints.crossAxisExtent,
+          gap: gap,
+        );
+        final count = itemCount(columns);
         return SliverList.separated(
-          itemCount: rowCount,
+          itemCount: (count / columns).ceil(),
           separatorBuilder: (_, _) =>
               SizedBox(height: AppSizes.gridVerticalGap.h),
-          itemBuilder: (_, row) => _buildRow(row, columns, gap),
+          itemBuilder: (_, row) => Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var column = 0; column < columns; column++) ...[
+                if (column > 0) SizedBox(width: gap),
+                Expanded(child: _cell(row * columns + column, count)),
+              ],
+            ],
+          ),
         );
       },
     );
   }
 
-  Widget _buildRow(int row, int columns, double gap) {
-    final start = row * columns;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var column = 0; column < columns; column++) ...[
-          if (column > 0) SizedBox(width: gap),
-          Expanded(child: _buildCell(start + column)),
-        ],
-      ],
-    );
-  }
-
   /// An empty cell keeps the last, incomplete row aligned to the columns.
-  Widget _buildCell(int index) {
-    if (index >= properties.length) return const SizedBox.shrink();
-    final property = properties[index];
-    return PropertyGridCard(
-      property: property,
-      categoryName: categoryNameFor?.call(property.category),
-      onTap: () => onTap(property),
-    );
-  }
+  Widget _cell(int index, int count) =>
+      index < count ? cellBuilder(index) : const SizedBox.shrink();
 }

@@ -48,4 +48,4 @@ Use cases stay thin (delegate + pure domain logic such as local filtering). No D
 
 ## DI order in `injection_container.dart`
 1. External (`Dio`, `SharedPreferences`, `Connectivity`) → 2. Core (`NetworkInfo`, `DioClient`) → 3. Data sources → 4. Repositories → 5. Use cases → 6. Cubits.
-`registerLazySingleton` for 1–5, `registerFactory` for Cubits (app-wide cubits like favorites: lazySingleton).
+`registerLazySingleton` for 1–5, `registerFactory` for Cubits. App-wide cubits (favorites) are also factories, created once by a `BlocProvider` above the router, which owns and closes them.

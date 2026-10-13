@@ -20,22 +20,27 @@ alwaysApply: false
 - The server can't combine search + category or filter by price. Don't send those params expecting them to work.
 - Featured: `/products?sortBy=rating&order=desc&limit=<n>`.
 
+## Ownership
+- `feature/home/data`: `HomeRemoteDataSource` (Featured, categories, "All" and category pages), `HomeLocalDataSource` (first page + categories), `HomeRepositoryImpl`.
+- `feature/properties/data`: `PropertiesRemoteDataSource` (search, full catalog, details), `PropertiesRepositoryImpl`, and the shared models.
+- One owner per endpoint and per storage key; don't add the same request to two data sources.
+
 ## Remote data source
-- Only class that touches `Dio`. Returns **models**, throws typed exceptions.
+- Only classes that touch `Dio` (through `DioClient`). Return **models**, throw typed exceptions.
 - Map `DioException`: `connectionTimeout|sendTimeout|receiveTimeout|transformTimeout` → `RequestTimeoutException`; `connectionError|badCertificate` (and `unknown` with `SocketException`) → `NetworkException`; `badResponse` → `ServerException(statusCode)`; `cancel` → `RequestCancelledException`; JSON/type errors → `ParsingException`; anything else → `UnknownException`. (Implemented in `core/network/dio_client.dart`.)
 - Full-set calls (search, whole catalog) accept a pure-Dart `CancellationSignal` (`core/utils/cancellation_signal.dart`), so domain and presentation never import Dio. The remote data source converts it to a Dio `CancelToken`: an already cancelled signal throws `RequestCancelledException` without a request; cancelling in flight aborts it. Use one signal per request and cancel the previous one on every new query.
 - Paged responses: `hasReachedMax` is `skip + limit >= total` from the response (DummyJSON echoes the returned count in `limit`).
 
 ## Local data source (reference §4.5.2)
-- Backed by `SharedPreferences`. **Only two keys** (`StorageKeys.productsFirstPage`, `StorageKeys.categories`). Never add a key without approval.
+- Backed by `SharedPreferences`. **Only three keys**: `StorageKeys.productsFirstPage` and `StorageKeys.categories` (API cache), and `StorageKeys.favorites` (user data, Q8). All go through `VersionedPreferencesStore`. Never add a key without approval.
 - Envelope `{schemaVersion, cachedAt, data}`. Version mismatch or corrupt value → remove the key and throw `CacheException`.
 - Bounds: first page = "All" page 0, ≤ 20 items, listing fields only; categories list; skip any write over 32 KB.
-- Not persisted: details (in-memory only, last 20 in the session), Featured, pages > 0, category pages, search/full-set results, favorites (Q8 not approved).
+- Not persisted: details (in-memory only, last 20 in the session), Featured, pages > 0, category pages, search/full-set results.
 
 ## Repository strategy (in `*_repository_impl.dart`)
 | Call | Strategy |
 | --- | --- |
-| "All" page 0 | Always remote when online → save → fresh. Fails with Network/Timeout/Server/UnexpectedResponse failure → cached page (< 24 h) with `isFromCache: true`; otherwise return that failure. 4xx never falls back |
+| "All" page 0 | Always remote when online → save → fresh. Any failure except `CancelledFailure` (offline, timeout, any non-2xx including 4xx, unreadable data, unknown) → cached page (< 24 h) with `isFromCache: true`; otherwise return that failure |
 | Pages > 0, category pages, search/full set, Featured | Remote only |
 | Categories | In-memory → persisted (< 24 h) → remote → save; remote failure → stale persisted copy if any |
 | Details | Remote → keep in memory; on failure, in-memory item, else the failure |

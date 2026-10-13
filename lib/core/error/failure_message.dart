@@ -11,6 +11,7 @@ extension FailureMessage on Failure {
     RequestFailure() => AppTextKeys.errorsRequest,
     UnexpectedResponseFailure() => AppTextKeys.errorsUnexpectedResponse,
     CacheFailure() => AppTextKeys.errorsNoCachedData,
+    FavoritesLimitFailure() => AppTextKeys.favoritesLimitReached,
     CancelledFailure() => AppTextKeys.errorsRequestCancelled,
     UnknownFailure() => AppTextKeys.errorsUnknown,
   };

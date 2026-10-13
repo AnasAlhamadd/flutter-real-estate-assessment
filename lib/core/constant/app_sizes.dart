@@ -89,6 +89,9 @@ abstract final class AppSizes {
   static const double featuredCardWidth = 250;
   static const double featuredCardHeight = 340;
 
+  /// Heart in the featured price row (`I1:4470;85001:13415`).
+  static const double featuredHeartSize = 22;
+
   /// Share of the card height covered by the bottom gradient.
   static const double featuredGradientFraction = 0.465;
 
@@ -108,6 +111,9 @@ abstract final class AppSizes {
   static const double gridCardPaddingBottom = 20;
   static const double gridImageContentGap = 12;
   static const double gridContentPriceGap = 10;
+
+  /// Heart in the grid price row (`I1:4473;85001:13433`).
+  static const double gridHeartSize = 20;
 
   /// [S] Gap title → location in grid cards.
   static const double gridTitleLocationGap = 8;

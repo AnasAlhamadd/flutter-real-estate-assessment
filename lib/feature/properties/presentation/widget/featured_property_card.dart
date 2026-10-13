@@ -29,12 +29,16 @@ class FeaturedPropertyCard extends StatelessWidget {
   final VoidCallback onTap;
   final String? categoryName;
 
-  /// Optional heart (Q8). Nothing is shown when `null`.
+  /// Optional heart, normally a `FavoriteButton`. It is centered on the
+  /// Figma heart position (end of the price row), so its tap area can be
+  /// larger than the icon without moving the text.
   final Widget? favoriteButton;
 
   @override
   Widget build(BuildContext context) {
     final badgeInset = RatingBadgeSize.large.inset;
+    const tapRadius = AppSizes.minTapTarget / 2;
+    final heartRadius = AppSizes.featuredHeartSize.r / 2;
     return SizedBox(
       width: AppSizes.featuredCardWidth.r,
       height: AppSizes.featuredCardHeight.r,
@@ -64,9 +68,21 @@ class FeaturedPropertyCard extends StatelessWidget {
                 child: _FeaturedContent(
                   property: property,
                   location: property.locationLabel(categoryName: categoryName),
-                  favoriteButton: favoriteButton,
+                  hasFavoriteButton: favoriteButton != null,
                 ),
               ),
+              if (favoriteButton case final button?)
+                PositionedDirectional(
+                  end:
+                      AppSizes.featuredContentHorizontalPadding.r +
+                      heartRadius -
+                      tapRadius,
+                  bottom:
+                      AppSizes.featuredContentBottomPadding.r +
+                      heartRadius -
+                      tapRadius,
+                  child: button,
+                ),
             ],
           ),
         ),
@@ -106,12 +122,12 @@ class _FeaturedContent extends StatelessWidget {
   const _FeaturedContent({
     required this.property,
     required this.location,
-    this.favoriteButton,
+    required this.hasFavoriteButton,
   });
 
   final PropertyEntity property;
   final String location;
-  final Widget? favoriteButton;
+  final bool hasFavoriteButton;
 
   @override
   Widget build(BuildContext context) {
@@ -134,6 +150,7 @@ class _FeaturedContent extends StatelessWidget {
         ),
         SizedBox(height: AppSizes.featuredLocationPriceGap.h),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: CustomText.plain(
@@ -143,7 +160,10 @@ class _FeaturedContent extends StatelessWidget {
                 style: AppTextStyles.featuredPrice,
               ),
             ),
-            ?favoriteButton,
+            if (hasFavoriteButton) ...[
+              SizedBox(width: AppSizes.inlineTextGap.w),
+              SizedBox.square(dimension: AppSizes.featuredHeartSize.r),
+            ],
           ],
         ),
       ],

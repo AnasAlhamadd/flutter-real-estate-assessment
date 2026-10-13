@@ -8,6 +8,7 @@ abstract interface class NetworkInfo {
   Stream<bool> get onStatusChange;
 }
 
+/// Implementation of the [NetworkInfo] interface. Uses [Connectivity] to check for network connectivity.
 class NetworkInfoImpl implements NetworkInfo {
   const NetworkInfoImpl(this._connectivity);
 

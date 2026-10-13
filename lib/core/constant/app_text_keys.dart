@@ -26,6 +26,12 @@ abstract final class AppTextKeys {
   static const String homeWelcomeGuest = 'home.welcome_guest';
   static const String homeFeatured = 'home.featured';
   static const String homeRecommendation = 'home.recommendation';
+  static const String homeRefreshFailed = 'home.refresh_failed';
+
+  static const String favoritesAdd = 'favorites.add';
+  static const String favoritesRemove = 'favorites.remove';
+  static const String favoritesLimitReached = 'favorites.limit_reached';
+  static const String favoritesSaveFailed = 'favorites.save_failed';
 
   static const String exploreTitle = 'explore.title';
   static const String detailsTitle = 'details.title';
