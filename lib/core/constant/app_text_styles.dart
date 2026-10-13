@@ -56,6 +56,24 @@ abstract final class AppTextStyles {
   static TextStyle get badgeSmall =>
       _rubik(8, FontWeight.w600, 1.4, color: ColorsApp.rating);
 
+  /// Splash title and tagline (Figma `1:4561`, `1:4562`). Figma uses Outfit
+  /// Black / Medium, which has no Arabic glyphs, so Rubik keeps the same
+  /// weights, size and tracking (Q6). Both are shown uppercase.
+  static TextStyle get splashTitle => _rubik(
+    20,
+    FontWeight.w900,
+    null,
+    color: ColorsApp.primary,
+    letterSpacing: 2,
+  );
+  static TextStyle get splashTagline => _rubik(
+    12,
+    FontWeight.w500,
+    null,
+    color: ColorsApp.black02,
+    letterSpacing: 1.2,
+  );
+
   /// `Paragraph/Medium/P12 - LH 130%`.
   static TextStyle get navLabel => _rubik(12, FontWeight.w500, 1.3);
 

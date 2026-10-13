@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/app_theme.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
+import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 class App extends StatefulWidget {
-  const App({this.initialLocation = AppRouter.home, super.key});
+  const App({this.initialLocation = AppRouter.splash, super.key});
 
   final String initialLocation;
 
@@ -34,7 +35,7 @@ class _AppState extends State<App> {
       splitScreenMode: true,
       builder: (context, _) => MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        onGenerateTitle: (context) => context.tr('app.title'),
+        onGenerateTitle: (context) => context.tr(AppTextKeys.appTitle),
         theme: AppTheme.light,
         locale: context.locale,
         supportedLocales: context.supportedLocales,

@@ -16,7 +16,11 @@ abstract final class ImagePath {
   static const String searchBold = '$_svg/search_bold.svg';
   static const String star = '$_svg/star.svg';
 
-  static const List<String> all = [
+  /// Splash logo (Figma `1:4553`), exported as-is: multicolor, 133.885×112.445.
+  static const String splashLogo = '$_svg/splash_logo.svg';
+
+  /// Normalized 24×24 icons.
+  static const List<String> icons = [
     arrowLeft,
     arrowRight,
     filter,
