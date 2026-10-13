@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dart';
 import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
+import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Figma "Tab" chip: primary fill when selected, primary 4% with a primary
@@ -40,7 +41,7 @@ class CategoryChip extends StatelessWidget {
               horizontal: AppSizes.chipHorizontalPadding.w,
               vertical: AppSizes.chipVerticalPadding.h,
             ),
-            child: Text(
+            child: CustomText.plain(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

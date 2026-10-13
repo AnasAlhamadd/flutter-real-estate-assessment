@@ -4,9 +4,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_real_estate_assessment/app.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
+import 'package:flutter_real_estate_assessment/feature/favorites/domain/repositories/favorites_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/home/domain/repositories/home_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fake_home_repository.dart';
 import 'test_viewports.dart';
 import 'translations.dart';
 
@@ -18,6 +21,9 @@ const TestViewport defaultViewport = TestViewport(
 
 /// Pumps the real app (EasyLocalization + ScreenUtil + router) on a simulated
 /// device. `preferences` seeds SharedPreferences, e.g. `{'locale': 'ar'}`.
+/// Screens get their data from [repository] (sample data by default) and
+/// [favorites] (empty by default). Pass `settle: false` while a skeleton is
+/// visible, because its shimmer never settles.
 Future<void> pumpApp(
   WidgetTester tester, {
   Locale locale = AppLocalization.english,
@@ -25,7 +31,14 @@ Future<void> pumpApp(
   double textScale = 1,
   String initialLocation = AppRouter.home,
   Map<String, Object> preferences = const {},
+  HomeRepository? repository,
+  FavoritesRepository? favorites,
+  bool settle = true,
 }) async {
+  registerScreenDependencies(
+    repository ?? FakeHomeRepository(),
+    favorites: favorites,
+  );
   tester.view
     ..physicalSize = viewport.size
     ..devicePixelRatio = 1
@@ -48,5 +61,11 @@ Future<void> pumpApp(
       startLocale: locale,
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
 }

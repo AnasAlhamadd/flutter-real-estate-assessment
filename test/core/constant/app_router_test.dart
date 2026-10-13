@@ -3,6 +3,7 @@ import 'package:flutter_real_estate_assessment/app.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/auth_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -35,9 +36,9 @@ void main() {
     await tester.tap(find.text(translate(_en, 'auth.continue_as_guest')));
     await tester.pumpAndSettle();
 
-    final homeTitle = find.widgetWithText(AppBar, translate(_en, 'home.title'));
-    expect(homeTitle, findsOneWidget);
-    expect(GoRouter.of(tester.element(homeTitle)).canPop(), isFalse);
+    final home = find.byType(HomeScreen);
+    expect(home, findsOneWidget);
+    expect(GoRouter.of(tester.element(home)).canPop(), isFalse);
   });
 
   testWidgets('/auth opens Auth directly', (tester) async {

@@ -1,9 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_real_estate_assessment/core/app_theme.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
+import 'package:flutter_real_estate_assessment/feature/favorites/presentation/cubit/favorites_cubit.dart';
+import 'package:flutter_real_estate_assessment/injection_container.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
@@ -29,18 +32,21 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: AppSizes.designSize,
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, _) => MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        onGenerateTitle: (context) => context.tr(AppTextKeys.appTitle),
-        theme: AppTheme.light,
-        locale: context.locale,
-        supportedLocales: context.supportedLocales,
-        localizationsDelegates: context.localizationDelegates,
-        routerConfig: _router,
+    return BlocProvider(
+      create: (_) => sl<FavoritesCubit>()..load(),
+      child: ScreenUtilInit(
+        designSize: AppSizes.designSize,
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, _) => MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          onGenerateTitle: (context) => context.tr(AppTextKeys.appTitle),
+          theme: AppTheme.light,
+          locale: context.locale,
+          supportedLocales: context.supportedLocales,
+          localizationsDelegates: context.localizationDelegates,
+          routerConfig: _router,
+        ),
       ),
     );
   }

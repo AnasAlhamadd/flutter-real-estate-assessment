@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_bottom_nav_bar.dart';
+import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,8 +13,8 @@ import '../helpers/translations.dart';
 
 typedef _TabRoute = ({String path, String titleKey});
 
+/// Tabs that are still placeholders.
 const List<_TabRoute> _tabRoutes = [
-  (path: AppRouter.home, titleKey: 'home.title'),
   (path: AppRouter.explore, titleKey: 'explore.title'),
   (path: AppRouter.profile, titleKey: 'profile.title'),
 ];
@@ -22,8 +23,20 @@ const List<String> _navKeys = ['nav.home', 'nav.explore', 'nav.profile'];
 
 const List<double> _textScales = [1, 1.3];
 
-/// Phase 2 covers the router shell and placeholder routes. The five Figma
-/// screens are added to this matrix in Phase 5.
+void _expectNavInReach(WidgetTester tester, Locale locale) {
+  for (final key in _navKeys) {
+    expectVisibleAndTappable(
+      tester,
+      find.descendant(
+        of: find.byType(AppBottomNavBar),
+        matching: find.text(translate(locale, key)),
+      ),
+    );
+  }
+}
+
+/// The router shell on every viewport. Home has its own matrix in
+/// `test/feature/properties/presentation/pages/home_screen_test.dart`.
 void main() {
   for (final locale in AppLocalization.supportedLocales) {
     for (final viewport in testViewports) {
@@ -50,17 +63,25 @@ void main() {
               find.text(translate(locale, 'common.coming_soon')),
               findsOneWidget,
             );
-            for (final key in _navKeys) {
-              expectVisibleAndTappable(
-                tester,
-                find.descendant(
-                  of: find.byType(AppBottomNavBar),
-                  matching: find.text(translate(locale, key)),
-                ),
-              );
-            }
+            _expectNavInReach(tester, locale);
           });
         }
+
+        testWidgets('/ shows Home inside the shell on $variant', (
+          tester,
+        ) async {
+          await pumpApp(
+            tester,
+            locale: locale,
+            viewport: viewport,
+            textScale: textScale,
+          );
+
+          expectNoLayoutErrors(tester);
+          expectDirectionFor(tester, locale);
+          expect(find.byType(HomeScreen), findsOneWidget);
+          _expectNavInReach(tester, locale);
+        });
 
         testWidgets('details route shows a working back button on $variant', (
           tester,
@@ -86,10 +107,7 @@ void main() {
 
           await tester.tap(find.byType(BackButton));
           await tester.pumpAndSettle();
-          expect(
-            find.widgetWithText(AppBar, translate(locale, 'home.title')),
-            findsOneWidget,
-          );
+          expect(find.byType(HomeScreen), findsOneWidget);
         });
       }
     }

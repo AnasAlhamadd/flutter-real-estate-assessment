@@ -25,7 +25,7 @@ test/
 └── feature/<feature>/
     ├── data/model/           # fromJson/toEntity: valid, missing fields, wrong types
     ├── data/datasource/      # remote (real DioClient + StubHttpAdapter: paths, query params, errors, cancellation) + local (SharedPreferences.setMockInitialValues): round-trip, schema mismatch, corrupt value, oversize write
-    ├── data/repositories/    # online/offline/cache-fallback by failure type + age, 4xx no fallback, exception→Failure paths
+    ├── data/repositories/    # online/offline/cache-fallback by failure type + age, cancel never falls back, exception→Failure paths
     ├── domain/usecases/      # delegation + pure logic (local category + price filters)
     └── presentation/
         ├── cubit/            # bloc_test: loading→success/empty/failure, retry, pagination, debounce
@@ -35,6 +35,7 @@ integration_test/app_test.dart  # optional: browse → details → switch langua
 ```
 
 ## Rules
+- One test file per source file: `lib/<path>/x.dart` → `test/<path>/x_test.dart`. A long one may be split by concern (`x_<concern>_test.dart`, e.g. `home_cubit_pagination_test.dart`). Test-only helpers live in `test/helpers/`.
 - Unit tests never hit the network. Use fixtures and mocks only.
 - Name tests by behavior: `'returns cached page with isFromCache when offline'`.
 - Arrange/Act/Assert. One behavior per test.

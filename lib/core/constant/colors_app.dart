@@ -34,4 +34,9 @@ abstract final class ColorsApp {
 
   /// Auth Google button shadow: `rgba(0,0,0,0.2)`.
   static const Color authButtonShadow = Color(0x33000000);
+
+  /// Not in Figma (no loading design): skeleton fill and the shimmer
+  /// highlight, neutral tints between White/01 and Greyscale/400.
+  static const Color skeletonBase = Color(0xFFEDEEF2);
+  static const Color skeletonHighlight = Color(0xFFF8F9FB);
 }

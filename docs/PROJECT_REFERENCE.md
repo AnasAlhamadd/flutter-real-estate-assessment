@@ -1,7 +1,7 @@
 # PROJECT_REFERENCE: Flutter Real Estate Assessment
 
 > **Single source of truth for this project.** Agent rules live in `.cursor/rules/*.mdc` and point here.
-> Last updated: 2026-10-13 · Status: **Auth UI ([#6](https://github.com/AnasAlhamadd/flutter-real-estate-assessment/issues/6)) implemented on `feature/auth` (from `feature/splash`). Flow: Splash → Auth → Home (guest). No backend authentication. Phase 5 waits for your go-ahead.**
+> Last updated: 2026-10-13 · Status: **Home screen (Figma `1:4426`) implemented on `feature/home` (from `feature/auth` `34700e4`), with its own domain + data layers (`HomeRepository`, remote + local data sources). Flow: Splash → Auth → Home (guest). Explore, Filter, Details and Profile are still placeholders; the rest of Phase 5 waits for your go-ahead.**
 
 ---
 
@@ -187,9 +187,11 @@ lib/
 │   │   ├── image_path.dart           # asset paths
 │   │   ├── app_text_keys.dart        # every translation key (en/ar parity checked by a test)
 │   │   ├── api_constants.dart        # baseUrl (--dart-define) + endpoints
-│   │   └── storage_keys.dart         # SharedPreferences keys (approved: first page + categories only)
+│   │   └── storage_keys.dart         # SharedPreferences keys (approved: first page + categories + favorites)
+│   ├── storage/versioned_preferences_store.dart # {schemaVersion, cachedAt, data} envelope, size cap, corrupt → removed
 │   ├── network/
-│   │   ├── dio_client.dart           # timeouts, LogInterceptor (debug only)
+│   │   ├── dio_client.dart           # timeouts, ApiLogInterceptor (debug only)
+│   │   ├── api_log_interceptor.dart  # dart:developer log (name `API`): request / request_status (+ ms) / uri per finished request
 │   │   └── network_info.dart
 │   ├── error/
 │   │   ├── exceptions.dart           # Server/Network/RequestTimeout/Parsing/Cache/Cancelled/Unknown
@@ -201,9 +203,10 @@ lib/
 │   ├── enums/request_status.dart
 │   ├── function/show_snack_bar.dart
 │   ├── utils/{debouncer, formatters, bidi_text, cancellation_signal}.dart
-│   └── widget/                       # CustomText (translated text), AppButton, SectionHeader, AppNetworkImage, LoadingView,
+│   └── widget/                       # CustomText (translated key / .plain), AppButton, SectionHeader, AppNetworkImage, LoadingView,
 │                                     # ErrorView, EmptyView, AppSearchField, AppBackButton, AppSvgIcon,
 │                                     # CircleIconButton, CategoryChip, RatingBadge, AppBottomNavBar,
+│                                     # FavoriteButton, AppShimmer + SkeletonBox, LoadMoreScrollListener, LoadMoreErrorView,
 │                                     # app_shell.dart (Figma nav since Phase 4)
 │                                     # Temporary until Phase 5: placeholder_screen.dart, language_switcher.dart
 └── feature/
@@ -211,23 +214,36 @@ lib/
     ├── auth/presentation/                # UI only, no domain/data until backend auth exists (#6)
     │   ├── pages/auth_screen.dart
     │   └── widget/{auth_collage, auth_intro, google_auth_button}.dart
-    └── properties/                   # final screen names come from Phase 1
+    ├── favorites/                    # Q8: local only, no screen; FavoritesCubit provided above the router
+    │   ├── domain/{repositories/favorites_repository, usecases/{get,save,toggle}_favorite(s)_usecase}.dart
+    │   ├── data/{datasource/favorites_local_data_source, repositories/favorites_repository_impl}.dart
+    │   └── presentation/{cubit/favorites_{cubit,state}, widget/{property_favorite_button, favorites_failure_listener}}.dart
+    ├── home/                         # Home screen with its own domain + data (2026-10-13, your call)
+    │   ├── domain/
+    │   │   ├── repositories/home_repository.dart   # featured, categories, recommendations (All | category, paged)
+    │   │   └── usecases/{get_featured_properties, get_categories, get_recommendations}_usecase.dart
+    │   ├── data/
+    │   │   ├── datasource/home_remote_data_source.dart  # DummyJSON: featured, categories, /products, /products/category/{slug}
+    │   │   ├── datasource/home_local_data_source.dart   # SharedPreferences: "All" first page + categories (§4.5.2)
+    │   │   └── repositories/home_repository_impl.dart   # remote first; saved copy on any failure except cancel
+    │   └── presentation/
+    │       ├── cubit/home_{cubit,state}.dart
+    │       ├── pages/home_screen.dart
+    │       └── widget/{home_header, home_category_chips, featured_property_list, section_status_view}.dart
+    └── properties/                   # shared entities/models, search + details, property widgets
         ├── domain/
         │   ├── entities/{property_entity, properties_page_entity, category_entity,
         │   │             review_entity, price_range}.dart
-        │   ├── repositories/properties_repository.dart
-        │   └── usecases/{get_properties, search_properties, get_categories, get_featured_properties,
-        │                 get_properties_by_category, get_property_details, filter_properties}_usecase.dart
+        │   ├── repositories/properties_repository.dart   # search, full catalog, details
+        │   └── usecases/{search_properties, get_property_details, filter_properties}_usecase.dart
         ├── data/
         │   ├── model/{property_model, properties_response_model, category_model,
         │   │          review_model, json_readers}.dart
-        │   ├── datasource/{properties_remote_data_source, properties_local_data_source}.dart
+        │   ├── datasource/properties_remote_data_source.dart
         │   └── repositories/properties_repository_impl.dart
-        └── presentation/
-            ├── cubit/{home, search, property_details}_cubit.dart (+ _state.dart)
-            ├── pages/{home, search, property_details}_screen.dart
-            └── widget/{featured_property_card, property_grid_card, property_list_card,
-                        property_location_label, filter_sheet, ...}.dart
+        └── presentation/widget/{featured_property_card, property_grid_card, property_list_card,
+                                 property_location_label, sliver_property_grid,
+                                 property_card_skeletons}.dart
 assets/
 ├── images/  ├── svg/  ├── fonts/
 └── translations/{en.json, ar.json}
@@ -235,7 +251,9 @@ test/                                 # see §4.7
 integration_test/app_test.dart        # optional
 ```
 
-If Figma has favorites, add `feature/favorites/` (local-only data source, app-wide Cubit).
+**Screen features (2026-10-13, your call):** Home moved from `properties/presentation` to `feature/home/` because it is a screen that composes several sources, not part of the property data module. **Updated 2026-10-13 (your call):** Home now owns its domain and data layers: `HomeRepository`, three use cases, `HomeRemoteDataSource` (DummyJSON) and `HomeLocalDataSource` (the persisted "All" first page + categories, moved from `properties`). `properties` keeps the shared entities/models, search, full catalog and details. One `GetRecommendationsUseCase` takes an optional category slug, so `HomeCubit` no longer chooses the endpoint. Dependencies point one way: `home → properties` (entities/models), `home → favorites → properties`; `properties` never imports a screen feature. Explore's paged mode (§4.5.1: "All" and category pages when there's no search text) will need the paged listing again; whether it reuses Home's use cases or gets its own is TODO(question) until Explore is built. Explore and Details are proposed to follow the same pattern (`feature/explore/`, `feature/property_details/`) when they're built; TODO(question) until then.
+
+Favorites (Q8, approved 2026-10-13) live in `feature/favorites/`: local-only data source, one app-wide `FavoritesCubit`. They reuse `PropertyEntity` and `PropertyModel` from `properties` (listing fields only).
 
 ### 4.3 Request lifecycle (one user action end-to-end)
 
@@ -285,12 +303,12 @@ User types "villa"
 | Listing pages > 0 | `skip = page * 20` | — | Remote only. Failure keeps existing items and shows a retry footer |
 | By category (paged mode) | `GET /products/category/{slug}?limit=20&skip=…&select=<listing fields>` | — | Remote only, paginated |
 | Search / price filter (full-set mode) | `GET /products/search?q=…&limit=0&select=<listing fields>` (or `GET /products?limit=0&select=…` when only a price filter is active) | in-memory only | Fetch the full matching set once, then category + price filters run locally (§4.5.1) |
-| Featured (Home) | `GET /products?sortBy=rating&order=desc&limit=<Q18>&select=<listing fields>` | — | Remote only (not in the approved persisted scope) |
+| Featured (Home) | `GET /products?sortBy=rating&order=desc&limit=5&select=<listing fields>` | — | Remote only (not in the approved persisted scope) |
 | Categories | `GET /products/categories` | **persisted** (§4.5.2) + in-memory | Memory → persisted if < 24 h old → remote → save. Remote fails: persisted copy of any age |
 | Details | `GET /products/{id}` (full object) | **in-memory only** (session, last 20) | Show the list item as initial data → remote → keep in memory. Failure: in-memory item, else `Failure`. Never persisted |
 | Sort | `sortBy`, `order` query params | — | Server-side (verified to work on `/products`, `/search`, `/category/{slug}` together with `select`) |
 | Price range | not supported by API (`minPrice`/`price_gte` are ignored, verified) | — | Local pure function `FilterPropertiesUseCase` (unit-tested), full-set mode only |
-| Favorites | — | — | **Not approved yet (Q8).** No storage key exists |
+| Favorites | — | **persisted** (§4.5.2, `StorageKeys.favorites`) | ✅ Q8 approved 2026-10-13. Device only, no API. Toggle updates the UI at once, then saves; saves run one at a time and always write the latest list; a failed save reverts to the saved list and shows a snackbar |
 | Language | — | `easy_localization` (`saveLocale`, key `locale`) | Automatic |
 
 #### 4.5.1 Listing modes (search, category, price)
@@ -312,18 +330,19 @@ Rules:
 
 #### 4.5.2 Persisted cache boundaries (`shared_preferences`)
 
-Approved scope: **two keys only**, `StorageKeys.productsFirstPage` (`cache.products.first_page`) and `StorageKeys.categories` (`cache.categories`). Nothing else from the API is written to disk.
+Approved scope: **three keys only**. API cache: `StorageKeys.productsFirstPage` (`cache.products.first_page`) and `StorageKeys.categories` (`cache.categories`); nothing else from the API is written to disk. User data: `StorageKeys.favorites` (`favorites`, Q8). All three use `VersionedPreferencesStore` (`core/storage/`).
 
 | Rule | Value |
 | --- | --- |
 | Envelope | `{ "schemaVersion": <int>, "cachedAt": <ISO-8601 UTC>, "data": <JSON> }` |
 | Schema versioning | A version mismatch, missing field, or unparseable value counts as "no cache": the key is removed and the local data source throws `CacheException` |
 | Bounds | First page: exactly the "All" page 0, ≤ 20 items, `<listing fields>` only (measured **4.2 KB**). Categories: the `/products/categories` list (24 entries, measured **2.5 KB**). Writes larger than **32 KB** are skipped |
-| First-page fallback rule | Used only when the remote call fails with `NetworkFailure`, `TimeoutFailure`, `ServerFailure`, or `UnexpectedResponseFailure`, and the entry is < 24 h old. Never used for 4xx `RequestFailure`, pages > 0, categories, search, or price filtering |
+| First-page fallback rule | **Changed 2026-10-13 (your call):** used when the remote call fails for any reason except cancellation: no connection, timeout, any non-2xx status (4xx included), unreadable data, or an unknown error; and the entry is < 24 h old. Previously 4xx never fell back (a 4xx usually means a request bug, which the saved copy now hides). Never used for pages > 0, category pages, Featured, search, or price filtering. Implemented in `HomeRepositoryImpl` |
 | Categories freshness | < 24 h old: served without a request. Older: refreshed from remote; if that fails, the stale copy is still used |
 | Write failures | Never fail the user's request (cache is best-effort; the README states writes aren't guaranteed to reach disk) |
-| Not persisted | Details, Featured, pages > 0, category pages, search/full-set results, favorites (Q8) |
-| API | The existing `SharedPreferences` instance (same store as easy_localization's `locale` key), behind `PropertiesLocalDataSource`, so a later move to `SharedPreferencesAsync`/`WithCache` is a one-file change |
+| Favorites | Newest first, unique ids, **≤ 100** (`ToggleFavoriteUseCase.maxFavorites`; adding beyond shows `favorites.limit_reached`). Each entry is a snapshot of the listing fields only (`PropertyModel.listingFromEntity`). Writes over **64 KB** fail with `CacheException` (100 long entries fit). Never expires. Unreadable or older-schema data is removed and favorites start empty; invalid or repeated entries are skipped |
+| Not persisted | Details, Featured, pages > 0, category pages, search/full-set results |
+| API | The existing `SharedPreferences` instance (same store as easy_localization's `locale` key), behind `HomeLocalDataSource` (`feature/home/data`), so a later move to `SharedPreferencesAsync`/`WithCache` is a one-file change |
 
 **Error mapping**
 
@@ -399,15 +418,20 @@ test/
 │   ├── error/failure_message_test.dart
 │   ├── network/dio_exception_mapping_test.dart
 │   └── utils/{formatters, debouncer, bidi_text}_test.dart
+├── feature/home/
+│   ├── data/datasource/{home_remote, home_local}_data_source_test.dart
+│   ├── data/repositories/home_repository_impl_test.dart   # fallback by failure type (4xx included), cancel, age
+│   ├── domain/usecases/home_usecases_test.dart
+│   ├── presentation/cubit/home_cubit_test.dart, home_cubit_pagination_test.dart
+│   ├── presentation/widget/{home_header, home_category_chips, section_status_view}_test.dart
+│   └── presentation/pages/home_screen_test.dart, home_screen_interactions_test.dart  # finders in helpers/home_screen_finders.dart
+├── feature/favorites/            # one test file per lib file, e.g. domain/usecases/toggle_favorite_usecase_test.dart
 └── feature/properties/
     ├── data/model/property_model_test.dart
-    ├── data/datasource/{remote, local}_data_source_test.dart
+    ├── data/datasource/properties_remote_data_source_test.dart
     ├── data/repositories/properties_repository_impl_test.dart
     ├── domain/usecases/filter_properties_usecase_test.dart
-    └── presentation/
-        ├── cubit/{home, search, property_details}_cubit_test.dart
-        ├── widget/property_card_test.dart         # LTR/RTL, long title, 320×640 @ 1.3 text scale
-        └── pages/home_screen_test.dart            # each RequestStatus renders the right view
+    └── presentation/widget/{property_cards, sliver_property_grid, property_card_skeletons}_test.dart
 integration_test/app_test.dart                     # optional: browse → details → switch to AR → RTL
 ```
 
@@ -452,7 +476,7 @@ integration_test/app_test.dart                     # optional: browse → detail
 
 | Screen | Node ID | Purpose | Components | Entry → Exit | Data (endpoint) | States designed? |
 | --- | --- | --- | --- | --- | --- | --- |
-| ★ **Home** | `1:4426` (430×1459) | Browse: featured carousel + recommendations grid | Header (avatar, greeting, name, bell), search bar (search + filter icons), section headers ×2 ("Featured", "Our Recommendation" + "See All"), featured cards ×2 (250×340, horizontal scroll), category chips (All, House, Villa, Apartments, Others), grid cards ×4 (2 columns), bottom nav (Home active) | App start / nav "Home" → Explore (search bar, See All, nav), Filter sheet (filter icon), Details (card), Profile (nav) | Featured: `GET /products?sortBy=rating&order=desc&limit=…` (✅ approved 2026-10-13; count is Q18). Grid: `GET /products?limit&skip` or `GET /products/category/{slug}`. Chips: `GET /products/categories` | Success only |
+| ★ **Home** | `1:4426` (430×1459) | Browse: featured carousel + recommendations grid | Header (avatar, greeting, name, bell), search bar (search + filter icons), section headers ×2 ("Featured", "Our Recommendation" + "See All"), featured cards ×2 (250×340, horizontal scroll), category chips (All, House, Villa, Apartments, Others), grid cards ×4 (2 columns), bottom nav (Home active) | App start / nav "Home" → Explore (search bar, See All, nav), Filter sheet (filter icon), Details (card), Profile (nav) | Featured: `GET /products?sortBy=rating&order=desc&limit=5` (✅ approved 2026-10-13; count 5 per Q18). Grid: first page of `GET /products?limit&skip` ("All") or `GET /products/category/{slug}`. Chips: `GET /products/categories` | Success only. **✅ Implemented** (`HomeScreen`, route `/`, Home tab of the shell). Loading, error + retry, empty and offline ("saved results") states are built per section from tokens. Header per Q11, bell and filter icon hidden. **Updated 2026-10-13:** card-shaped shimmer skeletons for first loads, infinite scroll (next page when less than one screen is left, skeleton row while loading, retry footer on failure, dedupe by id, stops at the last page, paused on saved results), pull to refresh (keeps shown content on failure + snackbar), automatic refresh once when the device comes back online, working hearts (Q8) Back-to-top button (not in Figma, your request 2026-10-13): appears after one screen of scrolling, end side above the nav bar, primary circle 44 + `Button/Shadow 1` + the Figma chevron turned up |
 | ★ **Explore (Search results)**: Figma "Search-v1" | `1:4120` (430×1041) | Search by text, filter by category, see result count | Header (back button, title "Search for Your Ideal Home", bell), search field (typed state "Beijing China \|" with primary-color caret), category chips, "Found 182 Apartments" heading, list cards ×4 (390×128), bottom nav (Explore active) | Nav "Explore" / Home search bar / See All → Details (card), Filter sheet (filter icon), Home (back, nav), Profile (nav) | `GET /products/search?q=` (debounced), `GET /products/category/{slug}`, `total` for the count | Success only |
 | ★ **Filter** (bottom sheet over Explore) | `1:3867` (430×955) | Narrow results | Dim overlay (black 30%), sheet with 24 top radius, title row (back, "Filter", "Reset"), Price Range (histogram + range slider + labels), Property Type chips (multi-select, wrap), Home Details (Bedrooms/Bathrooms steppers), Building Size (range slider), primary button "Set Filter" (390×54) | Filter icon on Home or Explore → back to the caller (back / Set Filter) | Local price filter on loaded items (`FilterPropertiesUseCase`). Category via API. Beds/baths/size have no data | Success only |
 | ★ **Property Details** | `1:4236` (430×2060) | Full property info + call to action | Hero image 428×460 with pagination dots, overlay app bar (back, heart, share), title, category tag, rating + review count, stats row (beds/bath/sqft), divider, Agent block (avatar, name, role, chat, call), Overview, Facilities grid (2×4), Gallery (3 tiles, "20+"), Location (address + map), Reviews (summary, "See All", one review), sticky bottom bar ("PRICE", price, "Booking Now") | Any card → back | `GET /products/{id}` (list item as initial data) | Success only |
@@ -467,15 +491,15 @@ Decision key: **implement** = real behavior. **local** = device-only state. **hi
 
 | Screen | Element (node) | Proposed action | Decision |
 | --- | --- | --- | --- |
-| Home | Avatar + "Good Morning" + name (`1:4449`) | Not tappable. Greeting localized | Q11 |
+| Home | Avatar + "Good Morning" + name (`1:4449`) | Not tappable. Greeting localized | ✅ Q11: neutral avatar (Profile icon on Greyscale/400), greeting by hour (5–11 morning, 12–16 afternoon, else evening), "Welcome, Guest" instead of the name |
 | Home / Explore / Profile | Bell + dot (`1:4454`, `1:4165`, `1:3810`) | No notifications feature | **hide** (Q13) |
-| Home | Search bar (`1:4458`) | Open Explore with the field focused | implement |
-| Home / Explore | Filter icon (`1:4462`, `1:4146`) | Open Filter sheet | implement |
-| Home | "See All" Featured (`1:4465`) | Explore, sorted by rating | implement |
-| Home | "See All" Recommendation (`1:4468`) | Explore with the selected category | implement |
+| Home | Search bar (`1:4458`) | Open Explore with the field focused | implement. ✅ Home: read-only field, `go(explore)`; focusing the field waits for the Explore screen |
+| Home / Explore | Filter icon (`1:4462`, `1:4146`) | Open Filter sheet | implement. Home: **hidden** until the Filter sheet exists (`AppSearchField` without `onFilterTap`) |
+| Home | "See All" Featured (`1:4465`) | Explore, sorted by rating | implement. ✅ Home: `go(explore)`; sorting waits for Explore |
+| Home | "See All" Recommendation (`1:4468`) | Explore with the selected category | implement. ✅ Home: `go(explore)`; passing the category waits for Explore |
 | Home / Explore | Category chips (`1:4478`, `1:4149`) | Select category → reload list | implement (Q12) |
 | Home / Explore | Card tap (featured `1:4470`, grid `1:4473`, list `1:4170`) | Push `/property/:id` | implement |
-| Home / Explore / Details | Heart (cards, Details `1:4270`) | Toggle favorite, persisted locally (no favorites list screen in Figma) | **local** (Q8) |
+| Home / Explore / Details | Heart (cards, Details `1:4270`) | Toggle favorite, persisted locally (no favorites list screen in Figma) | **local** (Q8, ✅ approved). ✅ Home Featured + grid cards: 44 px tap target centered on the Figma heart; filled heart when saved (white on Featured, Primary on grid); same state on every card with the same id. The list card (Explore) still uses its in-row slot until Explore is built |
 | Explore | Back button (`1:4161`) | Return to Home tab (pop when pushed from Home) | implement (Q16) |
 | Explore | Search field (`1:4142`) | Debounced server search, clear on empty | implement |
 | Filter | Back arrow (`1:3973`) | Close sheet without applying | implement |
@@ -522,6 +546,32 @@ Named Figma variables come from `get_variable_defs(1:4426)` plus the style lists
 **Card values measured from the 1x frame exports [S]** (not in §5.3, marked `[S]` in `AppSizes`): rating-badge insets 24 / 12 / 6 (featured / grid / list), badge padding 10×4 / 6×4 / 5×1.5 with icon-text gaps 4 / 2 / 2, featured content inset 16 (sides) / 20 (bottom), gaps title→location→price 8 / 10 (featured), 8 / 10 (grid), 10 (list). Sampled text colors: grid location Black/03, list location Black/02, search/filter icons Black/03, inactive nav Black/02. Prices are shown as `$12219` (no grouping); prices with cents keep two decimals.
 
 **Built in Phase 4:** `AppSvgIcon`, `CircleIconButton`, `AppBackButton`, `AppButton`, `SectionHeader`, `CategoryChip`, `AppSearchField`, `RatingBadge` (3 sizes), `AppNetworkImage`, `LoadingView`, `ErrorView`, `EmptyView`, `AppBottomNavBar` (wired into `AppShell`), and `FeaturedPropertyCard`, `PropertyGridCard`, `PropertyListCard`. Cards take an optional `favoriteButton` widget and show nothing when it's `null` (no heart asset until Q8 is decided). **Deferred to Phase 5** with their screens because their measurements aren't in §5.3: `PropertyTag`, `Divider`, `ProfileMenuRow`, range slider.
+
+**Built with Home (`1:4426`):** `HomeHeader` (avatar + greeting + welcome line; `greetingKeyFor(DateTime)`), `FeaturedPropertyList` (horizontal list of `FeaturedPropertyCard`), `HomeCategoryChips` ("All" + API categories, horizontal scroll), `SliverPropertyGrid` (rows of `PropertyGridCard`, column count from the width), `SectionStatusView` (`.failure` / `.empty` wrappers around `ErrorView` / `EmptyView` with a minimum height, so a section keeps its place; its `.loading` variant was replaced by skeletons on 2026-10-13). Header values verified in `get_design_context(1:4426)`: header top 60 (16 below the status bar), avatar 44 (radius 30), avatar-text gap 10, greeting `Paragraph/Regular/P12 - LH 180%` Black/03 (`AppTextStyles.homeGreeting`), name line `Paragraph/Medium/P16 - LH 130%` Black/01; section title → content 20, Featured cards → "Our Recommendation" 32 (`AppSizes` Home block).
+
+**Built with Home favorites, loading and pagination (2026-10-13):**
+- Heart icons: `assets/svg/heart.svg` (`ImagePath.heart`) is the Figma Iconly Light-Outline Heart from the saved `get_design_context(1:4426)` asset URL, normalized to `0 0 24 24` with its mask removed. `heart_bold.svg` (`ImagePath.heartBold`, selected state) is not in Figma: it fills the outline's outer contour and keeps the highlight arc as a cut-out (approved). Both are tinted by `AppSvgIcon`.
+- `FavoriteButton` (`core/widget`): heart in a 44 px tap target. Variants `onImage` (22, white; Featured) and `onSurface` (20, Black/03 → Primary when selected; grid). Announced as a toggle button: "Add to favorites" / "Remove from favorites" in both languages. `PropertyFavoriteButton` binds it to `FavoritesCubit` by id. Cards draw the button as an overlay centered on the Figma heart (price-row end, bottom-aligned with the price), and reserve the heart's width in the price row, so the bigger tap area doesn't move the Figma layout.
+- `AppShimmer` + `SkeletonBox` (`core/widget`, no package): a highlight sweeping in the reading direction; static when the platform asks for reduced motion. Not in Figma: tints `ColorsApp.skeletonBase/Highlight`. `FeaturedPropertyCardSkeleton` (250×340 `.r`) and `PropertyGridCardSkeleton` (grid card surface, image ratio, paddings, line heights measured with the current font and text scale) match the real cards' sizes (tested), so the page doesn't jump. `FeaturedPropertyListSkeleton` and `SliverPropertyGridSkeleton(rows)` are announced once as "Loading".
+- `LoadMoreScrollListener` (next page when less than one viewport is left, vertical depth-0 scrolls only) and `LoadMoreErrorView` (compact message + retry under loaded items): reusable by Explore.
+- Visual check: one `get_screenshot(1:4426)` compared with temporary real-font renders of the app at 430×932 and 430×1459 in EN and AR (deleted afterwards). Section positions match within ≈5 px (status-bar mock 44 vs. a 47 px test inset); heart position and colors match. Differences that are decisions, not defects: no photos in the test data, sample text, bell and filter icon hidden (Q13), greeting per Q11. ⚠ The rating badge's Figma shadow (0,20 blur 100) renders as a solid grey pill under the badge in the test renderer; not checked on a device yet.
+
+**`CustomText` API** (`core/widget/custom_text.dart`), the only text widget for UI copy:
+
+| Constructor | Use for |
+| --- | --- |
+| `CustomText(AppTextKeys.x, …)` | Translation keys. Uses `context.tr`, so it rebuilds on a locale change |
+| `CustomText.plain(text, …)` | Text that must not be translated: API data (titles, categories), formatted prices, already-translated strings |
+
+Shared parameters: `style`, `textAlign`, `maxLines`, `overflow`, `softWrap`, `textDirection` (e.g. keep Latin-only content LTR in the Arabic UI), `semanticsLabel`, `upperCase`. It drops `letterSpacing` in the Arabic locale (tracking breaks letter joins) and never overrides the text scaler, so the user's accessibility text size always applies. `SectionHeader`, `CategoryChip` and the property cards use it.
+
+**Responsive conventions (Home is the reference):**
+- Every screen scrolls (`CustomScrollView` / slivers) inside a `SafeArea`; the shell's bottom nav takes the bottom inset, so tab screens use `SafeArea(bottom: false)`.
+- Spacing uses `.w` / `.h` from `AppSizes`; fixed-ratio boxes (the 250×340 featured card) use `.r` on both sides, so they keep their ratio in landscape and on tablets.
+- Grids pick their column count from the available width: `floor((width + gap) / (187 + gap))`, clamped to 2–4 (`SliverPropertyGrid.columnsFor`). Rows use `Expanded` cells, so card height follows the content and the text scale instead of a fixed `childAspectRatio`.
+- Horizontal rows of variable-width items (chips) scroll horizontally instead of wrapping or shrinking.
+- Text that can be long gets `maxLines` + ellipsis. The only fixed heights around text are fixed-ratio cards, whose lines are all clamped.
+- Tests cover 320×568, 360×800, 430×932, 768×1024 and 932×430 (landscape) × en/ar × text scale 1.0/1.3.
 
 | Component / asset | Node ID (example instance) | Type | Used on | Export |
 | --- | --- | --- | --- | --- |
@@ -644,7 +694,7 @@ Manual checklist:
 - [ ] Timeout (temporarily lower timeouts).
 - [ ] 404/500 (temporary wrong endpoint/base URL).
 - [ ] Broken/empty image URLs → no crash.
-- [ ] Fast typing → one request after pause (check LogInterceptor).
+- [ ] Fast typing → one request after pause (check the `ApiLogInterceptor` output; superseded requests log `request_status: cancel`).
 - [ ] Fast scroll to end → no parallel page requests.
 - [ ] Navigate back and forth → no unnecessary refetch.
 - **Commit:** `fix(network): harden error handling and request deduplication`
@@ -685,17 +735,17 @@ Manual checklist:
 | **Q5** | Default language on first launch | — | ✅ Implemented as proposed: saved choice → device language if `ar`/`en` → `en` (easy_localization `saveLocale: true`, `useOnlyLangCode: true`) |
 | **Q6** | Arabic font | — | ✅ **Approved 2026-10-13: Rubik for both English and Arabic.** The earlier "no Arabic glyphs" assumption was outdated; coverage verified from the font file (§5). Verify rendered Arabic in Phase 4; consider IBM Plex Sans Arabic only if a real rendering issue is found |
 | **Q7** | Digits in Arabic UI: Western (123) or Eastern Arabic (١٢٣)? | Phase 6 | Western for prices/phones |
-| **Q8** | Non-required buttons: hearts (cards + Details), share (Details) | Phase 5 | Hearts → **local favorites** (persisted, no favorites list screen because Figma has none; would need a separately approved `shared_preferences` key, outside the approved cache scope in §4.5.2). Share → **hide** (would need `share_plus`, which isn't in the approved stack) |
+| **Q8** | Non-required buttons: hearts (cards + Details), share (Details) | Phase 5 | ✅ **Hearts approved 2026-10-13:** local favorites, persisted under `StorageKeys.favorites` as bounded listing snapshots (§4.5.2); no favorites screen; selected heart = filled shape derived from the Figma outline. Share → **hide** (would need `share_plus`, which isn't in the approved stack) |
 | **Q9** | Use DummyJSON POST/PATCH/DELETE? Specifically "Booking Now" on Details | Phase 5 | Option A: **hide** the button and keep the price bar. Option B: simulated `POST /carts/add` + success snackbar + C9 disclaimer. Proposed: A |
 | **Q10** | Which color set to implement: top-level blue (`#0061FF`), "New Orange" (`1:2188`), or "New Purple" (`1:2987`)? | — | ✅ **Approved 2026-10-13: top-level blue set** |
-| **Q11** | Home header and Profile show a user avatar and name ("Adrian Hajdin"), but there is no auth in scope | Phase 5 | Keep the localized time-based greeting. Replace the name with a localized welcome line and show a neutral avatar placeholder, so no fake user data is hard-coded (C0) |
+| **Q11** | Home header and Profile show a user avatar and name ("Adrian Hajdin"), but there is no auth in scope | Phase 5 | Keep the localized time-based greeting. Replace the name with a localized welcome line and show a neutral avatar placeholder, so no fake user data is hard-coded (C0). ✅ **Approved and applied on Home 2026-10-13** (Profile pending) |
 | **Q12** | Category chips: the design shows real-estate types (House, Villa, Apartments, Others / Townhomes, Condos…), but the API has 24 product categories | Phase 3 | Chips are **data-driven** from `GET /products/categories` ("All" + API names, localized where possible). Don't fake real-estate labels |
-| **Q13** | Notification bell (Home, Explore, Profile): no notifications feature | Phase 5 | **Hide** (D4) |
+| **Q13** | Notification bell (Home, Explore, Profile): no notifications feature | Phase 5 | **Hide** (D4). ✅ Applied on Home 2026-10-13 |
 | **Q14** | Filter sheet scope | Phase 5 | Keep: Price Range (local filter on the full matching set, §4.5.1; the histogram's data source is decided in Phase 5), category chips (Q12), Reset, Set Filter. Hide: Bedrooms, Bathrooms, Building Size. Optional: add sort (rating/price) via server `sortBy`/`order`, which isn't in Figma, so only with your approval |
 | **Q15** | Explore results layout: Search-v1 list (`1:4120`) or Search-v2 grid (`1:4055`)? | Phase 5 | **Search-v1 list**. The Filter sheet is designed over it, and it adds a distinct reusable list card |
 | **Q16** | Explore's back arrow when Explore is a bottom-nav tab | Phase 5 | Back → Home tab (or pop when opened from the Home search bar / See All) |
 | **Q17** | Profile screen scope | Phase 5 | Keep title, Language row, and bottom nav. Hide every row without a feature (My Booking … Logout) and the edit badge. Avatar/name per Q11 |
-| **Q18** | Featured item count (`limit` for `sortBy=rating&order=desc`). Figma shows 2 cards in a horizontal scroll; the total isn't specified | Phase 5 | TODO(question). The repository takes `limit` as a parameter, so Phase 3 isn't blocked |
+| **Q18** | Featured item count (`limit` for `sortBy=rating&order=desc`). Figma shows 2 cards in a horizontal scroll; the total isn't specified | — | ✅ **Answered 2026-10-13: 5** (`HomeCubit.featuredLimit`) |
 | **Q19** | Real authentication: provider (Google Sign-In, Firebase, custom backend), endpoints, session/token storage, and whether guest mode stays once sign-in exists | Future auth work | TODO(question). **Not approved, nothing implemented.** Current Auth is UI only (§5.1). Integration point: an `AuthCubit` calling a sign-in use case over an `AuthRepository` contract (domain) replaces `AuthScreen._showSignInUnavailable` and navigates to `AppRouter.signedInDestination` on success. No contract, use case, data source, or DI registration exists yet, on purpose (no requirements to shape them) |
 | **P1** | `.cursorrules` replaced by `.cursor/rules/*.mdc` | — | ✅ Done 2026-10-13 |
 | **P2** | Branch per phase vs. direct commits on `main` | — | Branch per phase (default applied: `feature/foundation` created from `main`) |
@@ -715,6 +765,12 @@ Manual checklist:
 | 2026-10-13 | Splash ([#1](https://github.com/AnasAlhamadd/flutter-real-estate-assessment/issues/1)) | ✅ Implemented on `feature/splash` (from `feature/design-system`) | GitHub task created and approved first (no issue existed). `/splash` is the default `initialLocation`; it shows the Figma logo, "REAL SCOUT" and the localized tagline, then `context.go(home)` after 1.5 s (no back stack; timer cancelled on dispose). Deep links bypass it. Rubik replaces Figma's Outfit (no Arabic glyphs). New key `splash.tagline`. Tests: en/ar × 320x568/430x932 × text scale 1.0/1.3, timing, back stack, early dispose, deep link, logo asset. `flutter analyze` 0; `flutter test` 342/342 |
 | 2026-10-13 | Text keys, `CustomText`, splash timing fix | ✅ Implemented on `feature/splash`, uncommitted | `AppTextKeys` (`core/constant/app_text_keys.dart`) declares every translation key; all string-literal keys in `lib/` replaced (router, app title, failure messages, shared widgets, splash). `CustomText` (`core/widget/custom_text.dart`) translates a key, can upper-case, and drops letter spacing in the Arabic locale (replaces the splash-only RTL check; you chose a `context.locale` check over detecting Arabic characters, so Latin text such as "REAL SCOUT" also loses its tracking in Arabic). **Splash bug:** the logo was parsed in an isolate only after the splash mounted, so in debug builds the title showed alone and the logo was visible for ≈0.6 s of the 1.5 s timer (measured from simulator screenshots every ≈0.3 s). Fix: `SplashScreen.precacheLogo()` fills `svg.cache` in `main()` alongside `di.init()`; the widget reads the same cache key. After the fix the logo and text appear together and stay ≈1.4 s. Note: hot reload keeps the router's current route, so the splash only reappears after a hot restart or cold launch. Tests: key parity with both JSON files (read from source), `CustomText` (translation, props, upper case, letter spacing per locale, locale switch), precache + cache key. `flutter analyze` 0; `flutter test` 357/357 |
 | 2026-10-13 | Auth UI ([#6](https://github.com/AnasAlhamadd/flutter-real-estate-assessment/issues/6)) | ✅ Implemented on `feature/auth` (from `feature/splash` `ebfc910`) | No Auth issue existed: decisions asked first (Google button → notice, guest action, collage export, Figma budget, base branch), issue drafted and approved. Flow: Splash → `/auth` (replaces Splash) → "Continue as guest" → Home (replaces Auth). `AppRouter.signedInDestination` (= Home) reserved for real sign-in (Q19). Deep links unchanged. Screen from Figma `1:4499`: single-image collage, `AuthIntro` (eyebrow, rich headline, subtitle), `GoogleAuthButton` (`OutlinedButton`, Figma shadow), guest `TextButton` (44 px minimum tap target). No Cubit/use case/repository: the screen has no state or data yet. New tokens (`AppSizes`/`AppTextStyles`/`ColorsApp` auth entries, `minTapTarget`), 7 keys in both languages, `assets/images/` registered. Tests: Auth matrix (en/ar × 320×568/430×932 × 1.0/1.3), no scroll at design size, scroll at 2.0, notice without navigation, single snackbar, guest → Home without back stack, semantics (buttons, header); Splash → Auth timing/back stack/deep link; router flow; asset checks. `flutter analyze` 0; `flutter test` 385/385 |
+| 2026-10-13 | 5: Home screen | ✅ Implemented on `feature/home` (from `feature/auth` `34700e4`), local commits only | No GitHub issue (you chose to start without one). Decisions asked first: `HomeCubit` over the existing use cases (no data-layer changes), one `get_design_context(1:4426)` call, header per Q11, filter icon and bell hidden, Featured count 5 (Q18). `HomeCubit` loads Featured, categories and the first "All" page in parallel, with separate status, failure and retry per section; selecting a chip reloads page 0 for that category and drops stale responses; `isFromCache` shows a localized offline notice. `HomeScreen` replaces the Home placeholder at `/`: header, read-only search field → Explore, Featured list, "See All" ×2 → Explore, chips, responsive grid, cards → `/property/:id`. `CustomText.plain` added (API data and prices now go through `CustomText`); featured card sized with `.r`. 8 keys added, `home.title` removed. Dev dep `bloc_test ^9.0.0`. Tests: `HomeCubit` (bloc_test), Home widgets, `CustomText.plain` (props, ellipsis, text scale, RTL), Home screen (5 viewports incl. tablet and landscape × en/ar × 1.0/1.3, Figma geometry at 430, long Arabic text at 320 × 1.3, navigation, states, clock), shell/router/language-switch/DI updates. `flutter analyze` 0; `flutter test` 477/477 (92 new). Explore still a placeholder, so "See All" and search don't pass a query, sort or category yet |
+| 2026-10-13 | Home: favorites, skeletons, pagination, refresh | 🟡 Implemented on `feature/home`, uncommitted (you asked for no commits) | Decisions asked first: favorites as bounded snapshots under a new key, no favorites screen, filled heart derived from the outline, no static fallback data, own shimmer (no package), remote-first cache policy kept, one Figma screenshot. **Favorites:** `feature/favorites` (domain, data, presentation), app-wide `FavoritesCubit` above the router, serialized saves with revert on failure, 100-item limit, snackbars for limit/save failures. **Storage:** `VersionedPreferencesStore` extracted from the properties local data source (API unchanged) and reused for favorites. **Home:** skeletons replace the spinners; infinite scroll with dedupe, `hasReachedMax`, retry footer, stale-response protection (one request counter for category changes, refresh and pages), paging paused on saved results; pull to refresh keeps content on failure and shows `home.refresh_failed` (a saved copy counts as a failure); one refresh when connectivity goes offline → online (never on every event). **Bug found by tests:** `Semantics(excludeSemantics: true)` hid the heart's tap action from screen readers; fixed with `onTap` on the semantics node. Removed `SectionStatusView.loading`. Keys: `home.refresh_failed`, `favorites.{add,remove,limit_reached,save_failed}`. Tests: store, favorites data/domain/cubit (incl. restart with real prefs, rapid taps, failure revert), `HomeCubit` pagination/refresh/connectivity, heart button (states, semantics en/ar, 44 px), heart placement on cards (en/ar × 430/320 × 1.0/1.3), shimmer + reduced motion, skeleton sizes, Home favorites sync, pagination footer, refresh. `flutter analyze` 0; `flutter test` 605/605 (128 new). **Then, at your request:** Home moved to `feature/home/presentation/` (cubit, page, Home-only widgets); shared property widgets stay in `properties`; tests moved to mirror `lib/` one file per source file (`favorites_usecases_test` → `{toggle_favorite, get_favorites, save_favorites}_usecase_test`, `home_widgets_test` → per-widget files, `card_favorite_button_test` → `property_favorite_button_test`, Home finders → `test/helpers/`). `flutter analyze` 0; `flutter test` 608/608 |
+| 2026-10-13 | Debug request log | ✅ Implemented, uncommitted | Replaced Dio's verbose `LogInterceptor` with `ApiLogInterceptor` (`core/network/api_log_interceptor.dart`), still added in debug builds only. One block per finished request: `request: GET`, `request_status: 200 (142 ms)` (or the `DioExceptionType` name such as `cancel` / `connectionTimeout` when there is no response), `uri: <full uri with query>`. Tests: success, HTTP 404, in-flight cancel. `flutter analyze` 0; `flutter test` 611/611 |
+| 2026-10-13 | Home data layer | ✅ Implemented on `feature/home`, uncommitted | Decisions asked first (3 questions): Home gets its own domain + data; saved data on any non-200 or no internet; cache scope unchanged ("All" first page + categories). **Domain:** `HomeRepository` (`getFeaturedProperties`, `getCategories`, `getRecommendations({categorySlug, page})`) + `GetFeaturedPropertiesUseCase`, `GetCategoriesUseCase`, `GetRecommendationsUseCase` (one use case for "All" and category pages, so `HomeCubit` no longer picks the endpoint). **Data:** `HomeRemoteDataSource` (DummyJSON), `HomeLocalDataSource` (moved from `PropertiesLocalDataSource`, same keys and envelope), `HomeRepositoryImpl` (remote first; the "All" first page falls back to its < 24 h copy on any failure except cancellation, 4xx included). **Properties** now holds search, full catalog, details and the shared entities/models; its four Home use cases and local data source were removed. Pagination and lazy loading were already in place and are unchanged (20 per page, `hasReachedMax`, retry footer). Tests moved/added: Home remote/local data sources, repository (every failure type, cancel, cache age, category pages), use cases, DI; test helpers split into `sample_properties.dart` + `fake_home_repository.dart`. `flutter analyze` 0; `flutter test` 621/621 |
+| 2026-10-13 | Home: back to top | ✅ Implemented on `feature/home`, uncommitted | Your request. `ScrollToTopButton` (`core/widget/scroll_to_top_button.dart`) listens to Home's `ScrollController` (`HomeView` is now stateful and owns it) and shows once the page is scrolled more than one viewport. It sits in the Scaffold's floating slot: end side (right in English, left in Arabic), above the bottom nav bar. Tap scrolls to the top in 500 ms (`easeOutCubic`), or jumps when the system disables animations. While hidden it ignores taps and is excluded from semantics. Not in Figma, so built from existing tokens only: `CircleIconButton` (44) in `ColorsApp.primary`, `AppSizes.buttonShadow`, `ImagePath.arrowRight` rotated to point up; no new asset. New key `common.back_to_top` (en/ar). Tests: widget (hidden at top, hidden within one screen, appears + returns to top in en/ar, no animation) and Home (end side per locale, above the nav bar, back to 0). `flutter analyze` 0; `flutter test` 628/628 |
+| 2026-10-13 | Grid cards: appear animation | ✅ Implemented on `feature/home`, uncommitted | Your request. `AppearAnimation` (`core/widget/appear_animation.dart`): fade 0→1, slide up from 12 % of the card height, scale 0.94→1, 450 ms `easeOutCubic`, optional delay folded into the controller (`Interval`, no timers). `SliverPropertyGrid` (now stateful) wraps every card: first page and each new pagination page animate, column after column (70 ms stagger, reading order, so it mirrors in Arabic). Cards rebuilt after scrolling back don't replay it (ids already shown are remembered); a replaced list (category change, refresh) clears that memory and bumps a generation in the card keys so even the same id in the same place replays. Off when the system disables animations. Not in Figma (motion isn't designed); no new package. Tests: animation (start/rest values, delay, `animate: false`, reduced motion) and grid (new page animates while loaded cards stay, stagger, no replay on scroll back, replaced list replays). `flutter analyze` 0; `flutter test` 636/636 |
 
 ---
 
@@ -735,3 +791,9 @@ Manual checklist:
 | 2026-10-13 | Cursor Agent + Figma MCP + GitHub CLI | Splash feature ([#1](https://github.com/AnasAlhamadd/flutter-real-estate-assessment/issues/1)) | Issue #1, `lib/feature/splash/**`, router/app defaults, tokens, `assets/svg/splash_logo.svg`, tests, reference §2/§4.2/§5.1/§5.4/Q1 | Searched both repos for an existing task (none) and stopped for approval; `get_design_context(1:4551)` with screenshot; logo fetched from the response's asset URL and parsed in a test (size + gradients); temporary real-font renders in EN/AR compared with the Figma screenshot (deleted afterwards); `flutter analyze` 0; `flutter test` 342/342 | **Rejected** Outfit (Figma font) because it has no Arabic and would add a second font for one screen; kept Rubik at the same weights. Dropped letter spacing for the Arabic tagline. Fixed a timing test that assumed the harness used no time before the check |
 | 2026-10-13 | Cursor Agent | Translation key constants, `CustomText`, splash "doesn't appear" investigation | `lib/core/constant/app_text_keys.dart`, `lib/core/widget/custom_text.dart`, key replacements in `lib/`, `SplashScreen.precacheLogo()` in `main.dart`, tests, `localization-rtl.mdc`, reference §4.2/§10 | Ran the app on the iPhone 16 Pro simulator (debug) before and after, with screenshots every ≈0.3 s; read `go_router` 18.0.2 `_effectiveInitialLocation` (platform route only wins for deep links) and `flutter_svg` 2.3.0 loader/cache code to confirm the cache key; `flutter analyze` 0; `flutter test` 357/357 | **Rejected** go_router's platform default route as the cause (`/` falls back to `initialLocation`). **Rejected** starting the timer only after the SVG loads inside the splash (a failed or hanging load would block navigation, and the isolate doesn't complete inside fake-async widget tests). Dropped a `namedArgs` parameter from `CustomText` until a key needs placeholders (Phase 5). The first version detected Arabic characters with a regex; **you replaced it** with a `context.locale` check for simplicity, accepting that Latin text loses letter spacing in the Arabic UI |
 | 2026-10-13 | Cursor Agent + Figma MCP + GitHub CLI + headless Chrome | Auth UI ([#6](https://github.com/AnasAlhamadd/flutter-real-estate-assessment/issues/6)) and Splash → Auth flow | Issue #6, `lib/feature/auth/**`, router/Splash change, tokens, keys, assets, tests, reference §2/§4.2/§5.1/§5.2/§5.4/Q1/Q19 | Stopped before coding: no Auth issue, and the brief asked for credential fields that the Figma frame doesn't have (confirmed with `get_design_context(1:4499)`); decisions taken through questions. Temporary real-font renders (EN/AR, 430×932 and 320×568, shadows on) compared with the Figma screenshot, then deleted; measured the panel parts when a test failed; `flutter analyze` 0; `flutter test` 385/385 | **You rejected** the first collage (12 tiles rebuilt in code with crop factors from 9 JPEGs) as over-engineered for static artwork and proposed your SVG export. **The agent rejected the SVG format**: it only wraps the 9 full-resolution JPEGs in base64 (7.6 MB, ~55 MB decoded per 4096 px photo), so it adds no precision. Kept your single-image idea as a 3× WebP (128 KB). Rejected macOS Quick Look rendering (it cropped the image to a square). A matrix test wrongly assumed no scrolling at 320×568 × 1.3: `splitScreenMode` scales text by 0.744 there, so the English headline takes 4 lines and the panel scrolls by design; the test now scrolls each action into view. Replaced deprecated `containsSemantics` with `isSemantics` |
+| 2026-10-13 | Cursor Agent + Figma MCP | Home screen (`1:4426`), `HomeCubit`, `CustomText.plain`, responsive grid | `lib/feature/properties/presentation/{cubit,pages,widget}/**`, `custom_text.dart`, tokens, keys, router, DI, tests, reference §4.2/§4.5/§5.1/§5.2/§5.4/§9 | Decisions asked before coding (data source, Figma budget, header, filter, Featured count, branch). Figma: `create_session` (first attempt timed out, retried once) + one `get_design_context(1:4426)`; header and spacing values taken from it. `flutter analyze` 0; `flutter test` 477/477 | Chose rows with `Expanded` cells over a `SliverGrid`, which needs a fixed cell height or ratio and can't grow with the text scale. Replaced the featured card's width-based `AspectRatio` with `.r` on both sides so the card keeps 250×340 proportions without growing past the viewport in landscape. Fixed test bugs found while running: column count read after the first row was recycled, ambiguous chip finders (card location shows the same category text), a "See All" test that pumped the app twice in one test, a `.at(1)` finder that broke after scrolling, and a loading test that hung after passing because `addTearDown(cubit.close)` waited outside the fake-async zone on a cubit `BlocProvider(create:)` already owns |
+| 2026-10-13 | Cursor Agent + Figma MCP | Home favorites, offline/refresh behavior, skeletons, pagination | `lib/core/{storage,widget}/**`, `lib/feature/favorites/**`, Home cubit/state/screen/widgets, DI, keys, heart SVGs, tests, reference §4.2/§4.5/§4.5.2/§5.1/§5.2/§5.4/Q8, rules (`00-project-core`, `data-layer`, `clean-architecture`) | Decisions asked before coding (7 questions). Heart outline from the asset URL saved from the earlier `get_design_context(1:4426)` (no new design-context call); filled variant checked in a headless-Chrome render. Figma: `create_session` + one `get_screenshot(1:4426)`, compared with temporary real-font renders (deleted). `flutter analyze` 0; `flutter test` 605/605 | Chose a card-level overlay for the 44 px heart instead of growing the price row (that would move the Figma layout). Registered `FavoritesCubit` as a factory owned by one root `BlocProvider` instead of the rule's lazySingleton (a provider would close a singleton); rule updated. Fixes from failing tests: missing semantics tap action on the heart, skeleton lines using a fixed 1.2 line height (now measured with `TextPainter`; a first fix collapsed bar widths and was caught by a measurement), test expectations that ignored bloc's equal-state dedupe, a finder for a formatted price, a locale switch inside one test, and the Android 48 px guideline applied to the approved 44 px target |
+| 2026-10-13 | Cursor Agent | Concise debug log for API requests | `lib/core/network/api_log_interceptor.dart`, `dio_client.dart`, `test/core/network/api_log_interceptor_test.dart`, reference §4/§7/§10 | `flutter analyze` 0; `flutter test` 611/611 | **Rejected** testing a pre-cancelled `CancelToken`: Dio rejects it before the error interceptors run, and the app never sends one (the remote data source throws `RequestCancelledException` first); tested an in-flight cancel instead |
+| 2026-10-13 | Cursor Agent | Home domain + data layers, fallback on any failure | `lib/feature/home/{domain,data}/**`, trimmed `lib/feature/properties/{domain,data}`, `HomeCubit`, DI, tests, helpers, reference §4.2/§4.5.2/§4.7/§10, rules (`data-layer`, `testing`) | Asked 3 questions before coding because the request conflicted with the recorded Home decision and the 4xx rule; boundary greps (no Flutter/Dio/prefs/data imports in domain, `properties` never imports `home`, each storage key has one owner); `flutter analyze` 0; `flutter test` 621/621 | **Rejected** keeping two recommendations use cases ("All" and category) because that left the endpoint choice in the cubit. **Rejected** keeping the paged listing in `properties` as well, which would have duplicated endpoints and cache keys; Explore's paged mode is a TODO(question). A batch of parallel edits to one test file was suspected of overwriting itself; a re-check showed every edit had applied |
+| 2026-10-13 | Cursor Agent | Home back-to-top button | `lib/core/widget/scroll_to_top_button.dart`, `home_screen.dart`, `app_text_keys.dart`, `{en,ar}.json`, tests, reference §5.1/§10 | `flutter analyze` 0; `flutter test` 628/628; position checked per locale and against the nav bar in widget tests | **Rejected** a Material `FloatingActionButton` (default look, not from the design tokens) and a new up-arrow asset (the Figma chevron rotated is enough). Threshold set to one viewport height, a judgment call with no design value to follow |
+| 2026-10-13 | Cursor Agent | Appear animation for grid cards with pagination | `lib/core/widget/appear_animation.dart`, `sliver_property_grid.dart`, tests, reference §10 | `flutter analyze` 0; `flutter test` 636/636 | **Rejected** a `Future.delayed` for the stagger (a pending timer can't be cancelled and fails widget tests); the delay is the start of the curve's `Interval`. A test found that a replaced list kept old card states when the same id stayed in the same place (equal keys), so the animation didn't replay; fixed with a list generation in the key. Two timing assertions were moved off exact frame boundaries. Parallel edits to one file duplicated an import, caught by `flutter analyze` |

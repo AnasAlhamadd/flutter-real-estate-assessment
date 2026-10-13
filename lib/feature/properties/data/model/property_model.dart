@@ -45,6 +45,19 @@ class PropertyModel {
     );
   }
 
+  /// The listing fields of [entity] only (reference §4.6), so stored
+  /// snapshots stay small whether the entity came from a list or details.
+  factory PropertyModel.listingFromEntity(PropertyEntity entity) =>
+      PropertyModel(
+        id: entity.id,
+        title: entity.title,
+        price: entity.price,
+        rating: entity.rating,
+        category: entity.category,
+        brand: entity.brand,
+        thumbnailUrl: entity.thumbnailUrl,
+      );
+
   final int id;
   final String title;
   final double price;

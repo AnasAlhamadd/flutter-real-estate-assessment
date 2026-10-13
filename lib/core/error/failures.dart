@@ -45,6 +45,11 @@ final class CacheFailure extends Failure {
   const CacheFailure();
 }
 
+/// The saved favorites list is full (`ToggleFavoriteUseCase.maxFavorites`).
+final class FavoritesLimitFailure extends Failure {
+  const FavoritesLimitFailure();
+}
+
 /// A superseded request (e.g. a newer search query). Never shown to the user.
 final class CancelledFailure extends Failure {
   const CancelledFailure();

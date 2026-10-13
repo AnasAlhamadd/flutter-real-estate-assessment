@@ -20,7 +20,19 @@
     "continue_as_guest": "Continue as guest"
   },
   "home": {
-    "title": "Home"
+    "good_morning": "Good Morning",
+    "good_afternoon": "Good Afternoon",
+    "good_evening": "Good Evening",
+    "welcome_guest": "Welcome, Guest",
+    "featured": "Featured",
+    "recommendation": "Our Recommendation",
+    "refresh_failed": "Couldn't refresh right now. Showing the results you already have."
+  },
+  "favorites": {
+    "add": "Add to favorites",
+    "remove": "Remove from favorites",
+    "limit_reached": "You've reached the maximum number of favorites.",
+    "save_failed": "Couldn't save your favorites on this device."
   },
   "explore": {
     "title": "Search for Your Ideal Home"
@@ -43,7 +55,10 @@
     "see_all": "See All",
     "search_hint": "Search something",
     "filter": "Filter",
-    "empty": "Nothing to show here yet."
+    "empty": "Nothing to show here yet.",
+    "all": "All",
+    "offline_saved_data": "You're offline. Showing saved results.",
+    "back_to_top": "Back to top"
   },
   "errors": {
     "no_internet": "No internet connection. Check your network and try again.",

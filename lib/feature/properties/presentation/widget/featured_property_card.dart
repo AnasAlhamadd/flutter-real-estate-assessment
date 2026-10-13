@@ -4,6 +4,7 @@ import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dar
 import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
 import 'package:flutter_real_estate_assessment/core/utils/formatters.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_network_image.dart';
+import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_real_estate_assessment/core/widget/rating_badge.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_location_label.dart';
@@ -11,6 +12,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Home "Featured" card: full-bleed image with a bottom gradient, rating
 /// badge, title, location and price (Figma `1:4470`).
+///
+/// Sized with `.r` (the smaller of the width and height scale), so the card
+/// keeps the Figma 250×340 proportions without outgrowing short landscape
+/// screens or stretching on tablets.
 class FeaturedPropertyCard extends StatelessWidget {
   const FeaturedPropertyCard({
     required this.property,
@@ -24,49 +29,61 @@ class FeaturedPropertyCard extends StatelessWidget {
   final VoidCallback onTap;
   final String? categoryName;
 
-  /// Optional heart (Q8). Nothing is shown when `null`.
+  /// Optional heart, normally a `FavoriteButton`. It is centered on the
+  /// Figma heart position (end of the price row), so its tap area can be
+  /// larger than the icon without moving the text.
   final Widget? favoriteButton;
 
   @override
   Widget build(BuildContext context) {
     final badgeInset = RatingBadgeSize.large.inset;
+    const tapRadius = AppSizes.minTapTarget / 2;
+    final heartRadius = AppSizes.featuredHeartSize.r / 2;
     return SizedBox(
-      width: AppSizes.featuredCardWidth.w,
-      child: AspectRatio(
-        aspectRatio: AppSizes.featuredCardWidth / AppSizes.featuredCardHeight,
-        child: Material(
-          color: ColorsApp.greyscale400,
-          borderRadius: BorderRadius.circular(AppSizes.radiusFeaturedCard.r),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                AppNetworkImage(url: property.thumbnailUrl),
-                const _BottomGradient(),
-                PositionedDirectional(
-                  top: badgeInset.r,
-                  end: badgeInset.r,
-                  child: RatingBadge(
-                    rating: property.rating,
-                    size: RatingBadgeSize.large,
-                  ),
+      width: AppSizes.featuredCardWidth.r,
+      height: AppSizes.featuredCardHeight.r,
+      child: Material(
+        color: ColorsApp.greyscale400,
+        borderRadius: BorderRadius.circular(AppSizes.radiusFeaturedCard.r),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              AppNetworkImage(url: property.thumbnailUrl),
+              const _BottomGradient(),
+              PositionedDirectional(
+                top: badgeInset.r,
+                end: badgeInset.r,
+                child: RatingBadge(
+                  rating: property.rating,
+                  size: RatingBadgeSize.large,
                 ),
-                PositionedDirectional(
-                  start: AppSizes.featuredContentHorizontalPadding.w,
-                  end: AppSizes.featuredContentHorizontalPadding.w,
-                  bottom: AppSizes.featuredContentBottomPadding.h,
-                  child: _FeaturedContent(
-                    property: property,
-                    location: property.locationLabel(
-                      categoryName: categoryName,
-                    ),
-                    favoriteButton: favoriteButton,
-                  ),
+              ),
+              PositionedDirectional(
+                start: AppSizes.featuredContentHorizontalPadding.r,
+                end: AppSizes.featuredContentHorizontalPadding.r,
+                bottom: AppSizes.featuredContentBottomPadding.r,
+                child: _FeaturedContent(
+                  property: property,
+                  location: property.locationLabel(categoryName: categoryName),
+                  hasFavoriteButton: favoriteButton != null,
                 ),
-              ],
-            ),
+              ),
+              if (favoriteButton case final button?)
+                PositionedDirectional(
+                  end:
+                      AppSizes.featuredContentHorizontalPadding.r +
+                      heartRadius -
+                      tapRadius,
+                  bottom:
+                      AppSizes.featuredContentBottomPadding.r +
+                      heartRadius -
+                      tapRadius,
+                  child: button,
+                ),
+            ],
           ),
         ),
       ),
@@ -105,12 +122,12 @@ class _FeaturedContent extends StatelessWidget {
   const _FeaturedContent({
     required this.property,
     required this.location,
-    this.favoriteButton,
+    required this.hasFavoriteButton,
   });
 
   final PropertyEntity property;
   final String location;
-  final Widget? favoriteButton;
+  final bool hasFavoriteButton;
 
   @override
   Widget build(BuildContext context) {
@@ -118,14 +135,14 @@ class _FeaturedContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
+        CustomText.plain(
           property.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTextStyles.featuredTitle,
         ),
         SizedBox(height: AppSizes.featuredTitleLocationGap.h),
-        Text(
+        CustomText.plain(
           location,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -133,16 +150,20 @@ class _FeaturedContent extends StatelessWidget {
         ),
         SizedBox(height: AppSizes.featuredLocationPriceGap.h),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
-              child: Text(
+              child: CustomText.plain(
                 Formatters.price(property.price),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.featuredPrice,
               ),
             ),
-            ?favoriteButton,
+            if (hasFavoriteButton) ...[
+              SizedBox(width: AppSizes.inlineTextGap.w),
+              SizedBox.square(dimension: AppSizes.featuredHeartSize.r),
+            ],
           ],
         ),
       ],

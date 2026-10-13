@@ -4,6 +4,7 @@ import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dar
 import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
 import 'package:flutter_real_estate_assessment/core/utils/formatters.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_network_image.dart';
+import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_real_estate_assessment/core/widget/rating_badge.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_location_label.dart';
@@ -24,12 +25,16 @@ class PropertyGridCard extends StatelessWidget {
   final VoidCallback onTap;
   final String? categoryName;
 
-  /// Optional heart (Q8). Nothing is shown when `null`.
+  /// Optional heart, normally a `FavoriteButton`. It is centered on the
+  /// Figma heart position (end of the price row), so its tap area can be
+  /// larger than the icon without moving the text.
   final Widget? favoriteButton;
 
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(AppSizes.radiusGridCard.r);
+    const tapRadius = AppSizes.minTapTarget / 2;
+    final heartRadius = AppSizes.gridHeartSize.r / 2;
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: radius,
@@ -39,29 +44,42 @@ class PropertyGridCard extends StatelessWidget {
         color: ColorsApp.white,
         borderRadius: radius,
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(
-              AppSizes.gridCardPaddingSide.w,
-              AppSizes.gridCardPaddingTop.h,
-              AppSizes.gridCardPaddingSide.w,
-              AppSizes.gridCardPaddingBottom.h,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _GridImage(property: property),
-                SizedBox(height: AppSizes.gridImageContentGap.h),
-                _GridDetails(
-                  property: property,
-                  location: property.locationLabel(categoryName: categoryName),
-                  favoriteButton: favoriteButton,
+        child: Stack(
+          children: [
+            InkWell(
+              onTap: onTap,
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(
+                  AppSizes.gridCardPaddingSide.w,
+                  AppSizes.gridCardPaddingTop.h,
+                  AppSizes.gridCardPaddingSide.w,
+                  AppSizes.gridCardPaddingBottom.h,
                 ),
-              ],
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _GridImage(property: property),
+                    SizedBox(height: AppSizes.gridImageContentGap.h),
+                    _GridDetails(
+                      property: property,
+                      location: property.locationLabel(
+                        categoryName: categoryName,
+                      ),
+                      hasFavoriteButton: favoriteButton != null,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
+            if (favoriteButton case final button?)
+              PositionedDirectional(
+                end: AppSizes.gridCardPaddingSide.w + heartRadius - tapRadius,
+                bottom:
+                    AppSizes.gridCardPaddingBottom.h + heartRadius - tapRadius,
+                child: button,
+              ),
+          ],
         ),
       ),
     );
@@ -103,12 +121,12 @@ class _GridDetails extends StatelessWidget {
   const _GridDetails({
     required this.property,
     required this.location,
-    this.favoriteButton,
+    required this.hasFavoriteButton,
   });
 
   final PropertyEntity property;
   final String location;
-  final Widget? favoriteButton;
+  final bool hasFavoriteButton;
 
   @override
   Widget build(BuildContext context) {
@@ -116,14 +134,14 @@ class _GridDetails extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
+        CustomText.plain(
           property.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTextStyles.gridTitle,
         ),
         SizedBox(height: AppSizes.gridTitleLocationGap.h),
-        Text(
+        CustomText.plain(
           location,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -131,16 +149,20 @@ class _GridDetails extends StatelessWidget {
         ),
         SizedBox(height: AppSizes.gridContentPriceGap.h),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
-              child: Text(
+              child: CustomText.plain(
                 Formatters.price(property.price),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.gridPrice,
               ),
             ),
-            ?favoriteButton,
+            if (hasFavoriteButton) ...[
+              SizedBox(width: AppSizes.inlineTextGap.w),
+              SizedBox.square(dimension: AppSizes.gridHeartSize.r),
+            ],
           ],
         ),
       ],

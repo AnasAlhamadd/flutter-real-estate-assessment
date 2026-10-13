@@ -68,9 +68,29 @@ abstract final class AppSizes {
   /// small screens don't shrink it.
   static const double minTapTarget = 44;
 
+  // Home (Figma `1:4426`).
+
+  /// Header top below the status bar (Figma: 60 from the frame top − 44).
+  static const double homeHeaderTop = 16;
+  static const double homeAvatarSize = 44;
+  static const double homeAvatarTextGap = 10;
+  static const double homeSectionTitleContentGap = 20;
+
+  /// Gap from the Featured cards to the "Our Recommendation" title.
+  static const double homeFeaturedRecommendationGap = 32;
+
+  /// Figma grid card width (2 columns of 187 in a 390 row). Wider screens fit
+  /// more columns of at least this many logical pixels.
+  static const double gridCardMinWidth = 187;
+  static const int gridMinColumns = 2;
+  static const int gridMaxColumns = 4;
+
   // Featured card.
   static const double featuredCardWidth = 250;
   static const double featuredCardHeight = 340;
+
+  /// Heart in the featured price row (`I1:4470;85001:13415`).
+  static const double featuredHeartSize = 22;
 
   /// Share of the card height covered by the bottom gradient.
   static const double featuredGradientFraction = 0.465;
@@ -91,6 +111,9 @@ abstract final class AppSizes {
   static const double gridCardPaddingBottom = 20;
   static const double gridImageContentGap = 12;
   static const double gridContentPriceGap = 10;
+
+  /// Heart in the grid price row (`I1:4473;85001:13433`).
+  static const double gridHeartSize = 20;
 
   /// [S] Gap title → location in grid cards.
   static const double gridTitleLocationGap = 8;

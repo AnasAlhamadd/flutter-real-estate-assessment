@@ -3,6 +3,7 @@ import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/auth_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,8 +31,7 @@ Finder _guestLabel(Locale locale) =>
 Finder _unavailableMessage(Locale locale) =>
     find.text(translate(locale, 'auth.sign_in_unavailable'));
 
-Finder _homeTitle() =>
-    find.widgetWithText(AppBar, translate(_en, 'home.title'));
+Finder _home() => find.byType(HomeScreen);
 
 String _location(WidgetTester tester) => GoRouter.of(
   tester.element(find.byType(Scaffold).first),
@@ -140,8 +140,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AuthScreen), findsNothing);
-    expect(_homeTitle(), findsOneWidget);
-    expect(GoRouter.of(tester.element(_homeTitle())).canPop(), isFalse);
+    expect(_home(), findsOneWidget);
+    expect(GoRouter.of(tester.element(_home())).canPop(), isFalse);
   });
 
   testWidgets('Continue as guest drops a pending sign-in message', (
@@ -155,7 +155,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(_unavailableMessage(_en), findsNothing);
-    expect(_homeTitle(), findsOneWidget);
+    expect(_home(), findsOneWidget);
   });
 
   testWidgets('exposes buttons and the headline to screen readers', (

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_real_estate_assessment/core/constant/storage_keys.dart';
 import 'package:flutter_real_estate_assessment/core/error/exceptions.dart';
-import 'package:flutter_real_estate_assessment/feature/properties/data/datasource/properties_local_data_source.dart';
+import 'package:flutter_real_estate_assessment/feature/home/data/datasource/home_local_data_source.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/data/model/category_model.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/data/model/properties_response_model.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/data/model/property_model.dart';
@@ -16,12 +16,12 @@ import '../../../../helpers/mocks.dart';
 void main() {
   final now = DateTime.utc(2026, 10, 13, 12);
   late SharedPreferences preferences;
-  late PropertiesLocalDataSourceImpl dataSource;
+  late HomeLocalDataSourceImpl dataSource;
 
   Future<void> createWith(Map<String, Object> values) async {
     SharedPreferences.setMockInitialValues(values);
     preferences = await SharedPreferences.getInstance();
-    dataSource = PropertiesLocalDataSourceImpl(preferences, clock: () => now);
+    dataSource = HomeLocalDataSourceImpl(preferences, clock: () => now);
   }
 
   setUp(() => createWith({}));
@@ -183,7 +183,7 @@ void main() {
     ).thenAnswer((_) async => false);
 
     expect(
-      PropertiesLocalDataSourceImpl(
+      HomeLocalDataSourceImpl(
         rejecting,
       ).cacheCategories(const [CategoryModel(slug: 'beauty', name: 'Beauty')]),
       throwsA(const CacheException()),

@@ -3,6 +3,7 @@ import 'package:flutter_real_estate_assessment/core/widget/app_shell.dart';
 import 'package:flutter_real_estate_assessment/core/widget/language_switcher.dart';
 import 'package:flutter_real_estate_assessment/core/widget/placeholder_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/auth_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
@@ -38,11 +39,7 @@ abstract final class AppRouter {
         branches: [
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: home,
-                builder: (_, _) =>
-                    const PlaceholderScreen(titleKey: AppTextKeys.homeTitle),
-              ),
+              GoRoute(path: home, builder: (_, _) => const HomeScreen()),
             ],
           ),
           StatefulShellBranch(

@@ -14,6 +14,7 @@ void main() {
     const RequestFailure(statusCode: 400): 'errors.request',
     const UnexpectedResponseFailure(): 'errors.unexpected_response',
     const CacheFailure(): 'errors.no_cached_data',
+    const FavoritesLimitFailure(): 'favorites.limit_reached',
     const CancelledFailure(): 'errors.request_cancelled',
     const UnknownFailure(): 'errors.unknown',
   };
