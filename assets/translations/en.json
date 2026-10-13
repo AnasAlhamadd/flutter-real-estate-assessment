@@ -27,7 +27,11 @@
   "common": {
     "retry": "Retry",
     "loading": "Loading…",
-    "coming_soon": "This screen will be built in a later phase."
+    "coming_soon": "This screen will be built in a later phase.",
+    "see_all": "See All",
+    "search_hint": "Search something",
+    "filter": "Filter",
+    "empty": "Nothing to show here yet."
   },
   "errors": {
     "no_internet": "No internet connection. Check your network and try again.",

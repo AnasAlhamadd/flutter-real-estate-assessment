@@ -28,6 +28,8 @@ switch (state.status) {
 - Do not replace designed elements with generic Material defaults that visibly change the look.
 - **No dead buttons:** every tappable element performs an action or is removed (decision per button in reference §5).
 - Images only through `AppNetworkImage` (placeholder + errorWidget; null/empty URL safe).
+- Icons only through `AppSvgIcon` + `ImagePath`; pass `matchTextDirection: true` for arrows/chevrons.
+- Values measured from Figma exports (not in reference §5.3) are marked `[S]` in `AppSizes`.
 - Use `ListView.builder`/`SliverList` for lists; load next page near the end, guarded by `isLoadingMore`/`hasReachedMax`.
 - Search input uses a debouncer (~400 ms) and ignores unchanged queries.
 

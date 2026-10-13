@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
+import 'package:flutter_real_estate_assessment/core/widget/app_bottom_nav_bar.dart';
 import 'package:go_router/go_router.dart';
 
-/// Temporary tab shell. The Figma bottom navigation replaces it in Phase 4.
+/// Tab shell with the Figma bottom navigation (Home, Explore, Profile).
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
 
@@ -12,26 +14,27 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) => navigationShell.goBranch(
+      bottomNavigationBar: AppBottomNavBar(
+        currentIndex: navigationShell.currentIndex,
+        onTap: (index) => navigationShell.goBranch(
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home),
+        items: [
+          AppBottomNavItem(
             label: context.tr('nav.home'),
+            activeIcon: ImagePath.homeBold,
+            inactiveIcon: ImagePath.homeLight,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.search),
+          AppBottomNavItem(
             label: context.tr('nav.explore'),
+            activeIcon: ImagePath.searchBold,
+            inactiveIcon: ImagePath.search,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.person_outline),
-            selectedIcon: const Icon(Icons.person),
+          AppBottomNavItem(
             label: context.tr('nav.profile'),
+            activeIcon: ImagePath.profileBold,
+            inactiveIcon: ImagePath.profileLight,
           ),
         ],
       ),
