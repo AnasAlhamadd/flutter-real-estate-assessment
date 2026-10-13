@@ -1,13 +1,14 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
+import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
+import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Stand-in for screens that are built in Phase 5.
 class PlaceholderScreen extends StatelessWidget {
   const PlaceholderScreen({
     required this.titleKey,
-    this.messageKey = 'common.coming_soon',
+    this.messageKey = AppTextKeys.commonComingSoon,
     this.child,
     super.key,
   });
@@ -19,7 +20,7 @@ class PlaceholderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr(titleKey))),
+      appBar: AppBar(title: CustomText(titleKey)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsetsDirectional.symmetric(
@@ -29,7 +30,7 @@ class PlaceholderScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(context.tr(messageKey), textAlign: TextAlign.start),
+              CustomText(messageKey, textAlign: TextAlign.start),
               if (child != null) ...[
                 SizedBox(height: AppSizes.screenHorizontalPadding.h),
                 child!,

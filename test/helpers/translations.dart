@@ -13,6 +13,23 @@ Map<String, dynamic> readTranslations(Locale locale) =>
         )
         as Map<String, dynamic>;
 
+/// Leaf translations by dotted key, e.g. `common.retry`.
+Map<String, String> flattenTranslations(
+  Map<String, dynamic> json, [
+  String prefix = '',
+]) {
+  final result = <String, String>{};
+  json.forEach((key, value) {
+    final path = prefix.isEmpty ? key : '$prefix.$key';
+    if (value is Map<String, dynamic>) {
+      result.addAll(flattenTranslations(value, path));
+    } else {
+      result[path] = value as String;
+    }
+  });
+  return result;
+}
+
 /// Resolves a dotted key straight from the JSON file, independent of the app.
 String translate(Locale locale, String key) {
   Object? node = readTranslations(locale);

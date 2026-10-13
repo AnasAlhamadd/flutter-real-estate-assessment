@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
+import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dart';
 import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
 import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
@@ -75,7 +76,7 @@ class AppSearchField extends StatelessWidget {
       style: AppTextStyles.searchInput,
       cursorColor: ColorsApp.primary,
       decoration: InputDecoration(
-        hintText: context.tr('common.search_hint'),
+        hintText: context.tr(AppTextKeys.commonSearchHint),
         hintStyle: AppTextStyles.searchHint,
         hintMaxLines: 1,
         border: InputBorder.none,
@@ -95,7 +96,7 @@ class _FilterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: context.tr('common.filter'),
+      label: context.tr(AppTextKeys.commonFilter),
       excludeSemantics: true,
       child: InkResponse(
         onTap: onTap,

@@ -38,6 +38,12 @@ abstract final class AppSizes {
   static const double navBarIconTop = 20;
   static const double navBarIconLabelGap = 6;
 
+  // Splash (Figma `1:4552`).
+  static const double splashLogoWidth = 133.885;
+  static const double splashLogoHeight = 112.445;
+  static const double splashLogoTextGap = 12;
+  static const double splashTitleTaglineGap = 10;
+
   // Featured card.
   static const double featuredCardWidth = 250;
   static const double featuredCardHeight = 340;
