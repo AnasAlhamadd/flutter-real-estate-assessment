@@ -68,6 +68,24 @@ void main() {
     expect(client.getJson('/products'), throwsA(const ParsingException()));
   });
 
+  test('getJsonList returns a decoded JSON array', () async {
+    final (client, _) = clientReturning(200, jsonEncode(['beauty', 'laptops']));
+
+    expect(await client.getJsonList('/products/categories'), [
+      'beauty',
+      'laptops',
+    ]);
+  });
+
+  test('getJsonList throws ParsingException for a JSON object', () {
+    final (client, _) = clientReturning(200, jsonEncode({'slug': 'beauty'}));
+
+    expect(
+      client.getJsonList('/products/categories'),
+      throwsA(const ParsingException()),
+    );
+  });
+
   test('throws ServerException with the status code on HTTP 500', () {
     final (client, _) = clientReturning(500, jsonEncode({'message': 'boom'}));
 

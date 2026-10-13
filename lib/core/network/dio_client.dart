@@ -32,15 +32,34 @@ class DioClient {
     Map<String, dynamic>? queryParameters,
     CancelToken? cancelToken,
   }) async {
+    final data = await _get(path, queryParameters, cancelToken);
+    if (data is Map<String, dynamic>) return data;
+    throw const ParsingException();
+  }
+
+  /// GETs a JSON array. Throws an [AppException] on any failure.
+  Future<List<dynamic>> getJsonList(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
+  }) async {
+    final data = await _get(path, queryParameters, cancelToken);
+    if (data is List<dynamic>) return data;
+    throw const ParsingException();
+  }
+
+  Future<Object?> _get(
+    String path,
+    Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
+  ) async {
     try {
       final response = await _dio.get<dynamic>(
         path,
         queryParameters: queryParameters,
         cancelToken: cancelToken,
       );
-      final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      throw const ParsingException();
+      return response.data;
     } on DioException catch (error) {
       throw mapDioException(error);
     }

@@ -11,11 +11,19 @@ abstract final class ApiConstants {
 
   static const int pageSize = 20;
 
+  /// `limit=0` makes DummyJSON return every matching product.
+  static const int allItems = 0;
+
+  /// `select` for every listing request (`id` is always returned).
+  static const String listingFields =
+      'title,price,rating,category,brand,thumbnail';
+
   static const String products = '/products';
   static const String searchProducts = '/products/search';
   static const String categories = '/products/categories';
 
-  static String productsByCategory(String slug) => '/products/category/$slug';
+  static String productsByCategory(String slug) =>
+      '/products/category/${Uri.encodeComponent(slug)}';
 
   static String productById(int id) => '/products/$id';
 }
