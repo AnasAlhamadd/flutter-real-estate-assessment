@@ -133,6 +133,65 @@ abstract final class AppSizes {
   /// location next to the price.
   static const double inlineTextGap = 8;
 
+  // Property Details (Figma `1:4236`).
+
+  /// Hero `1:4239`. Figma draws the hero and body 428 wide in a 430 frame;
+  /// the app uses the full width.
+  static const double detailsHeroHeight = 460;
+
+  /// Top bar `1:4266`: 16 below the status bar, 48 high, 24 side padding.
+  static const double detailsTopBarTop = 16;
+  static const double detailsTopBarHeight = 48;
+  static const double detailsTopBarPadding = 24;
+  static const double detailsTopBarIconSize = 28;
+
+  /// Hero page dots `1:4240`: 16 above the hero bottom.
+  static const double detailsDotsBottom = 16;
+  static const double detailsDotActiveWidth = 32;
+  static const double detailsDotSize = 8;
+  static const double detailsDotGap = 6;
+
+  /// Body `1:4273`: 20 × 24 padding, 30 between sections.
+  static const double detailsBodyVerticalPadding = 24;
+  static const double detailsSectionGap = 30;
+  static const double detailsTitleRowGap = 16;
+  static const double detailsTagRatingGap = 10;
+
+  /// Tag `1:4277`.
+  static const double detailsTagPaddingHorizontal = 10;
+  static const double detailsTagPaddingVertical = 6;
+  static const double radiusTag = 20;
+
+  /// Rating `1:4278`: star 20, gap 6.
+  static const double detailsRatingIconSize = 20;
+  static const double detailsRatingIconGap = 6;
+
+  /// Overview `1:4311`: title → text.
+  static const double detailsOverviewGap = 12;
+
+  /// Gallery `1:4366`: title → tiles, three 118 tiles spread over 388.
+  static const double detailsGalleryTitleGap = 20;
+  static const double detailsGalleryTileGap = 17;
+  static const int detailsGalleryTiles = 3;
+
+  /// Reviews `1:4400`: summary row → review, star 24, star → text 12.
+  static const double detailsReviewsGap = 24;
+  static const double detailsReviewsStarSize = 24;
+  static const double detailsReviewsStarGap = 12;
+
+  /// Review `1:4406`: avatar 40, avatar → name 10, rows 12 apart.
+  static const double detailsReviewAvatarSize = 40;
+  static const double detailsReviewAvatarGap = 10;
+  static const double detailsReviewContentGap = 12;
+
+  /// Price bar `1:4420`: padding 24 / 24 / 36, top corners 36,
+  /// "PRICE" → price 6.
+  static const double detailsPriceBarTop = 24;
+  static const double detailsPriceBarSide = 24;
+  static const double detailsPriceBarBottom = 36;
+  static const double detailsPriceLabelGap = 6;
+  static const double radiusPriceBar = 36;
+
   // Rating badge: [S] padding, icon-text gap and inset from the image corner.
   static const double badgeLargePaddingHorizontal = 10;
   static const double badgeLargeGap = 4;

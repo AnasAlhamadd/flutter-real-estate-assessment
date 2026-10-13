@@ -12,6 +12,35 @@ abstract final class AppTextStyles {
   static TextStyle get detailsTitle => _rubik(24, FontWeight.w700, 1.2);
   static TextStyle get sectionTitle => _rubik(20, FontWeight.w600, 1.2);
 
+  /// Property Details (Figma `1:4236`). The tag and "PRICE" are shown
+  /// uppercase.
+  static TextStyle get detailsTag =>
+      _rubik(10, FontWeight.w600, null, color: ColorsApp.primary);
+  static TextStyle get detailsRating =>
+      _rubik(14, FontWeight.w500, 1.4, color: ColorsApp.black02);
+
+  /// Overview text and review comments.
+  static TextStyle get detailsBody =>
+      _rubik(16, FontWeight.w400, 1.7, color: ColorsApp.black02);
+  static TextStyle get detailsGalleryMore =>
+      _rubik(20, FontWeight.w700, 1.2, color: ColorsApp.white);
+  static TextStyle get reviewerName => _rubik(16, FontWeight.w600, 1.4);
+  static TextStyle get reviewTime =>
+      _rubik(14, FontWeight.w400, null, color: ColorsApp.black03);
+
+  /// Not in Figma (the reviewer photo is replaced by initials, Q4).
+  static TextStyle get reviewerInitials =>
+      _rubik(14, FontWeight.w600, null, color: ColorsApp.white);
+  static TextStyle get detailsPriceLabel => _rubik(
+    12,
+    FontWeight.w500,
+    null,
+    color: ColorsApp.black02,
+    letterSpacing: 2,
+  );
+  static TextStyle get detailsPrice =>
+      _rubik(24, FontWeight.w600, 1.2, color: ColorsApp.primary);
+
   static TextStyle get featuredTitle =>
       _rubik(20, FontWeight.w700, 1.1, color: ColorsApp.white);
   static TextStyle get featuredPrice =>
