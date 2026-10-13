@@ -17,6 +17,7 @@ test/
 │   ├── mocks.dart            # mocktail: MockNetworkInfo, Mock*DataSource, Mock*Repository, MockSharedPreferences, Mock*UseCase
 │   ├── stub_http_adapter.dart # fake Dio HTTP adapter for remote data source tests (records requests, set status/body, hang)
 │   ├── pump_app.dart         # pumpApp(tester, {locale, viewport, textScale, initialLocation, preferences})
+│   ├── pump_widget.dart      # pumpLocalizedWidget (one widget with l10n + ScreenUtil + theme) + testWidgetsInLayouts (en/ar × 430x932@1.0 / 320x640@1.3)
 │   ├── test_viewports.dart   # 320×568, 375×812, 430×932, 768×1024 with safe-area padding
 │   ├── layout_expectations.dart # no layout errors, direction, visible + tappable inside the safe area
 │   └── translations.dart     # reads assets/translations/*.json from disk for tests
