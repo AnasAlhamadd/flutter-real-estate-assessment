@@ -1,0 +1,44 @@
+{
+  "app": {
+    "title": "Real Scout"
+  },
+  "nav": {
+    "home": "Home",
+    "explore": "Explore",
+    "profile": "Profile"
+  },
+  "home": {
+    "title": "Home"
+  },
+  "explore": {
+    "title": "Search for Your Ideal Home"
+  },
+  "details": {
+    "title": "Property Details"
+  },
+  "profile": {
+    "title": "Profile"
+  },
+  "language": {
+    "title": "Language",
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "common": {
+    "retry": "Retry",
+    "loading": "Loading…",
+    "coming_soon": "This screen will be built in a later phase."
+  },
+  "errors": {
+    "no_internet": "No internet connection. Check your network and try again.",
+    "timeout": "The request took too long. Please try again.",
+    "server": "Something went wrong on our side. Please try again later.",
+    "not_found": "We couldn't find what you're looking for.",
+    "request": "The request couldn't be completed.",
+    "unexpected_response": "We received an unexpected response. Please try again.",
+    "no_cached_data": "No saved data is available offline.",
+    "request_cancelled": "The request was cancelled.",
+    "unknown": "Something went wrong. Please try again.",
+    "page_not_found": "This page doesn't exist."
+  }
+}
