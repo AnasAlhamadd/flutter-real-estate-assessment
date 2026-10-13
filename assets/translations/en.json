@@ -10,6 +10,15 @@
   "splash": {
     "tagline": "Connecting You to Your Ideal Home."
   },
+  "auth": {
+    "welcome": "Welcome to Real Scout",
+    "headline": "Let’s Get You Closer\nTo",
+    "headline_highlight": "Your Ideal Home",
+    "subtitle": "Login to Real Scout with Google",
+    "google_button": "Sign Up with Google",
+    "sign_in_unavailable": "Sign-in isn't available yet. You can continue as a guest.",
+    "continue_as_guest": "Continue as guest"
+  },
   "home": {
     "title": "Home"
   },

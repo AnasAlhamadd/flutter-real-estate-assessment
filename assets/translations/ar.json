@@ -10,6 +10,15 @@
   "splash": {
     "tagline": "نوصلك إلى منزلك المثالي."
   },
+  "auth": {
+    "welcome": "مرحبًا بك في Real Scout",
+    "headline": "دعنا نقرّبك أكثر\nمن",
+    "headline_highlight": "منزلك المثالي",
+    "subtitle": "سجّل الدخول إلى Real Scout باستخدام Google",
+    "google_button": "التسجيل باستخدام Google",
+    "sign_in_unavailable": "تسجيل الدخول غير متاح بعد. يمكنك المتابعة كضيف.",
+    "continue_as_guest": "المتابعة كضيف"
+  },
   "home": {
     "title": "الرئيسية"
   },

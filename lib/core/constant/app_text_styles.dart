@@ -74,6 +74,20 @@ abstract final class AppTextStyles {
     letterSpacing: 1.2,
   );
 
+  /// Auth texts (Figma `1:4544`–`1:4546`, `1:4550`). The eyebrow is shown
+  /// uppercase.
+  static TextStyle get authEyebrow => _rubik(
+    16,
+    FontWeight.w400,
+    1.8,
+    color: ColorsApp.black02,
+    letterSpacing: 1.6,
+  );
+  static TextStyle get authHeadline => _rubik(32, FontWeight.w600, 1.3);
+  static TextStyle get authSubtitle =>
+      _rubik(18, FontWeight.w400, 1.8, color: ColorsApp.black02);
+  static TextStyle get authButton => _rubik(18, FontWeight.w500, 1.3);
+
   /// `Paragraph/Medium/P12 - LH 130%`.
   static TextStyle get navLabel => _rubik(12, FontWeight.w500, 1.3);
 

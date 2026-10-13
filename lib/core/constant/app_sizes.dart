@@ -44,6 +44,30 @@ abstract final class AppSizes {
   static const double splashLogoTextGap = 12;
   static const double splashTitleTaglineGap = 10;
 
+  // Auth (Figma `1:4499`).
+
+  /// Collage top below the status bar (Figma: 83 from the frame top − 44).
+  static const double authCollageTop = 39;
+
+  /// Collage `1:4521` as exported, including its 16 px side insets.
+  static const double authCollageWidth = 399;
+  static const double authCollageHeight = 552;
+
+  /// Fade above the text panel: from where the collage fade turns solid
+  /// (y 568) to the first text line (y 602). Keeps text readable when a short
+  /// screen moves the panel up over the photos.
+  static const double authPanelFadeHeight = 34;
+
+  static const double authTextGap = 12;
+  static const double authTextButtonGap = 20;
+  static const double authButtonVerticalPadding = 18;
+  static const double authButtonIconSize = 22;
+  static const double authButtonIconGap = 10;
+
+  /// Not in Figma: accessibility minimum for tap targets, kept unscaled so
+  /// small screens don't shrink it.
+  static const double minTapTarget = 44;
+
   // Featured card.
   static const double featuredCardWidth = 250;
   static const double featuredCardHeight = 340;
@@ -106,6 +130,7 @@ abstract final class AppSizes {
   static const double radiusFeaturedCard = 20;
   static const double radiusListCard = 28;
   static const double radiusChip = 30;
+  static const double radiusAuthButton = 30;
   static const double radiusPill = 100;
 
   // Shadows.
@@ -133,6 +158,15 @@ abstract final class AppSizes {
       color: ColorsApp.buttonShadow,
       offset: Offset(4, 8),
       blurRadius: 24,
+    ),
+  ];
+
+  /// Auth Google button (`1:4547`): `drop-shadow(0 4 60 rgba(0,0,0,.2))`.
+  static const List<BoxShadow> authButtonShadow = [
+    BoxShadow(
+      color: ColorsApp.authButtonShadow,
+      offset: Offset(0, 4),
+      blurRadius: 60,
     ),
   ];
 }
