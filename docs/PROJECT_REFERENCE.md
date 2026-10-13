@@ -1,7 +1,7 @@
 # PROJECT_REFERENCE: Flutter Real Estate Assessment
 
 > **Single source of truth for this project.** Agent rules live in `.cursor/rules/*.mdc` and point here.
-> Last updated: 2026-10-13 · Status: **Planning complete. Implementation not started.**
+> Last updated: 2026-10-13 · Status: **Phase 1 complete (screens + color set approved). Implementation not started. Phase 2 waits for your go-ahead.**
 
 ---
 
@@ -72,8 +72,8 @@ Execute ONLY Phase {{N}}: {{PHASE NAME}} exactly as defined in reference §7.
 | Simulators | iPhone 16 / 16e / 16 Plus / 16 Pro / 16 Pro Max · Android `Medium_Phone_API_36.0` |
 | Project | Default Flutter template (counter app). `flutter analyze` clean, `flutter test` passes |
 | IDs | Default `com.example.*` (change only if required) |
-| Figma MCP | ✅ Plugin installed and authenticated (`plugin-figma-figma`) · account `anasalhamadstd@gmail.com`, **Starter plan, Full seat → ~20 read calls/month** (`whoami` exempt; 2 calls already used) |
-| Figma file access | ❌ Community original returns *"you don't have edit access to this file"*. **Use a Drafts duplicate** (Open in Figma / Duplicate → new fileKey) |
+| Figma MCP | ✅ Plugin installed and authenticated (`plugin-figma-figma`) · account `anasalhamadstd@gmail.com` (handle "Anas alhamad"), **Starter plan, Full seat → ~20 read calls/month** (`whoami` exempt). **≈10 read calls used** as of 2026-10-13: 2 in Phase 0, 1 access check, 7 in Phase 1. Whether `create_session` counts is unverified |
+| Figma file access | ❌ Community original returns *"you don't have edit access to this file"*. ✅ **Drafts duplicate** `idJrPCgmZTzih809HNpgnr` is readable (verified 2026-10-13) |
 | GitHub | Two repos exist: `AnasAlhamadd/...` (origin, 1 commit) and `anasAlhamd/...` (empty). Delivery target: see Q2 |
 
 ---
@@ -290,21 +290,38 @@ User types "villa"
 
 ### 4.6 Data mapping (DummyJSON product → `PropertyEntity`)
 
-| Entity field | API field | Notes |
-| --- | --- | --- |
-| `id` | `id` | |
-| `title` | `title` | English only (documented) |
-| `description` | `description` | |
-| `price` | `price` | Formatted via `formatters.dart` |
-| `discountPercentage` | `discountPercentage` | Only if the design shows a discount |
-| `rating` | `rating` | |
-| `category` | `category` | Slug → label |
-| `thumbnailUrl` | `thumbnail` | Nullable-safe |
-| `imageUrls` | `images` | Defaults to `[]` |
-| `brand`, `stock`, `availabilityStatus` | same | Candidates to replace real-estate-only fields |
-| _Figma-only fields (location, beds, baths, area, agent…)_ | **none** | **Decision Q4.** Never hard-code in UI (C0) |
+**API schema verified 2026-10-13** with `GET /products/1`. Product keys: `id, title, description, category, price, discountPercentage, rating, stock, tags, brand, sku, weight, dimensions{width,height,depth}, warrantyInformation, shippingInformation, availabilityStatus, reviews[{rating, comment, date, reviewerName, reviewerEmail}], returnPolicy, minimumOrderQuantity, meta, images, thumbnail`. A list response has `{products, total, skip, limit}` (`total` = 194). `GET /products/categories` returns 24 entries shaped `{slug, name, url}`, e.g. `beauty, fragrances, furniture, groceries, home-decoration, kitchen-accessories, laptops, …, vehicle, womens-watches`. `brand` is missing on some products, so treat it as nullable.
 
-To be completed in Phase 1 once Figma fields are known.
+**Entity fields (the API provides them)**
+
+| Entity field | API field | Figma usage | Notes |
+| --- | --- | --- | --- |
+| `id` | `id` | route param `/property/:id` | |
+| `title` | `title` | Card titles, Details title | English only (documented) |
+| `description` | `description` | Details "Overview" | |
+| `price` | `price` (double, e.g. `9.99`) | Card price, Details bottom-bar price, Filter price range | Format via `formatters.dart`. Figma shows whole dollars (`$12219`), but the API has decimals |
+| `rating` | `rating` (e.g. `2.56`) | Rating badges, Details "4.8 (1,275 reviews)" | Show 1 decimal |
+| `category` | `category` (slug) | Details tag "APARTMENT", category chips | Slug → localized label where possible, else `name` from `/products/categories` |
+| `thumbnailUrl` | `thumbnail` | Card images | Nullable-safe |
+| `imageUrls` | `images` (list; product 1 has 1 image) | Details hero carousel + dots, Gallery (3 tiles + "N+") | Defaults to `[]`. Fall back to `thumbnail` when empty |
+| `reviews` | `reviews[]` → `reviewerName`, `comment`, `date`, `rating` | Details reviews block (name, text, "6 days ago") | Review count = `reviews.length` (Figma's "1,275" is sample data). Relative date computed locally |
+| `total` (page entity) | `total` | "Found 182 Apartments" | Localized "Found {n} results" |
+| `discountPercentage`, `stock`, `brand`, `tags`, `availabilityStatus`, `weight`, `dimensions` | same | **not in design** | Candidates to replace missing fields (Q4) |
+
+**Figma fields DummyJSON does not provide (decision Q4, never hard-coded, C0)**
+
+| Figma field | Screen(s) | Proposed handling |
+| --- | --- | --- |
+| Location text ("New York, US", "Beijing, China") | Featured card, grid card, list card | Replace with `brand` (nullable → hide line) **or** category label. Q4 |
+| Beds / baths / sqft | Details stats row | Hide row, or replace with `stock` / `weight` / `availabilityStatus` using existing chip style. Q4 |
+| Agent (name, role, avatar, chat, call) | Details "Agent" | Hide section (no data, and the chat/call actions have no backend) |
+| Facilities (8 icons + labels) | Details "Facilities" | Hide, or show `tags` as chips (the icons are facility-specific and can't map to tags). Q4 |
+| Address + map | Details "Location" | Hide section |
+| Reviewer avatar, review like count ("938") | Details reviews | Hide avatar (or initials) and the like count |
+| Property type (Apartments, Townhomes, Homes, Condos, Duplexes, Studios) | Filter sheet | Replace with API categories (Q12) |
+| Bedrooms / Bathrooms steppers, Building Size slider | Filter sheet | Hide (no matching field) |
+| User identity (avatar, "Adrian Hajdin") | Home header, Profile | No auth in scope. Q11 |
+| Booking ("Booking Now") | Details bottom bar | No booking endpoint. Q9 |
 
 ### 4.7 Test folder
 
@@ -355,40 +372,113 @@ integration_test/app_test.dart                     # optional: browse → detail
 
 ## 5. Design inventory (filled in Phase 1)
 
+**Evidence key.** **[V]** means verified from Figma MCP output (`get_metadata`, `get_variable_defs`, or `get_design_context` code/screenshot). **[S]** means read only from a screenshot (approximate). **[U]** means unverified or an assumption.
+
 | Field | Value |
 | --- | --- |
-| Figma Drafts duplicate URL | _pending (Q3)_ |
-| fileKey / page | _pending_ |
-| Frame size (ScreenUtil `designSize`) | _pending_ |
-| Fonts (Latin / Arabic coverage) | _pending_ |
+| Figma Drafts duplicate URL | <https://www.figma.com/design/idJrPCgmZTzih809HNpgnr/Real-Estate-Mobile-App-Design--Community---Copy-> |
+| fileKey / page | `idJrPCgmZTzih809HNpgnr` / `0:1` "Page 1" (the only page) [V] |
+| File layout | Three color sets of the same 8 frames (Splash, Auth, Home, Search-v1, Search-v2, Details, Filters, Profile): a **top-level set (blue, primary `#0061FF`)**, section `1:2188` "New Orange", and section `1:2987` "New Purple". Plus a spec frame `1:4584` "colors" [V]. The Orange/Purple sets were checked by metadata only (same frame names and sizes); their colors were not inspected [U]. **Proposed: implement the top-level blue set (Q10).** |
+| "colors" spec frame `1:4584` | Every swatch and the typography sample are labeled "Voog blue / #443DF6" [V, layer names]. These are placeholders that don't match the colors actually used. **Not used as a token source.** |
+| Frame size (ScreenUtil `designSize`) | All screen frames are **430 wide** [V]. Non-scrolling frames (Splash, Auth) are **430 × 932** [V]. The other frames are taller because they show scroll content (Home 1459, Details 2060). Status bar 44, home indicator 34 [V]. **Proposed `designSize: Size(430, 932)`** (iPhone 14/15 Pro Max viewport). Details content and hero use 428 instead of 430 [V], treated as a design inconsistency |
+| Fonts (Latin) | **Rubik** Regular 400 / Medium 500 / SemiBold 600 / Bold 700 for all UI text [V]. **Inter** Bold/SemiBold 12, only for the Filter stepper values and Building Size labels [V]. **Urbanist** Regular 10, only for the street labels inside the map art [V]. SF Pro Text belongs to the iOS status-bar mock only and won't be implemented |
+| Arabic glyph coverage | **Not verifiable in Figma.** The file has no Arabic text [V]. Outside Figma, Google Fonts lists Rubik's subsets as Latin, Cyrillic, and Hebrew, **with no Arabic** [U, check in Phase 4]. An Arabic font is needed (Q6) |
+| Designed states | **Only populated (success) states exist.** There are no loading, empty, error, or offline frames [V, metadata]. Those states will be built from tokens (C3) |
 
 ### 5.1 Screens
 
+★ = approved screens (Q1, 2026-10-13).
+
 | Screen | Node ID | Purpose | Components | Entry → Exit | Data (endpoint) | States designed? |
 | --- | --- | --- | --- | --- | --- | --- |
-| _pending_ | | | | | | |
+| ★ **Home** | `1:4426` (430×1459) | Browse: featured carousel + recommendations grid | Header (avatar, greeting, name, bell), search bar (search + filter icons), section headers ×2 ("Featured", "Our Recommendation" + "See All"), featured cards ×2 (250×340, horizontal scroll), category chips (All, House, Villa, Apartments, Others), grid cards ×4 (2 columns), bottom nav (Home active) | App start / nav "Home" → Explore (search bar, See All, nav), Filter sheet (filter icon), Details (card), Profile (nav) | Featured: `GET /products?sortBy=rating&order=desc&limit=…` [proposal]. Grid: `GET /products?limit&skip` or `GET /products/category/{slug}`. Chips: `GET /products/categories` | Success only |
+| ★ **Explore (Search results)**: Figma "Search-v1" | `1:4120` (430×1041) | Search by text, filter by category, see result count | Header (back button, title "Search for Your Ideal Home", bell), search field (typed state "Beijing China \|" with primary-color caret), category chips, "Found 182 Apartments" heading, list cards ×4 (390×128), bottom nav (Explore active) | Nav "Explore" / Home search bar / See All → Details (card), Filter sheet (filter icon), Home (back, nav), Profile (nav) | `GET /products/search?q=` (debounced), `GET /products/category/{slug}`, `total` for the count | Success only |
+| ★ **Filter** (bottom sheet over Explore) | `1:3867` (430×955) | Narrow results | Dim overlay (black 30%), sheet with 24 top radius, title row (back, "Filter", "Reset"), Price Range (histogram + range slider + labels), Property Type chips (multi-select, wrap), Home Details (Bedrooms/Bathrooms steppers), Building Size (range slider), primary button "Set Filter" (390×54) | Filter icon on Home or Explore → back to the caller (back / Set Filter) | Local price filter on loaded items (`FilterPropertiesUseCase`). Category via API. Beds/baths/size have no data | Success only |
+| ★ **Property Details** | `1:4236` (430×2060) | Full property info + call to action | Hero image 428×460 with pagination dots, overlay app bar (back, heart, share), title, category tag, rating + review count, stats row (beds/bath/sqft), divider, Agent block (avatar, name, role, chat, call), Overview, Facilities grid (2×4), Gallery (3 tiles, "20+"), Location (address + map), Reviews (summary, "See All", one review), sticky bottom bar ("PRICE", price, "Booking Now") | Any card → back | `GET /products/{id}` (list item as initial data) | Success only |
+| ★ **Profile** (reduced) | `1:3786` (430×975) | **Host the in-app language switch** through the design's own "Language" row (B1), and give the nav "Profile" tab a destination (D4) | Title "Profile", bell, avatar 140 + edit badge, name, divider, menu rows (My Booking, Payments, Profile, Notification, Security, **Language**, Help Center, Invite Friends, Logout in red), bottom nav (Profile active) | Nav "Profile" → language picker (Language row) | None (locale via `easy_localization`) | Success only |
+| Splash | `1:4551` (430×932) | Logo + "Real Scout" + tagline | Logo group `1:4553`, title, subtitle | Launch → Auth | None | Not recommended: no data value. A native splash could be added later |
+| Auth | `1:4499` (430×932) | Google sign-in landing | Image collage, "Welcome to Real Scout", "Sign Up with Google" button | Splash → Home | None (DummyJSON has no Google auth) | Not recommended: the button would be dead (D4) |
+| Search-v2 | `1:4055` (430×1051) | Same results as Search-v1 in a 2-column grid | Same as Search-v1, but uses grid cards and vuesax icons | — | — | Not recommended: duplicates Search-v1. Alternative layout (Q15) |
 
 ### 5.2 Tappable elements (D4)
 
-| Screen | Element | Action | Decision (implement / local / hide) |
+Decision key: **implement** = real behavior. **local** = device-only state. **hide** = removed from the UI (no backend or feature). Every hide decision is tied to Q4, Q8, Q9, Q11, Q13, Q14, or Q17.
+
+| Screen | Element (node) | Proposed action | Decision |
 | --- | --- | --- | --- |
-| _pending_ | | | |
+| Home | Avatar + "Good Morning" + name (`1:4449`) | Not tappable. Greeting localized | Q11 |
+| Home / Explore / Profile | Bell + dot (`1:4454`, `1:4165`, `1:3810`) | No notifications feature | **hide** (Q13) |
+| Home | Search bar (`1:4458`) | Open Explore with the field focused | implement |
+| Home / Explore | Filter icon (`1:4462`, `1:4146`) | Open Filter sheet | implement |
+| Home | "See All" Featured (`1:4465`) | Explore, sorted by rating | implement |
+| Home | "See All" Recommendation (`1:4468`) | Explore with the selected category | implement |
+| Home / Explore | Category chips (`1:4478`, `1:4149`) | Select category → reload list | implement (Q12) |
+| Home / Explore | Card tap (featured `1:4470`, grid `1:4473`, list `1:4170`) | Push `/property/:id` | implement |
+| Home / Explore / Details | Heart (cards, Details `1:4270`) | Toggle favorite, persisted locally (no favorites list screen in Figma) | **local** (Q8) |
+| Explore | Back button (`1:4161`) | Return to Home tab (pop when pushed from Home) | implement (Q16) |
+| Explore | Search field (`1:4142`) | Debounced server search, clear on empty | implement |
+| Filter | Back arrow (`1:3973`) | Close sheet without applying | implement |
+| Filter | "Reset" (`1:3977`) | Reset to defaults | implement |
+| Filter | Price range slider (`1:4004`) + histogram (`1:3982`) | Local min/max price filter. Histogram computed from loaded prices | implement (Q14) |
+| Filter | Property Type chips (`1:4014`) | Category selection | implement (Q12/Q14) |
+| Filter | Bedrooms / Bathrooms steppers (`1:4030`, `1:4037`) | No API field | **hide** (Q4) |
+| Filter | Building Size slider (`1:4045`) | No API field | **hide** (Q4) |
+| Filter | "Set Filter" button (`1:4053`) | Apply + close | implement |
+| Details | Back (`1:4267`) | Pop | implement |
+| Details | Share/Send (`1:4271`) | Needs `share_plus` (not in the approved stack) | **hide** unless approved (Q8) |
+| Details | Hero image swipe + dots (`1:4237`) | Page through `images` | implement |
+| Details | Agent chat / call (`I1:4310;929:29137/38`) | No data | **hide** with the Agent section (Q4) |
+| Details | Gallery tiles + "N+" (`1:4369`) | Open a full-screen viewer or jump the hero carousel to that image | implement (viewer has no Figma design, so reuse the hero style) |
+| Details | Reviews "See All" (`1:4405`) | Expand to all `reviews` (DummyJSON usually returns 3) | implement, or hide when ≤ 1 review |
+| Details | Review like heart (`1:4416`) | No data | **hide** |
+| Details | "Booking Now" (`1:4425`) | No booking endpoint | Q9 |
+| Profile | Avatar edit badge (`1:3817`) | No feature | **hide** |
+| Profile | "Language" row (`1:3842`) | Open the English/Arabic picker → `context.setLocale` (instant, persisted) | **implement** (B1, B7) |
+| Profile | My Booking, Payments, Profile, Notification, Security, Help Center, Invite Friends, Logout (`1:3821` … `1:3854`) | No features | **hide** (Q17) |
+| All | Bottom nav Home / Explore / Profile (`1:4489`) | Switch tabs (`StatefulShellRoute`) | implement |
 
 ### 5.3 Design tokens
 
-| Group | Values (from `get_variable_defs` / design context) |
+Named Figma variables come from `get_variable_defs(1:4426)` plus the style lists returned with each design context. Raw values are those used directly in the design-context code (not bound to variables) [V].
+
+| Group | Values |
 | --- | --- |
-| Colors | _pending_ |
-| Typography | _pending_ |
-| Spacing | _pending_ |
-| Radii | _pending_ |
-| Shadows | _pending_ |
+| Colors: variables | `Black/01 #191D31` (primary text) · `Black/02 #666876` (secondary text, inactive nav) · `Black / 03 #8C8E98` (placeholder, muted) · `White/01 #FFFFFF` · `Greyscale / 400 #BDBDBD` (image placeholder background) · `Alerts & Status / Error #F75555` (Logout) · `Gradients/Gradident Orange` (**returned with an empty value** [V]; not used visibly in the blue set) |
+| Colors: raw | **Primary `#0061FF`** (buttons, links, active chip, prices, active nav, active dot) · rating text `#246BFD` · search-field background `#FBFBFD` · primary 4% `rgba(0,97,255,0.04)` (inactive chip fill, icon-circle fill, search border, stepper fill, tag fill) · primary 10% `rgba(0,97,255,0.10)` (chip border, nav top border, back-button fill, bottom-bar border) · overlay `rgba(0,0,0,0.30)` · badge fill `rgba(255,255,255,0.90)` · featured-card gradient over the bottom 46.5%: transparent → `rgba(32,32,32,0.70)` (8 stops) · inactive dot `#FFFFFF`. Notification dot, slider thumbs, and histogram bar colors live inside SVG assets: light-blue bars and white thumbs with primary outline [S] |
+| Typography: variables | `Paragraph/Regular/P12 - LH 180%` Rubik 400 12/1.8 · `Paragraph/Regular/P14 - LH 180%` Rubik 400 14/1.8 · `Paragraph/Medium/P12 - LH 130%` Rubik 500 12/1.3 · `Paragraph/Medium/P16 - LH 130%` Rubik 500 16/1.3 · `Body/Small/Bold` Inter 700 12/16px · `Body/Small/Semi Bold` Inter 600 12/16px · `body / xsmall / regular` Urbanist 400 10, letter-spacing 0.2 |
+| Typography: raw (Rubik) | Details title Bold 24/1.2 · profile name, Details price SemiBold 24/1.2 · featured title Bold 20/1.1 (ellipsis), featured price Bold 20/1.2 · section headings SemiBold 20/1.2 (Profile title 20/1.3) · list title SemiBold 18/1.4, list price SemiBold 18/1.2, agent name SemiBold 18/1.2 · profile menu Medium 18/1.4 · "See All", button label, reviewer SemiBold 16/1.4 · grid title, grid price SemiBold 16/1.2 · Filter section titles SemiBold 16/24px · featured location Regular 16/1.4 (+0.2 letter-spacing) · Overview, review body Regular 16/1.7 · chip active SemiBold 14/1.8, inactive Regular 14/1.8 · search placeholder Regular 14/1.3, typed SemiBold 14/1.3 · list location, facility label Regular 14/1.4 · stats, agent role, Details rating Medium 14/1.4 · "Reset" Medium 14/1.8 · Filter row labels Medium 14/20px · Details review time Regular 14 · price-range labels SemiBold 12/16px · grid location Regular 12 · featured badge SemiBold 12/1.4 · "PRICE" Medium 12, letter-spacing 2, uppercase · tag SemiBold 10 uppercase · grid badge SemiBold 10/1.4 · list badge SemiBold 8/1.4 |
+| Spacing | Screen horizontal padding **20** · header top **60** (below the 44 status bar) · vertical rhythm between header, search, chips, and sections **24** · featured card gap **20** · grid gap **16** horizontal / **20** vertical · chip gap **12** (Filter chips **10**, wrap) · chip padding **20×8** (Filter **20×4**) · grid card padding top 16 / sides 14 / bottom 20, inner gap 12 / 10 · list card padding left 14, right 18, vertical 14, image-text gap 14, list gap **16** · search field inset 13.5, icon-text gap 16 · Details body padding 20×24, section gap **30**, inner gaps 16 / 12 / 20 · Filter sheet: section gap 30, title → content 16, popup title → sections 32 · Details bottom bar: top 24, bottom 36, sides 24, price-button gap 60 · nav bar: side padding 30, tab padding 20, icon-label gap 6 · Profile rows: gap 24, icon-label gap 12 |
+| Sizes | Icon button 44 (Filter back 32) · icons 20 / 22 / 24 / 28 · avatar 44 (Home), 140 (Profile), 60 (agent), 40 (reviewer) · featured card 250×340 · grid image 159×154 (2 columns of 187) · list image 100×100, list card height 128 · search field 390×52 · primary button height 54 · stepper buttons 24 · slider thumbs 24 · hero 428×460 · gallery tiles 118 · facility circle 60 (icon 28) · nav bar height 86 · dots: active 32×8, inactive 8×8, gap 6 |
+| Radii | 6 search field · 10 card images, gallery · 12 grid card · 20 featured card, tag · 24 Filter sheet top corners, steppers · 28 list card · 30 chips, 44 icon buttons · 36 Details bottom-bar top corners · 100 pill button, badges, icon circles, dots |
+| Shadows | `Card/Shadow 2` = `#04060F` 5%, offset (0,4), blur 60 [V variable]. The generated CSS uses `drop-shadow(0 4 30 rgba(4,6,15,.05))` for the grid and list cards · badge shadow (0,20) blur 100 `rgba(4,6,15,.12)` · `Button/Shadow 1` = `#246BFD` 25%, offset (4,8), blur 24 [V variable]. ⚠ The generated button code shows `rgba(112,79,56,.25)` (4,8,12) instead, a design inconsistency, so use the named variable · Flutter blur equivalents to be tuned visually in Phase 4 [U] |
 
 ### 5.4 Shared components & assets
 
-| Component / asset | Node ID | Type | Used on | Export |
+Not exported. `download_assets` runs only in Phase 4 after this list is approved. The MCP returns icons as **SVG** and photos as **PNG** [V], so `flutter_svg` is needed.
+
+| Component / asset | Node ID (example instance) | Type | Used on | Export |
 | --- | --- | --- | --- | --- |
-| _pending_ | | | | |
+| `FeaturedPropertyCard` (image, gradient, title, location, price, heart, rating badge) | `1:4470` | Figma component instance "card" | Home | Build in code. Image from API |
+| `PropertyGridCard` (image, badge, title, location, price, heart) | `1:4473` | Instance "card" | Home (also Search-v2) | Build in code |
+| `PropertyListCard` (image, badge, title, location, price, heart) | `1:4170` | Frame "card-item" | Explore, Filter background | Build in code |
+| `RatingBadge` (3 sizes: 14/12, 10/10, 8/8 icon/text) | `I1:4470;85001:13416` | Frame | All cards | Code + star SVG |
+| `SectionHeader` (title + "See All") | `1:4463` | Frame "head" | Home, Details reviews | Code |
+| `CategoryChip` (active/inactive) | `1:4479` / `1:4481` | Frame "Tab" | Home, Explore, Filter | Code |
+| `AppSearchField` (search icon, hint, filter icon) | `1:4458` | Frame "search-bar" | Home, Explore | Code + 2 SVG |
+| `CircleIconButton` 44 (white or primary-10% fill) | `1:4454`, `1:4161` | Frame "Icon" | Headers | Code |
+| `AppBottomNavBar` (3 tabs, bold/light icon pairs) | `1:4489` | Frame "Navbar" | Home, Explore, Profile | Code + 6 SVG |
+| `AppButton` primary pill | `1:4053`, `1:4425` | Component "Button / Primary / Rounded" | Filter, Details | Code |
+| `PropertyTag` | `1:4277` | Component "Tag / Inverted / Info" | Details | Code |
+| `StatChip` (icon circle + label) | `1:4282` | Frame | Details (if kept, Q4) | Code + 3 SVG |
+| `RangeSlider` + histogram | `1:4004`, `1:3982` | Frames/vectors | Filter | Code (custom `SliderTheme`) |
+| `ProfileMenuRow` (icon, label, chevron) | `1:3842` | Frame | Profile | Code + 2 SVG |
+| `Divider` (Theme=Light) | `1:4307` | Instance | Details, Profile | Code |
+| Iconly icons (SVG) | — | Vector instances | — | Home/Search/Filter/Heart/Star/Notification/Profile (Light-Outline + Bold), Home (Bold + Light), Search (Bold), Arrow-Left, Arrow-Right 2, Send, Bold/Location, Curved/More Circle (Language row) — **export the ones used by approved elements only** |
+| Facility icons ×8, Agent chat/call, Profile menu icons except Language | `1:4320`…, `I1:4310;929:29137` | SVG | Details, Profile | **Skip** if hidden (Q4, Q17) |
+| vuesax `setting-4`, `search-normal` | `1:3890`, `1:3892` | SVG | Filter background, Search-v2 | **Skip**. Iconly equivalents are used on Search-v1 |
+| Sample photos, avatars, map art | `1:4450`, `1:4239`, `1:4387`, … | PNG / vector | All | **Skip**: replaced by API images, or the section is hidden. Avatar handling is Q11 |
+| Splash logo | `1:4553` | Vector group | Splash | Only if Splash is approved |
+| iOS status bar / home indicator | `1:4428`, `1:4427` | Device chrome | All | **Skip** (system UI) |
 
 ---
 
@@ -517,15 +607,23 @@ Manual checklist:
 
 | # | Question / decision | Blocks | Proposed default |
 | --- | --- | --- | --- |
-| **Q1** | Which **screens did the recruiter specify**? (The brief doesn't name them) | Phase 1 | Home/Listing + Search & Filter + Property Details (+ language switcher), confirmed against Figma |
+| **Q1** | Which **screens did the recruiter specify**? (The brief doesn't name them) | — | ✅ **Approved 2026-10-13:** Home `1:4426`, Explore/Search-v1 `1:4120`, Filter sheet `1:3867`, Property Details `1:4236`, Profile (reduced to the Language row) `1:3786`. Excluded: Splash, Auth, Search-v2, and the Orange/Purple sets (§5.1) |
 | **Q2** | Delivery repo: `AnasAlhamadd/...` (origin) or `anasAlhamd/...` (empty)? | Phase 9 | `AnasAlhamadd/...` |
-| **Q3** | Figma **Drafts duplicate** link | Phase 1 | — |
-| **Q4** | Figma fields missing from DummyJSON (location, beds, area…): hide or replace with available fields? | Phase 3 | Replace with available fields (brand, rating, stock) or hide; document. Never hard-code |
+| **Q3** | Figma **Drafts duplicate** link | — | ✅ Answered: `idJrPCgmZTzih809HNpgnr` (§5) |
+| **Q4** | Figma fields missing from DummyJSON (location, beds/baths/sqft, agent, facilities, address/map, review avatar/likes, filter steppers/size): hide or replace with available fields? | Phase 3 | Card "location" line → `brand` (hidden when null). Details stats row → `stock` + `availabilityStatus` + `weight`, or hide. Facilities → `tags` chips, or hide. Agent, Location/map, review likes, Bedrooms/Bathrooms/Building Size → **hide**. Full table in §4.6 |
 | **Q5** | Default language on first launch | Phase 2 | Device language if `ar`/`en`, else `en` |
-| **Q6** | Arabic font if the Figma font lacks Arabic glyphs | Phase 4 | Decide after Phase 1 |
+| **Q6** | Arabic font. Rubik (the Figma font) appears to have **no Arabic glyphs** (Google Fonts subsets, unverified in Figma) | Phase 4 | Bundle a separate Arabic font for the `ar` locale only, and keep Rubik for `en`. Candidates: IBM Plex Sans Arabic, Noto Kufi Arabic, Cairo. Your choice |
 | **Q7** | Digits in Arabic UI: Western (123) or Eastern Arabic (١٢٣)? | Phase 6 | Western for prices/phones |
-| **Q8** | Non-required buttons (favorite, share, call…): implement locally or hide? | Phase 5 | Favorites local if prominent; otherwise hide (D4) |
-| **Q9** | Use DummyJSON POST/PATCH/DELETE? | Phase 5 | Only if a Figma screen needs it, with the C9 disclaimer |
+| **Q8** | Non-required buttons: hearts (cards + Details), share (Details) | Phase 5 | Hearts → **local favorites** (persisted, no favorites list screen because Figma has none). Share → **hide** (would need `share_plus`, which isn't in the approved stack) |
+| **Q9** | Use DummyJSON POST/PATCH/DELETE? Specifically "Booking Now" on Details | Phase 5 | Option A: **hide** the button and keep the price bar. Option B: simulated `POST /carts/add` + success snackbar + C9 disclaimer. Proposed: A |
+| **Q10** | Which color set to implement: top-level blue (`#0061FF`), "New Orange" (`1:2188`), or "New Purple" (`1:2987`)? | — | ✅ **Approved 2026-10-13: top-level blue set** |
+| **Q11** | Home header and Profile show a user avatar and name ("Adrian Hajdin"), but there is no auth in scope | Phase 5 | Keep the localized time-based greeting. Replace the name with a localized welcome line and show a neutral avatar placeholder, so no fake user data is hard-coded (C0) |
+| **Q12** | Category chips: the design shows real-estate types (House, Villa, Apartments, Others / Townhomes, Condos…), but the API has 24 product categories | Phase 3 | Chips are **data-driven** from `GET /products/categories` ("All" + API names, localized where possible). Don't fake real-estate labels |
+| **Q13** | Notification bell (Home, Explore, Profile): no notifications feature | Phase 5 | **Hide** (D4) |
+| **Q14** | Filter sheet scope | Phase 5 | Keep: Price Range (local filter, histogram computed from loaded prices), category chips (Q12), Reset, Set Filter. Hide: Bedrooms, Bathrooms, Building Size. Optional: add sort (rating/price) via server `sortBy`/`order`, which isn't in Figma, so only with your approval |
+| **Q15** | Explore results layout: Search-v1 list (`1:4120`) or Search-v2 grid (`1:4055`)? | Phase 5 | **Search-v1 list**. The Filter sheet is designed over it, and it adds a distinct reusable list card |
+| **Q16** | Explore's back arrow when Explore is a bottom-nav tab | Phase 5 | Back → Home tab (or pop when opened from the Home search bar / See All) |
+| **Q17** | Profile screen scope | Phase 5 | Keep title, Language row, and bottom nav. Hide every row without a feature (My Booking … Logout) and the edit badge. Avatar/name per Q11 |
 | **P1** | `.cursorrules` replaced by `.cursor/rules/*.mdc` | — | ✅ Done 2026-10-13 |
 | **P2** | Branch per phase vs. direct commits on `main` | Phase 2 | Branch per phase |
 
@@ -536,7 +634,7 @@ Manual checklist:
 | Date | Phase | Status | Notes |
 | --- | --- | --- | --- |
 | 2026-10-13 | 0: Setup & planning | ✅ | Env verified; Figma MCP authenticated; Community file access denied (needs duplicate); brief analyzed; rules rewritten in `.cursor/rules/` |
-| | 1: Figma | ⏳ | Waiting on Q1, Q3 |
+| 2026-10-13 | 1: Figma | ✅ Screen list (Q1) and color set (Q10) approved | Drafts duplicate verified. Page `0:1` mapped: 3 color sets × 8 frames + spec frame. Inspected Home, Search-v1, Filters, Details, Profile (blue set). §5 (inventory, tappables, tokens, components/assets) and §4.6 (API mapping, verified against live DummyJSON) filled. Q3 answered. Q1/Q4/Q6/Q8/Q9 updated. Q10–Q17 added. No code, assets, packages, or commits. Figma calls in Phase 1: 7 (≈10 total this month) |
 
 ---
 
@@ -547,3 +645,5 @@ Manual checklist:
 | 2026-10-13 | Cursor Agent | Environment audit (git, flutter doctor, analyze, test) | Environment section (§2) | Re-ran commands manually | — |
 | 2026-10-13 | Cursor Agent + Figma MCP | Connect Figma MCP, verify access | §2 Figma status | `whoami`; `get_metadata` returned a documented permission error | — |
 | 2026-10-13 | Cursor Agent | Analyze brief, plan phases, architecture | This reference + `.cursor/rules/` | Each requirement mapped to an ID (§3) and a phase (§7) | **Rejected** reusing rules copied from another project (Laravel backend path, Firebase, 5 locales with `nl` fallback, fixed 360×800 design size) because they didn't match this assessment |
+| 2026-10-13 | Cursor Agent + Figma MCP | Verify access to the Drafts duplicate | §2 Figma rows | `create_session` + `get_metadata` (no node) returned page `0:1` "Page 1" | — |
+| 2026-10-13 | Cursor Agent + Figma MCP | Phase 1 design inventory: `get_metadata(0:1)`, `get_variable_defs(1:4426)`, `get_design_context` for `1:4426`, `1:4120`, `1:3867`, `1:4236`, `1:3786` | §5, §4.6, §9 Q10–Q17 | Each value traced to MCP output (evidence key [V]/[S]/[U] in §5). Product schema re-checked with `curl https://dummyjson.com/products/1` and `/products/categories` | **Rejected** the "colors" spec frame (all swatches labeled "Voog blue #443DF6", contradicting the `#0061FF` used on screens). **Rejected** the generated button shadow `rgba(112,79,56,.25)` in favor of the named variable `Button/Shadow 1`. Did not claim Rubik Arabic coverage (marked unverified) |
