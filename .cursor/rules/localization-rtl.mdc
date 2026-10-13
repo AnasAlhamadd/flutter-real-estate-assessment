@@ -15,7 +15,8 @@ alwaysApply: false
 ## Strings
 - **No hard-coded user-facing strings**, including buttons, titles, errors, loading, empty states, nav labels, and snackbars.
 - Keys are nested and `snake_case` by area: `home.title`, `errors.no_internet`, `common.retry`.
-- Every key exists in **both** `en.json` and `ar.json`.
+- Every key exists in **both** `en.json` and `ar.json`, and is declared once in `AppTextKeys` (`core/constant/app_text_keys.dart`). Never pass a string-literal key; `test/core/constant/app_text_keys_test.dart` checks the class against both files.
+- Translated text widgets use `CustomText(AppTextKeys.x)` (`core/widget/custom_text.dart`). It drops letter spacing in the Arabic locale (it pulls joined Arabic letters apart). Use `context.tr(AppTextKeys.x)` only where a `String` is required (hints, semantics labels, button labels).
 
 ## Direction
 ```dart

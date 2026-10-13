@@ -1,10 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
+import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dart';
 import 'package:flutter_real_estate_assessment/core/error/failure_message.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_button.dart';
+import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Failure state with a translated message and a retry button.
@@ -24,13 +26,16 @@ class ErrorView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              context.tr(failure.messageKey),
+            CustomText(
+              failure.messageKey,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium16,
             ),
             SizedBox(height: AppSizes.sectionGap.h),
-            AppButton(label: context.tr('common.retry'), onPressed: onRetry),
+            AppButton(
+              label: context.tr(AppTextKeys.commonRetry),
+              onPressed: onRetry,
+            ),
           ],
         ),
       ),
