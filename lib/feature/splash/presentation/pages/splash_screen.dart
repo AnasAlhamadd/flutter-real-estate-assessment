@@ -14,7 +14,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 /// Launch screen (Figma `1:4551`). Shows the logo briefly, then replaces
-/// itself with Home so Back never returns here.
+/// itself with Auth so Back never returns here.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -45,11 +45,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer(SplashScreen.displayDuration, _openHome);
+    _timer = Timer(SplashScreen.displayDuration, _openAuth);
   }
 
-  void _openHome() {
-    if (mounted) context.go(AppRouter.home);
+  void _openAuth() {
+    if (mounted) context.go(AppRouter.auth);
   }
 
   @override
