@@ -1,0 +1,34 @@
+---
+description: Arabic/English localization with easy_localization and correct RTL/LTR layout
+globs: lib/**/*.dart,assets/translations/*.json
+alwaysApply: false
+---
+
+# Localization & RTL
+
+## Setup
+- `EasyLocalization(supportedLocales: [Locale('en'), Locale('ar')], fallbackLocale: Locale('en'), path: 'assets/translations', saveLocale: true, useOnlyLangCode: true)`.
+- `MaterialApp.router(locale: context.locale, supportedLocales: context.supportedLocales, localizationsDelegates: context.localizationDelegates)`. Direction then flips automatically.
+- Switch with `context.setLocale(...)`. No app restart, and the choice persists.
+- iOS: `CFBundleLocalizations` (`en`, `ar`) in `ios/Runner/Info.plist`.
+
+## Strings
+- **No hard-coded user-facing strings**, including buttons, titles, errors, loading, empty states, nav labels, and snackbars.
+- Keys are nested and `snake_case` by area: `home.title`, `errors.no_internet`, `common.retry`.
+- Every key exists in **both** `en.json` and `ar.json`.
+
+## Direction
+```dart
+// ❌ BAD
+EdgeInsets.only(left: 16)      Alignment.centerLeft      Positioned(left: 0)
+// ✅ GOOD
+EdgeInsetsDirectional.only(start: 16)   AlignmentDirectional.centerStart   PositionedDirectional(start: 0)
+```
+- Use `TextAlign.start/end`, never `left/right`.
+- Back/forward arrows: `Icons.arrow_back`/`arrow_forward` (they auto-mirror) or flip SVGs when `Directionality.of(context) == TextDirection.rtl`.
+- Horizontal lists start from the reading side automatically. Don't reverse them manually.
+
+## Mixed content (B6)
+- API data is English-only. Keep it as-is inside the Arabic UI (documented assumption).
+- Wrap prices, phone numbers, and Latin-only snippets so they don't reorder: `Directionality(textDirection: TextDirection.ltr, ...)` or Unicode isolates via `core/utils/bidi_text.dart`.
+- Format numbers/prices with `intl` (`NumberFormat`) through `core/utils/formatters.dart`.

@@ -1,0 +1,41 @@
+---
+description: Cubit/state conventions, Figma-faithful widgets, responsive layout, and UI behavior rules
+globs: lib/**/presentation/**/*.dart,lib/core/widget/**/*.dart,lib/core/constant/**/*.dart,lib/core/app_theme.dart
+alwaysApply: false
+---
+
+# Presentation Layer
+
+## State
+- One state class per Cubit, `Equatable`, immutable, `copyWith`.
+- Status enum shared from core: `enum RequestStatus { initial, loading, success, empty, failure }` plus `isLoadingMore`, `hasReachedMax` for pagination.
+- Cubits call **use cases only** and hold no UI code (no `BuildContext`).
+- Failures are stored as `Failure`; widgets convert to a translated message via `core/error/failure_message.dart`.
+
+```dart
+// ✅ GOOD
+switch (state.status) {
+  RequestStatus.loading => const LoadingView(),
+  RequestStatus.failure => ErrorView(failure: state.failure!, onRetry: cubit.retry),
+  RequestStatus.empty => const EmptyView(),
+  _ => PropertyList(items: state.items),
+}
+```
+
+## UI rules
+- Every value comes from Figma tokens: `ColorsApp`, `AppTextStyles`, `AppSizes`. No magic colors/sizes inline.
+- Reuse `core/widget/` (AppButton, SectionHeader, AppNetworkImage, LoadingView, ErrorView, EmptyView, AppSearchField, AppBackButton). Extract a widget when used ≥ 2 times or when Figma defines a component.
+- Do not replace designed elements with generic Material defaults that visibly change the look.
+- **No dead buttons:** every tappable element performs an action or is removed (decision per button in reference §5).
+- Images only through `AppNetworkImage` (placeholder + errorWidget; null/empty URL safe).
+- Use `ListView.builder`/`SliverList` for lists; load next page near the end, guarded by `isLoadingMore`/`hasReachedMax`.
+- Search input uses a debouncer (~400 ms) and ignores unchanged queries.
+
+## Responsive / overflow
+- `ScreenUtil` `.w .h .r .sp`; `ScreenUtilInit(minTextAdapt: true)`.
+- Prefer `Flexible`/`Expanded`/constraints over fixed widths; never fix the height of text containers.
+- Text in cards: `maxLines` + `TextOverflow.ellipsis`.
+- Verify on iPhone 16e and 16 Pro Max, and at text scale 1.3, in both languages.
+
+## Navigation
+- Routes are `static const` paths in `AppRouter`. Pass ids in the path (`/property/:id`); `extra` only as optional initial data.

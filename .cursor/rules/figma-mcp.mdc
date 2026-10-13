@@ -1,0 +1,25 @@
+---
+description: How to read the Figma design through Figma MCP (access, call budget, tool order, assets). Apply when inspecting Figma, implementing a screen from Figma, or exporting design assets.
+alwaysApply: false
+---
+
+# Figma MCP Workflow
+
+## Access
+- Server: Figma plugin (`plugin-figma-figma`, remote `https://mcp.figma.com/mcp`). Account: Starter plan, Full seat.
+- **Budget: ~20 read calls / month** (`whoami` is exempt). Plan calls; never retry a failing call blindly.
+- The original Community file `dXUFyRx7RgaaS0lGWPPFd3` returns *"you don't have edit access"*. Always use the **Drafts duplicate** link given by the user (different fileKey).
+- On access/rate errors: call `whoami`, report the exact error, stop.
+
+## Order of calls
+1. `get_metadata` (no nodeId) → page list.
+2. `get_metadata` on the page → frame names, node IDs, sizes (frame width/height = ScreenUtil `designSize`).
+3. `get_variable_defs` on the page → colors, typography, spacing, radii.
+4. `get_design_context` **only** for the screens/components in scope, one node at a time (it also returns a screenshot).
+5. `download_assets` only after the asset list is approved → `assets/svg/`, `assets/images/`.
+
+## Translating output
+- MCP output is React + Tailwind **reference**, not code to copy. Rebuild it with project widgets and tokens.
+- Put tokens in `ColorsApp`, `AppTextStyles`, `AppSizes`. Name them after Figma variables when they exist.
+- If MCP returns an asset URL, use that asset. Do not substitute another icon pack or a placeholder.
+- Record every verified screen (node ID, components, buttons + action decision, assets) in `docs/PROJECT_REFERENCE.md` §5.

@@ -1,0 +1,39 @@
+---
+description: Test folder structure, fixtures, mocks, and what must be tested
+globs: test/**/*.dart,integration_test/**/*.dart
+alwaysApply: false
+---
+
+# Testing
+
+## Structure (mirrors `lib/`)
+```
+test/
+├── fixtures/                 # real DummyJSON responses + broken variants
+│   ├── fixture_reader.dart   # String fixture(String name)
+│   ├── products_page.json  product.json  categories.json
+│   ├── search_empty.json   product_missing_fields.json  product_wrong_types.json
+├── helpers/
+│   ├── mocks.dart            # mocktail: MockDio, MockNetworkInfo, Mock*DataSource, Mock*Repository, Mock*UseCase
+│   └── pump_app.dart         # pumpApp(widget, {locale, textScale, size}) with EasyLocalization + ScreenUtil
+├── core/                     # error/failure_message, utils/formatters, utils/debouncer, network/dio error mapping
+└── feature/<feature>/
+    ├── data/model/           # fromJson/toEntity: valid, missing fields, wrong types
+    ├── data/datasource/      # remote (MockDio) + local (SharedPreferences.setMockInitialValues)
+    ├── data/repositories/    # online/offline/cache-fallback/exception→Failure paths
+    ├── domain/usecases/      # delegation + pure logic (local filters)
+    └── presentation/
+        ├── cubit/            # bloc_test: loading→success/empty/failure, retry, pagination, debounce
+        ├── widget/           # LTR + RTL, long text, narrow width, no overflow
+        └── pages/            # each status renders the right view
+integration_test/app_test.dart  # optional: browse → details → switch language → direction flips
+```
+
+## Rules
+- Unit tests never hit the network. Use fixtures and mocks only.
+- Name tests by behavior: `'returns cached page with isFromCache when offline'`.
+- Arrange/Act/Assert. One behavior per test.
+- Widget tests run in both `Locale('en')` and `Locale('ar')` and assert `Directionality`.
+- Overflow check: run in a narrow surface (`size: Size(320, 640)`) with `textScale: 1.3`. The test fails on any `FlutterError`.
+- Minimum before delivery: model parsing, repository strategy, local filter/search logic, search cubit, property card RTL/LTR, language switch.
+- Run `flutter test` and `flutter analyze` before declaring a task done.

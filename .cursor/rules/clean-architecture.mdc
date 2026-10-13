@@ -1,0 +1,51 @@
+---
+description: Clean Architecture (Uncle Bob) layering, dependency rule, and feature folder structure
+globs: lib/**/*.dart
+alwaysApply: false
+---
+
+# Clean Architecture
+
+## Dependency rule (never violate)
+```
+presentation ──► domain ◄── data
+```
+- `domain/` is pure Dart: **no** imports of Flutter, `dio`, `shared_preferences`, JSON, or `data/`.
+- `presentation/` imports `domain/` only (entities, use cases). Never import `data/` models or data sources.
+- `data/` implements `domain/` contracts. Only `injection_container.dart` wires concrete classes.
+
+## Feature structure
+```
+lib/feature/<feature>/
+├── domain/
+│   ├── entities/        # immutable, Equatable, no fromJson
+│   ├── repositories/    # abstract contracts returning Future<Either<Failure, T>>
+│   └── usecases/        # one public call() per class, single responsibility
+├── data/
+│   ├── model/           # fromJson/toJson + toEntity(); defensive parsing
+│   ├── datasource/      # <x>_remote_data_source.dart (Dio) + <x>_local_data_source.dart (cache)
+│   └── repositories/    # <x>_repository_impl.dart: orchestrates remote/local, maps exceptions → Failure
+└── presentation/
+    ├── cubit/           # <x>_cubit.dart + <x>_state.dart
+    ├── pages/           # <x>_screen.dart
+    └── widget/          # feature-only widgets
+```
+Shared code lives in `lib/core/` (`constant/`, `network/`, `error/`, `utils/`, `widget/`, `function/`, `app_theme.dart`).
+
+## Use case shape
+```dart
+abstract class UseCase<T, Params> {
+  Future<Either<Failure, T>> call(Params params);
+}
+class NoParams extends Equatable { @override List<Object?> get props => []; }
+```
+Use cases stay thin (delegate + pure domain logic such as local filtering). No Dio/JSON here.
+
+## Errors
+- Data sources **throw** typed exceptions (`ServerException`, `NetworkException`, `RequestTimeoutException`, `ParsingException`, `CacheException`).
+- Repositories **catch** them and **return** `Left(Failure)`. Nothing above data throws.
+- Presentation maps `Failure` → localized message key (never show raw exception text).
+
+## DI order in `injection_container.dart`
+1. External (`Dio`, `SharedPreferences`, connection checker) → 2. Core (`NetworkInfo`, `DioClient`) → 3. Data sources → 4. Repositories → 5. Use cases → 6. Cubits.
+`registerLazySingleton` for 1–5, `registerFactory` for Cubits (app-wide cubits like favorites: lazySingleton).

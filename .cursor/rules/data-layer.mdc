@@ -1,0 +1,39 @@
+---
+description: Remote/local data sources, repository caching strategy, Dio and error mapping for the DummyJSON backend
+globs: lib/**/data/**/*.dart,lib/core/network/**/*.dart,lib/core/error/**/*.dart
+alwaysApply: false
+---
+
+# Data Layer (Remote + Local)
+
+## Backend
+- API: DummyJSON (`https://dummyjson.com`), docs: https://dummyjson.com/docs/products
+- Base URL from `--dart-define=API_BASE_URL=...`, default `https://dummyjson.com` (`core/constant/api_constants.dart`).
+- Endpoints used: `GET /products?limit&skip&select&sortBy&order` · `GET /products/search?q=` · `GET /products/categories` · `GET /products/category/{slug}` · `GET /products/{id}`.
+- POST/PUT/PATCH/DELETE are **simulated** by DummyJSON (not persisted). Never claim persistence.
+- No price-range param exists → price filtering is local, pure, and unit-tested.
+
+## Remote data source
+- Only class that touches `Dio`. Returns **models**, throws typed exceptions.
+- Map `DioException`: `connectionTimeout|sendTimeout|receiveTimeout` → `RequestTimeoutException`; `connectionError` → `NetworkException`; `badResponse` → `ServerException(statusCode)`; JSON/type errors → `ParsingException`.
+- Search accepts a `CancelToken`; cancel the previous one on every new query.
+
+## Local data source
+- Backed by `SharedPreferences`; stores raw JSON strings + `cachedAt` timestamp.
+- Cached: categories (TTL 24h), first page of the default listing (TTL 10 min), last opened details, favorites ids (if the design has favorites).
+- Not cached: search results, pages > 0.
+- Throws `CacheException` when empty/corrupt.
+
+## Repository strategy (in `*_repository_impl.dart`)
+| Call | Strategy |
+| --- | --- |
+| Listing page 0 | Online → remote → save cache → return fresh. Offline/timeout → return cache with `isFromCache: true`; no cache → `Left(NetworkFailure)` |
+| Listing page > 0, search | Remote only; offline → `Left(NetworkFailure)` |
+| Categories | In-memory → local (valid TTL) → remote → save |
+| Details | Remote → save; on failure fall back to cached item |
+- Check `NetworkInfo.isConnected` before remote calls.
+- Never call the network from widgets, `build()`, or `initState` without a Cubit.
+
+## Models
+- `fromJson` is defensive: `(json['price'] as num?)?.toDouble() ?? 0`, lists default to `const []`, nullable image URLs allowed.
+- `toEntity()` maps API product → `PropertyEntity`. Never invent fields the API lacks; see reference §4 (field mapping).

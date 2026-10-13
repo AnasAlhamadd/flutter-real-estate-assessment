@@ -1,0 +1,37 @@
+---
+description: Core project context, stack, and agent workflow guardrails for the Flutter Real Estate assessment
+alwaysApply: true
+---
+
+# Project Core
+
+Flutter real-estate app built from a Figma design for a hiring assessment.
+Requirements: Figma-faithful UI · Arabic/English with in-app switching · RTL/LTR · DummyJSON API · search & filter.
+
+**Single source of truth:** `docs/PROJECT_REFERENCE.md`. Read it before any task. If a rule here conflicts with it, the reference wins; flag the conflict.
+
+## Stack (do not add alternatives without approval)
+- State: `flutter_bloc` (Cubit by default; Bloc only for event-heavy flows) + `equatable`
+- DI: `get_it` in `lib/injection_container.dart`
+- Routing: `go_router` in `lib/core/constant/app_router.dart`
+- Network: `dio` · Errors: `dartz` `Either<Failure, T>`
+- Local storage: `shared_preferences` (cache + favorites)
+- l10n: `easy_localization` (`ar`, `en`; fallback `en`; `saveLocale: true`)
+- Responsive: `flutter_screenutil` with the **Figma frame size** as `designSize`
+- Images: `cached_network_image`; SVG: `flutter_svg` (only if Figma icons are SVG)
+- Tests: `flutter_test`, `bloc_test`, `mocktail`
+- Install packages with `flutter pub add <name>`; never hand-write versions from memory.
+
+## Agent workflow
+- Execute **only** the phase/task requested (phases: reference §7). Never start the next phase on your own.
+- **Never commit or push** unless explicitly asked. Propose Conventional Commit messages instead.
+- Finish every task with: `flutter analyze` (0 issues) → `flutter test` (all green) → update reference §10 (progress log) and §11 (AI usage log).
+- Do not invent design values, screens, endpoints, or fields. Unknown → ask or mark `TODO(question)` in the reference.
+- Never commit secrets or the assessment PDF (repo is public).
+
+## Code style
+- Files `snake_case`; classes `PascalCase`; members `camelCase`; private `_name`.
+- Suffixes: `*_screen.dart`, `*_cubit.dart`, `*_state.dart`, `*_model.dart`, `*_entity.dart`, `*_repository.dart`, `*_repository_impl.dart`, `*_remote_data_source.dart`, `*_local_data_source.dart`, `*_usecase.dart`.
+- Imports: Dart → Flutter → packages → project (`package:flutter_real_estate_assessment/...`).
+- `const` constructors everywhere possible; trailing commas; functions ≤ ~50 lines; widgets small and single-purpose.
+- `///` doc comments on public APIs only when they add information.
