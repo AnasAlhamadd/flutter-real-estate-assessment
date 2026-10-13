@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
 import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
@@ -6,9 +7,12 @@ import 'package:flutter_real_estate_assessment/core/localization/app_localizatio
 import 'package:flutter_real_estate_assessment/core/widget/app_back_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_bottom_nav_bar.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_button.dart';
+import 'package:flutter_real_estate_assessment/core/widget/app_divider.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_network_image.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_search_field.dart';
+import 'package:flutter_real_estate_assessment/core/widget/app_svg_icon.dart';
 import 'package:flutter_real_estate_assessment/core/widget/category_chip.dart';
+import 'package:flutter_real_estate_assessment/core/widget/circle_icon_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/empty_view.dart';
 import 'package:flutter_real_estate_assessment/core/widget/error_view.dart';
 import 'package:flutter_real_estate_assessment/core/widget/loading_view.dart';
@@ -139,6 +143,30 @@ void main() {
 
       expect(find.text('See All'), findsNothing);
     });
+
+    for (final locale in AppLocalization.supportedLocales) {
+      testWidgets(
+        'puts the leading widget before the title (${locale.languageCode})',
+        (tester) async {
+          await pumpLocalizedWidget(
+            tester,
+            const SectionHeader(
+              title: 'Reviews',
+              leading: SizedBox.square(key: Key('leading'), dimension: 24),
+            ),
+            locale: locale,
+          );
+
+          final leading = tester.getRect(find.byKey(const Key('leading')));
+          final title = tester.getRect(find.text('Reviews'));
+          if (directionOf(locale) == TextDirection.ltr) {
+            expect(leading.right, lessThanOrEqualTo(title.left));
+          } else {
+            expect(leading.left, greaterThanOrEqualTo(title.right));
+          }
+        },
+      );
+    }
   });
 
   group('CategoryChip', () {
@@ -222,6 +250,63 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(AppBackButton), findsNothing);
       expect(find.text('open'), findsOneWidget);
+    });
+
+    testWidgets('plain: a 28 px Black/01 arrow in a 44 px target, no circle', (
+      tester,
+    ) async {
+      var taps = 0;
+      await pumpLocalizedWidget(
+        tester,
+        Center(child: AppBackButton.plain(onPressed: () => taps++)),
+      );
+
+      final arrow = tester.widget<AppSvgIcon>(find.byType(AppSvgIcon));
+      expect(arrow.assetPath, ImagePath.arrowLeft);
+      expect(arrow.size, AppSizes.detailsTopBarIconSize);
+      expect(arrow.color, ColorsApp.black01);
+      expect(arrow.matchTextDirection, isTrue);
+      expect(find.byType(CircleIconButton), findsNothing);
+      expect(
+        tester.getSize(find.byType(AppBackButton)),
+        const Size.square(AppSizes.minTapTarget),
+      );
+      expect(
+        find.bySemanticsLabel(
+          MaterialLocalizations.of(
+            tester.element(find.byType(AppBackButton)),
+          ).backButtonTooltip,
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byType(AppBackButton));
+      expect(taps, 1);
+    });
+  });
+
+  group('AppDivider', () {
+    testWidgets('is a full-width 1 px Primary 10% line', (tester) async {
+      await pumpLocalizedWidget(
+        tester,
+        const Padding(padding: EdgeInsets.all(20), child: AppDivider()),
+      );
+
+      expect(
+        tester.getSize(find.byType(AppDivider)),
+        Size(AppSizes.designSize.width - 40, AppDivider.thickness),
+      );
+      expect(
+        tester
+            .widget<ColoredBox>(
+              find.descendant(
+                of: find.byType(AppDivider),
+                matching: find.byType(ColoredBox),
+              ),
+            )
+            .color,
+        ColorsApp.primary10,
+      );
     });
   });
 

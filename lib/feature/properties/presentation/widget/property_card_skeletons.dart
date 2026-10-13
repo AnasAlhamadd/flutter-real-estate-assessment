@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dart';
@@ -57,19 +55,19 @@ class PropertyGridCardSkeleton extends StatelessWidget {
                 child: SkeletonBox(radius: AppSizes.radiusImage.r),
               ),
               SizedBox(height: AppSizes.gridImageContentGap.h),
-              _TextLine(
+              SkeletonTextLine(
                 style: AppTextStyles.gridTitle,
                 widthFactor: 0.85,
                 radius: textRadius,
               ),
               SizedBox(height: AppSizes.gridTitleLocationGap.h),
-              _TextLine(
+              SkeletonTextLine(
                 style: AppTextStyles.gridLocation,
                 widthFactor: 0.55,
                 radius: textRadius,
               ),
               SizedBox(height: AppSizes.gridContentPriceGap.h),
-              _TextLine(
+              SkeletonTextLine(
                 style: AppTextStyles.gridPrice,
                 widthFactor: 0.4,
                 radius: textRadius,
@@ -80,53 +78,5 @@ class PropertyGridCardSkeleton extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// A bar as tall as one line of [style] in the current font and text
-/// scale, bottom-aligned in at least [minHeight] (the price row is as tall
-/// as its heart).
-class _TextLine extends StatelessWidget {
-  const _TextLine({
-    required this.style,
-    required this.widthFactor,
-    required this.radius,
-    this.minHeight = 0,
-  });
-
-  final TextStyle style;
-  final double widthFactor;
-  final double radius;
-  final double minHeight;
-
-  @override
-  Widget build(BuildContext context) {
-    final lineHeight = _lineHeight(context);
-    return SizedBox(
-      height: math.max(lineHeight, minHeight),
-      child: Align(
-        alignment: AlignmentDirectional.bottomStart,
-        child: FractionallySizedBox(
-          widthFactor: widthFactor,
-          child: SkeletonBox(height: lineHeight, radius: radius),
-        ),
-      ),
-    );
-  }
-
-  /// Measured like `Text` lays it out, so it matches the real card.
-  double _lineHeight(BuildContext context) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: ' ',
-        style: DefaultTextStyle.of(context).style.merge(style),
-      ),
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
-      maxLines: 1,
-    )..layout();
-    final height = painter.height;
-    painter.dispose();
-    return height;
   }
 }
