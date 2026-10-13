@@ -37,6 +37,26 @@ abstract final class AppTextKeys {
   static const String detailsTitle = 'details.title';
   static const String profileTitle = 'profile.title';
 
+  static const String detailsOverview = 'details.overview';
+  static const String detailsGallery = 'details.gallery';
+  static const String detailsPrice = 'details.price';
+
+  /// Plural; named arg `rating`.
+  static const String detailsRatingReviews = 'details.rating_reviews';
+
+  /// Named args `index`, `total`.
+  static const String detailsImagePosition = 'details.image_position';
+  static const String detailsShowImage = 'details.show_image';
+
+  static const String timeJustNow = 'time.just_now';
+
+  /// Plurals.
+  static const String timeMinutesAgo = 'time.minutes_ago';
+  static const String timeHoursAgo = 'time.hours_ago';
+  static const String timeDaysAgo = 'time.days_ago';
+  static const String timeMonthsAgo = 'time.months_ago';
+  static const String timeYearsAgo = 'time.years_ago';
+
   static const String languageTitle = 'language.title';
   static const String languageEnglish = 'language.english';
   static const String languageArabic = 'language.arabic';

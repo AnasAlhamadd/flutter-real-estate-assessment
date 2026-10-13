@@ -38,7 +38,39 @@
     "title": "Search for Your Ideal Home"
   },
   "details": {
-    "title": "Property Details"
+    "title": "Property Details",
+    "overview": "Overview",
+    "gallery": "Gallery",
+    "price": "Price",
+    "rating_reviews": {
+      "one": "{rating} ({} review)",
+      "other": "{rating} ({} reviews)"
+    },
+    "image_position": "Image {index} of {total}",
+    "show_image": "Show image {index} of {total}"
+  },
+  "time": {
+    "just_now": "Just now",
+    "minutes_ago": {
+      "one": "{} minute ago",
+      "other": "{} minutes ago"
+    },
+    "hours_ago": {
+      "one": "{} hour ago",
+      "other": "{} hours ago"
+    },
+    "days_ago": {
+      "one": "{} day ago",
+      "other": "{} days ago"
+    },
+    "months_ago": {
+      "one": "{} month ago",
+      "other": "{} months ago"
+    },
+    "years_ago": {
+      "one": "{} year ago",
+      "other": "{} years ago"
+    }
   },
   "profile": {
     "title": "Profile"
