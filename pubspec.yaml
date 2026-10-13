@@ -75,6 +75,12 @@ flutter:
 
   assets:
     - assets/translations/
+    - assets/svg/
+
+  fonts:
+    - family: Rubik
+      fonts:
+        - asset: assets/fonts/rubik/Rubik-VariableFont_wght.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

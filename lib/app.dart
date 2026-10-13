@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_real_estate_assessment/core/app_theme.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -34,6 +35,7 @@ class _AppState extends State<App> {
       builder: (context, _) => MaterialApp.router(
         debugShowCheckedModeBanner: false,
         onGenerateTitle: (context) => context.tr('app.title'),
+        theme: AppTheme.light,
         locale: context.locale,
         supportedLocales: context.supportedLocales,
         localizationsDelegates: context.localizationDelegates,
