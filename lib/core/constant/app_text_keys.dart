@@ -12,6 +12,14 @@ abstract final class AppTextKeys {
 
   static const String splashTagline = 'splash.tagline';
 
+  static const String authWelcome = 'auth.welcome';
+  static const String authHeadline = 'auth.headline';
+  static const String authHeadlineHighlight = 'auth.headline_highlight';
+  static const String authSubtitle = 'auth.subtitle';
+  static const String authGoogleButton = 'auth.google_button';
+  static const String authSignInUnavailable = 'auth.sign_in_unavailable';
+  static const String authContinueAsGuest = 'auth.continue_as_guest';
+
   static const String homeTitle = 'home.title';
   static const String exploreTitle = 'explore.title';
   static const String detailsTitle = 'details.title';

@@ -31,4 +31,7 @@ abstract final class ColorsApp {
   static const Color cardShadow = Color(0x0D04060F);
   static const Color badgeShadow = Color(0x1F04060F);
   static const Color buttonShadow = Color(0x40246BFD);
+
+  /// Auth Google button shadow: `rgba(0,0,0,0.2)`.
+  static const Color authButtonShadow = Color(0x33000000);
 }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
@@ -19,7 +20,34 @@ void main() {
       'assets/svg',
     ).listSync().whereType<File>().map((file) => file.path).toSet();
 
-    expect({...ImagePath.icons, ImagePath.splashLogo}, files);
+    expect({...ImagePath.icons, ImagePath.splashLogo, ImagePath.google}, files);
+  });
+
+  test('assets/images holds only the Auth collage', () {
+    final files = Directory(
+      'assets/images',
+    ).listSync().whereType<File>().map((file) => file.path).toSet();
+
+    expect(files, {ImagePath.authCollage});
+  });
+
+  test('the Auth collage decodes at 3× its Figma size', () async {
+    final data = await rootBundle.load(ImagePath.authCollage);
+    final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    final image = (await codec.getNextFrame()).image;
+    addTearDown(() {
+      image.dispose();
+      codec.dispose();
+    });
+
+    expect(image.width, 399 * 3);
+    expect(image.height, 552 * 3);
+  });
+
+  test('the Google logo keeps its Figma size', () async {
+    final source = await rootBundle.loadString(ImagePath.google);
+
+    expect(await _parsedSize(source), const Size(22, 22));
   });
 
   for (final path in ImagePath.icons) {

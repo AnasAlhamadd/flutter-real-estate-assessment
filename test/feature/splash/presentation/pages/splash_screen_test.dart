@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
+import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/auth_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,7 +21,7 @@ final List<TestViewport> _viewports = testViewports
 Finder _appBarTitle(Locale locale, String key) =>
     find.widgetWithText(AppBar, translate(locale, key));
 
-/// Lets the splash timer fire and the Home route settle.
+/// Lets the splash timer fire and the Auth route settle.
 Future<void> _finishSplash(WidgetTester tester) async {
   await tester.pump(SplashScreen.displayDuration);
   await tester.pumpAndSettle();
@@ -68,7 +69,7 @@ void main() {
     }
   }
 
-  testWidgets('opens Home after the display duration, not before', (
+  testWidgets('opens Auth after the display duration, not before', (
     tester,
   ) async {
     final start = tester.binding.clock.now();
@@ -82,16 +83,15 @@ void main() {
 
     await _finishSplash(tester);
     expect(find.byType(SplashScreen), findsNothing);
-    expect(_appBarTitle(AppLocalization.english, 'home.title'), findsOneWidget);
+    expect(find.byType(AuthScreen), findsOneWidget);
+    expect(_appBarTitle(AppLocalization.english, 'home.title'), findsNothing);
   });
 
   testWidgets('replaces itself so Back cannot return to it', (tester) async {
     await pumpApp(tester, initialLocation: AppRouter.splash);
     await _finishSplash(tester);
 
-    final router = GoRouter.of(
-      tester.element(_appBarTitle(AppLocalization.english, 'home.title')),
-    );
+    final router = GoRouter.of(tester.element(find.byType(AuthScreen)));
     expect(router.canPop(), isFalse);
   });
 
@@ -149,14 +149,19 @@ void main() {
     await _finishSplash(tester);
   });
 
-  testWidgets('deep links open their route without the splash', (tester) async {
+  testWidgets('deep links open their route without the splash or Auth', (
+    tester,
+  ) async {
     tester.platformDispatcher.defaultRouteNameTestValue =
         AppRouter.propertyDetailsPath(1);
     addTearDown(tester.platformDispatcher.clearDefaultRouteNameTestValue);
 
     await pumpApp(tester, initialLocation: AppRouter.splash);
+    await tester.pump(SplashScreen.displayDuration * 2);
+    await tester.pumpAndSettle();
 
     expect(find.byType(SplashScreen), findsNothing);
+    expect(find.byType(AuthScreen), findsNothing);
     expect(
       _appBarTitle(AppLocalization.english, 'details.title'),
       findsOneWidget,
