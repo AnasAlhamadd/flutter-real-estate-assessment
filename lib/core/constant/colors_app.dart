@@ -22,6 +22,9 @@ abstract final class ColorsApp {
   static const Color primary10 = Color(0x1A0061FF);
 
   static const Color overlay = Color(0x4D000000);
+
+  /// Details hero bottom gradient (not in Figma): transparent → [overlay].
+  static const Color heroGradientStart = Color(0x00000000);
   static const Color badgeBackground = Color(0xE6FFFFFF);
 
   /// Featured-card gradient: transparent → `rgba(32,32,32,0.70)`.

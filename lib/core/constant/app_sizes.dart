@@ -139,6 +139,11 @@ abstract final class AppSizes {
   /// the app uses the full width.
   static const double detailsHeroHeight = 460;
 
+  /// Hero scroll effects (not in Figma; your request 2026-10-13): blur once
+  /// the hero has scrolled fully away, and the bottom gradient's height.
+  static const double detailsHeroMaxBlur = 10;
+  static const double detailsHeroGradientHeight = 120;
+
   /// Top bar `1:4266`: 16 below the status bar, 48 high, 24 side padding.
   static const double detailsTopBarTop = 16;
   static const double detailsTopBarHeight = 48;

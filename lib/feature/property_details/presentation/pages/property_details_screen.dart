@@ -200,15 +200,17 @@ class _DetailsContentState extends State<_DetailsContent> {
     final property = widget.property;
     return CustomScrollView(
       controller: _scrollController,
+      // Bouncing on every platform so pulling down can stretch the hero.
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
       slivers: [
-        SliverToBoxAdapter(
-          child: DetailsHero(
-            imageUrls: property.imageUrls.isNotEmpty
-                ? property.imageUrls
-                : [property.thumbnailUrl],
-            controller: _pageController,
-            topBar: DetailsTopBar(property: property),
-          ),
+        DetailsHero(
+          imageUrls: property.imageUrls.isNotEmpty
+              ? property.imageUrls
+              : [property.thumbnailUrl],
+          controller: _pageController,
+          topBar: DetailsTopBar(property: property),
         ),
         SliverSafeArea(
           top: false,
