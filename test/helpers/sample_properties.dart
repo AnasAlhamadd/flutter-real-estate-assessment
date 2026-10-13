@@ -1,6 +1,7 @@
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/category_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/properties_page_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/review_entity.dart';
 
 /// Sample listing items. No thumbnails, so widget tests never download.
 const List<PropertyEntity> sampleProperties = [
@@ -43,6 +44,44 @@ const List<PropertyEntity> sampleProperties = [
     brand: 'Calvin Klein',
   ),
 ];
+
+/// Full details of `sampleProperties.first`. Empty image URLs show the
+/// placeholder, so widget tests never download.
+final PropertyEntity sampleDetailedProperty = PropertyEntity(
+  id: 1,
+  title: 'Essence Mascara Lash Princess',
+  price: 9.99,
+  rating: 4.94,
+  category: 'beauty',
+  brand: 'Essence',
+  description:
+      'The Essence Mascara Lash Princess is a popular mascara known for its '
+      'volumizing and lengthening effects.',
+  imageUrls: const ['', '', '', '', ''],
+  reviews: [
+    ReviewEntity(
+      reviewerName: 'Eleanor Collins',
+      comment: 'Would not recommend!',
+      rating: 3,
+      date: DateTime.utc(2026, 10, 7, 12),
+    ),
+    ReviewEntity(
+      reviewerName: 'Lucas Gordon',
+      comment: 'Very satisfied!',
+      rating: 4,
+      date: DateTime.utc(2026, 10, 13, 11, 30),
+    ),
+    ReviewEntity(
+      reviewerName: 'Eleanor Collins',
+      comment: 'Highly impressed!',
+      rating: 5,
+      date: DateTime.utc(2025, 10, 1),
+    ),
+  ],
+);
+
+/// "Now" for review times: the first review is 6 days old (Figma "6 days ago").
+final DateTime sampleNow = DateTime.utc(2026, 10, 13, 12);
 
 const List<CategoryEntity> sampleCategories = [
   CategoryEntity(slug: 'beauty', name: 'Beauty'),
