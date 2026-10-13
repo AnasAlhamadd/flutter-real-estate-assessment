@@ -20,7 +20,7 @@ class SectionHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-          child: Text(
+          child: CustomText.plain(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

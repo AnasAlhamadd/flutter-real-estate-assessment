@@ -4,6 +4,7 @@ import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dar
 import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
 import 'package:flutter_real_estate_assessment/core/utils/formatters.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_network_image.dart';
+import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_real_estate_assessment/core/widget/rating_badge.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_location_label.dart';
@@ -116,14 +117,14 @@ class _GridDetails extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
+        CustomText.plain(
           property.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTextStyles.gridTitle,
         ),
         SizedBox(height: AppSizes.gridTitleLocationGap.h),
-        Text(
+        CustomText.plain(
           location,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -133,7 +134,7 @@ class _GridDetails extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(
+              child: CustomText.plain(
                 Formatters.price(property.price),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
