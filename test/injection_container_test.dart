@@ -6,6 +6,7 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/usecase
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/get_properties_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/get_property_details_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/search_properties_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/presentation/cubit/home_cubit.dart';
 import 'package:flutter_real_estate_assessment/injection_container.dart' as di;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,5 +28,18 @@ void main() {
     expect(di.sl<GetCategoriesUseCase>(), isNotNull);
     expect(di.sl<GetPropertyDetailsUseCase>(), isNotNull);
     expect(di.sl<FilterPropertiesUseCase>(), isNotNull);
+  });
+
+  test('creates a new HomeCubit for every Home screen', () async {
+    await di.init();
+
+    final first = di.sl<HomeCubit>();
+    final second = di.sl<HomeCubit>();
+    addTearDown(() async {
+      await first.close();
+      await second.close();
+    });
+
+    expect(identical(first, second), isFalse);
   });
 }
