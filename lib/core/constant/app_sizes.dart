@@ -126,8 +126,27 @@ abstract final class AppSizes {
   static const double listCardPaddingVertical = 14;
   static const double listImageContentGap = 14;
 
-  /// [S] Gap title → location row in list cards.
+  /// Gap title → location in list cards.
   static const double listTitleLocationGap = 10;
+
+  /// End column `1:4181`: heart on top, price at the bottom, 10 from the
+  /// card padding, 54 wide in Figma and 8 after the text.
+  static const double listHeartSize = 22;
+  static const double listEndColumnPadding = 10;
+  static const double listEndColumnMinWidth = 54;
+  static const double listContentEndGap = 8;
+
+  // Explore / Search (Figma `1:4120`).
+
+  /// Header top below the status bar (Figma: 60 from the frame top − 44).
+  static const double searchHeaderTop = 16;
+
+  /// Gap from the search field to "Found {n}" (Figma 24 to the chips, which
+  /// wait for the Filter task) and from it to the list.
+  static const double searchSectionGap = 24;
+
+  /// Skeleton cards shown while the first page loads (about one screen).
+  static const int searchSkeletonCount = 4;
 
   /// Not in Figma: minimum gap between two texts sharing a row, e.g. a long
   /// location next to the price.

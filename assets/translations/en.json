@@ -37,6 +37,14 @@
   "explore": {
     "title": "Search for Your Ideal Home"
   },
+  "search": {
+    "found": {
+      "one": "Found {} result",
+      "other": "Found {} results"
+    },
+    "no_results": "No results found. Try a different search.",
+    "refresh_failed": "Couldn't refresh right now. Showing the results you already have."
+  },
   "details": {
     "overview": "Overview",
     "gallery": "Gallery",

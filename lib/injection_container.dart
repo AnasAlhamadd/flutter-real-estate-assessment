@@ -29,6 +29,14 @@ import 'package:flutter_real_estate_assessment/feature/property_details/data/rep
 import 'package:flutter_real_estate_assessment/feature/property_details/domain/repositories/property_extras_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/domain/usecases/get_property_extras_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/cubit/property_details_cubit.dart';
+import 'package:flutter_real_estate_assessment/feature/search/data/datasource/search_results_local_data_source.dart';
+import 'package:flutter_real_estate_assessment/feature/search/data/repositories/search_repository_impl.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/repositories/search_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/get_cached_search_results_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/load_more_search_results_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/refresh_search_results_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/search_first_page_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/search_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -59,6 +67,10 @@ Future<void> init() async {
     ..registerLazySingleton<FavoritesLocalDataSource>(
       () => FavoritesLocalDataSourceImpl(sl()),
     )
+    // One instance for the app session, so cached searches outlive the screen.
+    ..registerLazySingleton<SearchResultsLocalDataSource>(
+      SearchResultsMemoryDataSource.new,
+    )
     // this mock: stands in for a remote source until an API has these fields.
     ..registerLazySingleton(PropertyExtrasMockDataSource.new)
     // Repositories
@@ -74,6 +86,9 @@ Future<void> init() async {
     ..registerLazySingleton<PropertyExtrasRepository>(
       () => PropertyExtrasRepositoryImpl(mockDataSource: sl()),
     )
+    ..registerLazySingleton<SearchRepository>(
+      () => SearchRepositoryImpl(remote: sl(), local: sl(), networkInfo: sl()),
+    )
     // Use cases
     ..registerLazySingleton(() => GetFeaturedPropertiesUseCase(sl()))
     ..registerLazySingleton(() => GetCategoriesUseCase(sl()))
@@ -85,12 +100,27 @@ Future<void> init() async {
     ..registerLazySingleton(() => GetFavoritesUseCase(sl()))
     ..registerLazySingleton(() => SaveFavoritesUseCase(sl()))
     ..registerLazySingleton(ToggleFavoriteUseCase.new)
+    ..registerLazySingleton(() => GetCachedSearchResultsUseCase(sl()))
+    ..registerLazySingleton(() => SearchFirstPageUseCase(sl()))
+    ..registerLazySingleton(() => LoadMoreSearchResultsUseCase(sl()))
+    ..registerLazySingleton(() => RefreshSearchResultsUseCase(sl()))
     // Cubits
     ..registerFactory(
       () => HomeCubit(
         getFeaturedProperties: sl(),
         getCategories: sl(),
         getRecommendations: sl(),
+        connectivityChanges: sl<NetworkInfo>().onStatusChange,
+      ),
+    )
+    ..registerFactory(
+      () => SearchCubit(
+        getCachedResults: sl(),
+        searchFirstPage: sl(),
+        loadMoreResults: sl(),
+        refreshResults: sl(),
+        getBrowsePage: sl(),
+        getCategories: sl(),
         connectivityChanges: sl<NetworkInfo>().onStatusChange,
       ),
     )

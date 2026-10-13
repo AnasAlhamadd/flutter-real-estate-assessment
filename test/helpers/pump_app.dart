@@ -8,6 +8,7 @@ import 'package:flutter_real_estate_assessment/core/services/phone_dialer.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/domain/repositories/favorites_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/home/domain/repositories/home_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/repositories/properties_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/repositories/search_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,6 +38,7 @@ Future<void> pumpApp(
   HomeRepository? repository,
   FavoritesRepository? favorites,
   PropertiesRepository? properties,
+  SearchRepository? search,
   PhoneDialer? phoneDialer,
   bool settle = true,
 }) async {
@@ -44,6 +46,7 @@ Future<void> pumpApp(
     repository ?? FakeHomeRepository(),
     favorites: favorites,
     properties: properties,
+    search: search,
     phoneDialer: phoneDialer,
   );
   tester.view

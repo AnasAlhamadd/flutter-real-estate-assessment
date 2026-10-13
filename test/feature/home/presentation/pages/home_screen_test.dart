@@ -22,6 +22,7 @@ import 'package:flutter_real_estate_assessment/feature/home/presentation/widget/
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_grid_card.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/sliver_property_grid.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/pages/search_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/fake_favorites_repository.dart';
@@ -98,10 +99,7 @@ Widget _homeView(
   child: HomeView(clock: clock ?? () => DateTime(2026, 10, 13, 9)),
 );
 
-void _expectExploreOpen(Locale locale) => expect(
-  find.widgetWithText(AppBar, translate(locale, 'explore.title')),
-  findsOneWidget,
-);
+void _expectExploreOpen() => expect(find.byType(SearchScreen), findsOneWidget);
 
 void main() {
   group('responsive layout', () {
@@ -321,7 +319,7 @@ void main() {
       await tester.tap(find.byType(AppSearchField));
       await tester.pumpAndSettle();
 
-      _expectExploreOpen(_en);
+      _expectExploreOpen();
     });
 
     for (final titleKey in const ['home.featured', 'home.recommendation']) {
@@ -336,7 +334,7 @@ void main() {
         await tester.tap(seeAll);
         await tester.pumpAndSettle();
 
-        _expectExploreOpen(_en);
+        _expectExploreOpen();
       });
     }
 

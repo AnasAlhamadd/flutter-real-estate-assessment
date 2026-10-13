@@ -34,6 +34,11 @@ abstract final class AppTextKeys {
   static const String favoritesSaveFailed = 'favorites.save_failed';
 
   static const String exploreTitle = 'explore.title';
+
+  /// Plural: "Found {} results".
+  static const String searchFound = 'search.found';
+  static const String searchNoResults = 'search.no_results';
+  static const String searchRefreshFailed = 'search.refresh_failed';
   static const String profileTitle = 'profile.title';
 
   static const String detailsOverview = 'details.overview';

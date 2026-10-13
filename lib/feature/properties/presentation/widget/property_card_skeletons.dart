@@ -22,6 +22,67 @@ class FeaturedPropertyCardSkeleton extends StatelessWidget {
   }
 }
 
+/// Loading placeholder laid out like a `PropertyListCard`: same surface,
+/// paddings, image and text line heights, so the real card replaces it
+/// without moving the list.
+class PropertyListCardSkeleton extends StatelessWidget {
+  const PropertyListCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final textRadius = AppSizes.radiusPill.r;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: ColorsApp.white,
+        borderRadius: BorderRadius.circular(AppSizes.radiusListCard.r),
+        boxShadow: AppSizes.cardShadow,
+      ),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: AppSizes.listCardHeight.h),
+        child: Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(
+            AppSizes.listCardPaddingStart.w,
+            AppSizes.listCardPaddingVertical.h,
+            AppSizes.listCardPaddingEnd.w,
+            AppSizes.listCardPaddingVertical.h,
+          ),
+          child: AppShimmer(
+            child: Row(
+              children: [
+                SkeletonBox(
+                  width: AppSizes.listImageSize.r,
+                  height: AppSizes.listImageSize.r,
+                  radius: AppSizes.radiusImage.r,
+                ),
+                SizedBox(width: AppSizes.listImageContentGap.w),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonTextLine(
+                        style: AppTextStyles.listTitle,
+                        widthFactor: 0.85,
+                        radius: textRadius,
+                      ),
+                      SizedBox(height: AppSizes.listTitleLocationGap.h),
+                      SkeletonTextLine(
+                        style: AppTextStyles.listLocation,
+                        widthFactor: 0.55,
+                        radius: textRadius,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Loading placeholder laid out like a `PropertyGridCard`: same card
 /// surface, image ratio, paddings and text line heights (at the current text
 /// scale), so swapping in the real card doesn't move the page.

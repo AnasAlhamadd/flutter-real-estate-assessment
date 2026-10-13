@@ -7,6 +7,7 @@ import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/a
 import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/pages/search_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
@@ -44,11 +45,7 @@ abstract final class AppRouter {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: explore,
-                builder: (_, _) =>
-                    const PlaceholderScreen(titleKey: AppTextKeys.exploreTitle),
-              ),
+              GoRoute(path: explore, builder: (_, _) => const SearchScreen()),
             ],
           ),
           StatefulShellBranch(

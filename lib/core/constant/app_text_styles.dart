@@ -80,6 +80,10 @@ abstract final class AppTextStyles {
     letterSpacing: 0.2,
   );
 
+  /// Explore header title (`1:4120`). [U] Not verified: the Figma read was
+  /// lost and the MCP limit is reached; uses `Paragraph/Medium/P16 - LH 130%`.
+  static TextStyle get searchHeaderTitle => _rubik(16, FontWeight.w500, 1.3);
+
   static TextStyle get listTitle => _rubik(18, FontWeight.w600, 1.4);
   static TextStyle get listPrice =>
       _rubik(18, FontWeight.w600, 1.2, color: ColorsApp.primary);

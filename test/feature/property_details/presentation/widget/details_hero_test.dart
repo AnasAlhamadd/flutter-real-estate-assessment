@@ -83,11 +83,7 @@ void main() {
     expect(small, greaterThan(1));
     expect(large, greaterThan(small));
     expect(_blur(tester).enabled, isFalse);
-    expect(
-      tester.getRect(_photos).top,
-      0,
-      reason: 'zooms from the top edge',
-    );
+    expect(tester.getRect(_photos).top, 0, reason: 'zooms from the top edge');
 
     await gesture.up();
     await tester.pumpAndSettle();
