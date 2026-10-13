@@ -1,0 +1,214 @@
+{
+  "products": [
+    {
+      "id": 101,
+      "title": "Apple AirPods Max Silver",
+      "price": 549.99,
+      "rating": 3.47,
+      "category": "mobile-accessories",
+      "brand": "Apple",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods-max-silver/thumbnail.webp"
+    },
+    {
+      "id": 104,
+      "title": "Apple iPhone Charger",
+      "price": 19.99,
+      "rating": 4.15,
+      "category": "mobile-accessories",
+      "brand": "Apple",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-iphone-charger/thumbnail.webp"
+    },
+    {
+      "id": 105,
+      "title": "Apple MagSafe Battery Pack",
+      "price": 99.99,
+      "rating": 3.62,
+      "category": "mobile-accessories",
+      "brand": "Apple",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-magsafe-battery-pack/thumbnail.webp"
+    },
+    {
+      "id": 107,
+      "title": "Beats Flex Wireless Earphones",
+      "price": 49.99,
+      "rating": 4.24,
+      "category": "mobile-accessories",
+      "brand": "Beats",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/mobile-accessories/beats-flex-wireless-earphones/thumbnail.webp"
+    },
+    {
+      "id": 108,
+      "title": "iPhone 12 Silicone Case with MagSafe Plum",
+      "price": 29.99,
+      "rating": 3.62,
+      "category": "mobile-accessories",
+      "brand": "Apple",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/mobile-accessories/iphone-12-silicone-case-with-magsafe-plum/thumbnail.webp"
+    },
+    {
+      "id": 110,
+      "title": "Selfie Lamp with iPhone",
+      "price": 14.99,
+      "rating": 3.55,
+      "category": "mobile-accessories",
+      "brand": "GadgetMaster",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/mobile-accessories/selfie-lamp-with-iphone/thumbnail.webp"
+    },
+    {
+      "id": 111,
+      "title": "Selfie Stick Monopod",
+      "price": 12.99,
+      "rating": 3.88,
+      "category": "mobile-accessories",
+      "brand": "SnapTech",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/mobile-accessories/selfie-stick-monopod/thumbnail.webp"
+    },
+    {
+      "id": 121,
+      "title": "iPhone 5s",
+      "price": 199.99,
+      "rating": 2.83,
+      "category": "smartphones",
+      "brand": "Apple",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/iphone-5s/thumbnail.webp"
+    },
+    {
+      "id": 122,
+      "title": "iPhone 6",
+      "price": 299.99,
+      "rating": 3.41,
+      "category": "smartphones",
+      "brand": "Apple",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/iphone-6/thumbnail.webp"
+    },
+    {
+      "id": 123,
+      "title": "iPhone 13 Pro",
+      "price": 1099.99,
+      "rating": 4.12,
+      "category": "smartphones",
+      "brand": "Apple",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/iphone-13-pro/thumbnail.webp"
+    },
+    {
+      "id": 124,
+      "title": "iPhone X",
+      "price": 899.99,
+      "rating": 2.51,
+      "category": "smartphones",
+      "brand": "Apple",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/iphone-x/thumbnail.webp"
+    },
+    {
+      "id": 125,
+      "title": "Oppo A57",
+      "price": 249.99,
+      "rating": 3.94,
+      "category": "smartphones",
+      "brand": "Oppo",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/oppo-a57/thumbnail.webp"
+    },
+    {
+      "id": 126,
+      "title": "Oppo F19 Pro Plus",
+      "price": 399.99,
+      "rating": 3.51,
+      "category": "smartphones",
+      "brand": "Oppo",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/oppo-f19-pro-plus/thumbnail.webp"
+    },
+    {
+      "id": 127,
+      "title": "Oppo K1",
+      "price": 299.99,
+      "rating": 4.25,
+      "category": "smartphones",
+      "brand": "Oppo",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/oppo-k1/thumbnail.webp"
+    },
+    {
+      "id": 128,
+      "title": "Realme C35",
+      "price": 149.99,
+      "rating": 4.2,
+      "category": "smartphones",
+      "brand": "Realme",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/realme-c35/thumbnail.webp"
+    },
+    {
+      "id": 129,
+      "title": "Realme X",
+      "price": 299.99,
+      "rating": 3.7,
+      "category": "smartphones",
+      "brand": "Realme",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/realme-x/thumbnail.webp"
+    },
+    {
+      "id": 130,
+      "title": "Realme XT",
+      "price": 349.99,
+      "rating": 4.58,
+      "category": "smartphones",
+      "brand": "Realme",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/realme-xt/thumbnail.webp"
+    },
+    {
+      "id": 131,
+      "title": "Samsung Galaxy S7",
+      "price": 299.99,
+      "rating": 3.3,
+      "category": "smartphones",
+      "brand": "Samsung",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s7/thumbnail.webp"
+    },
+    {
+      "id": 132,
+      "title": "Samsung Galaxy S8",
+      "price": 499.99,
+      "rating": 4.4,
+      "category": "smartphones",
+      "brand": "Samsung",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s8/thumbnail.webp"
+    },
+    {
+      "id": 133,
+      "title": "Samsung Galaxy S10",
+      "price": 699.99,
+      "rating": 3.06,
+      "category": "smartphones",
+      "brand": "Samsung",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s10/thumbnail.webp"
+    },
+    {
+      "id": 134,
+      "title": "Vivo S1",
+      "price": 249.99,
+      "rating": 3.5,
+      "category": "smartphones",
+      "brand": "Vivo",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/vivo-s1/thumbnail.webp"
+    },
+    {
+      "id": 135,
+      "title": "Vivo V9",
+      "price": 299.99,
+      "rating": 3.6,
+      "category": "smartphones",
+      "brand": "Vivo",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/vivo-v9/thumbnail.webp"
+    },
+    {
+      "id": 136,
+      "title": "Vivo X21",
+      "price": 499.99,
+      "rating": 4.26,
+      "category": "smartphones",
+      "brand": "Vivo",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/vivo-x21/thumbnail.webp"
+    }
+  ],
+  "total": 23,
+  "skip": 0,
+  "limit": 23
+}

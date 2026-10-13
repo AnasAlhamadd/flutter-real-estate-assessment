@@ -1,0 +1,63 @@
+{
+  "products": [
+    {
+      "id": 36,
+      "title": "Protein Powder",
+      "price": 19.99,
+      "rating": 4.18,
+      "category": "groceries",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/groceries/protein-powder/thumbnail.webp"
+    },
+    {
+      "id": 37,
+      "title": "Red Onions",
+      "price": 1.99,
+      "rating": 4.2,
+      "category": "groceries",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/groceries/red-onions/thumbnail.webp"
+    },
+    {
+      "id": 38,
+      "title": "Rice",
+      "price": 5.99,
+      "rating": 3.18,
+      "category": "groceries",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/groceries/rice/thumbnail.webp"
+    },
+    {
+      "id": 39,
+      "title": "Soft Drinks",
+      "price": 1.99,
+      "rating": 4.75,
+      "category": "groceries",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/groceries/soft-drinks/thumbnail.webp"
+    },
+    {
+      "id": 40,
+      "title": "Strawberry",
+      "price": 3.99,
+      "rating": 3.08,
+      "category": "groceries",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/groceries/strawberry/thumbnail.webp"
+    },
+    {
+      "id": 41,
+      "title": "Tissue Paper Box",
+      "price": 2.49,
+      "rating": 2.69,
+      "category": "groceries",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/groceries/tissue-paper-box/thumbnail.webp"
+    },
+    {
+      "id": 42,
+      "title": "Water",
+      "price": 0.99,
+      "rating": 4.96,
+      "category": "groceries",
+      "thumbnail": "https://cdn.dummyjson.com/product-images/groceries/water/thumbnail.webp"
+    }
+  ],
+  "total": 27,
+  "skip": 20,
+  "limit": 7
+}

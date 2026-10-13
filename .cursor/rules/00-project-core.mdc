@@ -15,7 +15,8 @@ Requirements: Figma-faithful UI · Arabic/English with in-app switching · RTL/L
 - DI: `get_it` in `lib/injection_container.dart`
 - Routing: `go_router` in `lib/core/constant/app_router.dart`
 - Network: `dio` · Errors: `dartz` `Either<Failure, T>`
-- Local storage: `shared_preferences` (cache + favorites)
+- Local storage: `shared_preferences` for lightweight settings and the approved bounded cache only ("All" first page + categories, reference §4.5.2). Not a database or general offline cache. Favorites need approval (Q8)
+- Connectivity: `connectivity_plus` behind `NetworkInfo` (connectivity awareness only, not proof the API is reachable)
 - l10n: `easy_localization` (`ar`, `en`; fallback `en`; `saveLocale: true`)
 - Responsive: `flutter_screenutil` with the **Figma frame size** as `designSize`
 - Images: `cached_network_image`; SVG: `flutter_svg` (only if Figma icons are SVG)
