@@ -20,6 +20,7 @@ abstract final class AppLocalization {
     startLocale: startLocale,
     useOnlyLangCode: true,
     saveLocale: true,
+    ignorePluralRules: false,
     assetLoader: assetLoader,
     child: child,
   );
