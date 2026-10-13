@@ -50,7 +50,52 @@
       "other": "{rating} ({} تقييم)"
     },
     "image_position": "الصورة {index} من {total}",
-    "show_image": "عرض الصورة {index} من {total}"
+    "show_image": "عرض الصورة {index} من {total}",
+    "beds": {
+      "zero": "بلا غرف نوم",
+      "one": "غرفة نوم واحدة",
+      "two": "غرفتا نوم",
+      "few": "{} غرف نوم",
+      "many": "{} غرفة نوم",
+      "other": "{} غرفة نوم"
+    },
+    "baths": {
+      "zero": "بلا حمّامات",
+      "one": "حمّام واحد",
+      "two": "حمّامان",
+      "few": "{} حمّامات",
+      "many": "{} حمّامًا",
+      "other": "{} حمّام"
+    },
+    "area": "{area} قدم²",
+    "agent": "الوكيل",
+    "agent_role_owner": "المالك",
+    "chat_agent": "مراسلة {name}",
+    "call_agent": "الاتصال بـ {name}",
+    "facilities": "المرافق",
+    "facility": {
+      "car_parking": "موقف سيارات",
+      "swimming_pool": "مسبح",
+      "gym": "صالة رياضية",
+      "restaurant": "مطعم",
+      "wifi": "واي فاي وإنترنت",
+      "pet_center": "مركز الحيوانات الأليفة",
+      "sport_center": "مركز رياضي",
+      "laundry": "مغسلة"
+    },
+    "location": "الموقع",
+    "map": "خريطة موقع العقار",
+    "review_likes": {
+      "zero": "لا إعجابات",
+      "one": "إعجاب واحد",
+      "two": "إعجابان",
+      "few": "{} إعجابات",
+      "many": "{} إعجابًا",
+      "other": "{} إعجاب"
+    },
+    "booking_now": "احجز الآن",
+    "not_available": "هذه الميزة غير متاحة بعد",
+    "call_failed": "تعذّر فتح تطبيق الهاتف"
   },
   "time": {
     "just_now": "الآن",

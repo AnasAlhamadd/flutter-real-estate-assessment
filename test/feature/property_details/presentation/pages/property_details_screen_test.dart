@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
+import 'package:flutter_real_estate_assessment/core/services/phone_dialer.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_back_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_divider.dart';
@@ -12,15 +13,27 @@ import 'package:flutter_real_estate_assessment/core/widget/favorite_button.dart'
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/data/datasource/property_extras_mock_data_source.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/entities/property_extras_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/repositories/property_extras_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/cubit/property_details_cubit.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_agent.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_facilities.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_gallery.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_header.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_location.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_map.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_overview.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_price_bar.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_reviews.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_skeleton.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_stats.dart';
+import 'package:flutter_real_estate_assessment/injection_container.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../helpers/fake_phone_dialer.dart';
 import '../../../../helpers/fake_properties_repository.dart';
 import '../../../../helpers/layout_expectations.dart';
 import '../../../../helpers/pump_app.dart';
@@ -29,11 +42,20 @@ import '../../../../helpers/test_viewports.dart';
 import '../../../../helpers/translations.dart';
 
 const Locale _en = AppLocalization.english;
+
+class _FailingExtrasRepository implements PropertyExtrasRepository {
+  @override
+  Future<Either<Failure, PropertyExtrasEntity>> getPropertyExtras(
+    int propertyId,
+  ) async => const Left(UnknownFailure());
+}
+
 final PropertyEntity _listing = sampleProperties.first;
 
 /// Opens Details from Home (so Back has somewhere to go), optionally with
 /// the listing item as `extra`. Pumps frames instead of settling while
 /// [settle] is false, because skeletons never settle.
+/// [extras] replaces the mock extras source.
 Future<void> _open(
   WidgetTester tester, {
   required FakePropertiesRepository properties,
@@ -42,6 +64,8 @@ Future<void> _open(
   Locale locale = _en,
   TestViewport viewport = defaultViewport,
   double textScale = 1,
+  PhoneDialer? phoneDialer,
+  PropertyExtrasRepository? extras,
   bool settle = true,
 }) async {
   await pumpApp(
@@ -50,7 +74,15 @@ Future<void> _open(
     locale: locale,
     viewport: viewport,
     textScale: textScale,
+    phoneDialer: phoneDialer,
   );
+  if (extras != null) {
+    sl
+      ..unregister<PropertyDetailsCubit>()
+      ..registerFactory(
+        () => propertyDetailsCubitFor(properties, extras: extras),
+      );
+  }
   unawaited(
     GoRouter.of(
       tester.element(find.byType(HomeScreen)),
@@ -65,17 +97,22 @@ Future<void> _open(
   }
 }
 
-Future<void> _scrollTo(WidgetTester tester, Finder finder) =>
-    tester.scrollUntilVisible(
-      finder,
-      200,
-      scrollable: find
-          .descendant(
-            of: find.byType(PropertyDetailsScreen),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
+/// Scrolls [finder] into view, then to the top of the viewport so it isn't
+/// under the price bar.
+Future<void> _scrollTo(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    200,
+    scrollable: find
+        .descendant(
+          of: find.byType(PropertyDetailsScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first,
+  );
+  await tester.ensureVisible(finder.first);
+  await tester.pumpAndSettle();
+}
 
 void main() {
   group('loading', () {
@@ -112,7 +149,7 @@ void main() {
       gate.complete();
       await tester.pumpAndSettle();
 
-      expect(find.text(sampleDetailedProperty.description!), findsOneWidget);
+      await _scrollTo(tester, find.text(sampleDetailedProperty.description!));
       expect(properties.detailRequests, [1]);
     });
   });
@@ -127,27 +164,109 @@ void main() {
       expect(find.text('BEAUTY'), findsOneWidget);
       expect(find.text('4.9 (3 reviews)'), findsWidgets);
       expect(find.byType(AppDivider), findsOneWidget);
-      expect(find.text(translate(_en, 'details.overview')), findsOneWidget);
+      await _scrollTo(tester, find.text(translate(_en, 'details.overview')));
       await _scrollTo(tester, find.byType(DetailsReviews));
       expect(find.byType(DetailsGallery), findsOneWidget);
       expect(find.byType(DetailsReviews), findsOneWidget);
       expect(find.byType(DetailsPriceBar), findsOneWidget);
     });
 
-    testWidgets('hides the sections without API data (Q4, Q9)', (tester) async {
+    testWidgets('shows the mock sections in Figma order (Q4)', (tester) async {
       await _open(tester, properties: FakePropertiesRepository());
+
+      expect(find.byType(DetailsStats), findsOneWidget);
+      expect(find.text('8 Beds'), findsOneWidget);
+      final delegate =
+          tester.widget<SliverList>(find.byType(SliverList)).delegate
+              as SliverChildListDelegate;
+      final sections = delegate.children
+          .map((child) => child.runtimeType)
+          .where((type) => type != SizedBox)
+          .toList();
+      expect(sections, [
+        DetailsHeader,
+        AppDivider,
+        DetailsAgent,
+        DetailsOverview,
+        DetailsFacilities,
+        DetailsGallery,
+        DetailsLocation,
+        DetailsReviews,
+      ]);
+      await _scrollTo(tester, find.byType(DetailsMap));
+      await _scrollTo(tester, find.text('938'));
+    });
+
+    testWidgets('an extras failure hides only the mock sections', (
+      tester,
+    ) async {
+      await _open(
+        tester,
+        properties: FakePropertiesRepository(),
+        extras: _FailingExtrasRepository(),
+      );
       await _scrollTo(tester, find.byType(DetailsReviews));
 
-      for (final text in [
-        'Agent',
-        'Facilities',
-        'Location',
-        'Booking Now',
-        'Beds',
+      for (final type in [
+        DetailsStats,
+        DetailsAgent,
+        DetailsFacilities,
+        DetailsLocation,
       ]) {
-        expect(find.textContaining(text), findsNothing, reason: text);
+        expect(find.byType(type), findsNothing, reason: '$type');
       }
-      expect(find.byType(AppButton), findsNothing);
+      expect(find.byType(DetailsGallery), findsOneWidget);
+      expect(find.text('938'), findsNothing);
+    });
+
+    testWidgets('Booking Now and chat say they are not available', (
+      tester,
+    ) async {
+      final notAvailable = translate(_en, 'details.not_available');
+      await _open(tester, properties: FakePropertiesRepository());
+
+      await tester.tap(find.widgetWithText(AppButton, 'Booking Now'));
+      await tester.pump();
+      expect(find.text(notAvailable), findsOneWidget);
+
+      await _scrollTo(tester, find.byType(DetailsAgent));
+      await tester.tap(find.bySemanticsLabel('Chat with Natasya Wilodra'));
+      await tester.pumpAndSettle();
+      expect(find.text(notAvailable), findsOneWidget);
+    });
+
+    testWidgets('call opens the dialer with the agent number', (tester) async {
+      final dialer = FakePhoneDialer();
+      await _open(
+        tester,
+        properties: FakePropertiesRepository(),
+        phoneDialer: dialer,
+      );
+
+      await _scrollTo(tester, find.byType(DetailsAgent));
+      await tester.tap(find.bySemanticsLabel('Call Natasya Wilodra'));
+      await tester.pumpAndSettle();
+
+      expect(dialer.dialed, [PropertyExtrasMockDataSource.sample.agent.phone]);
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('a dialer failure shows a message', (tester) async {
+      await _open(
+        tester,
+        properties: FakePropertiesRepository(),
+        phoneDialer: FakePhoneDialer(result: false),
+        locale: AppLocalization.arabic,
+      );
+
+      await _scrollTo(tester, find.byType(DetailsAgent));
+      await tester.tap(find.bySemanticsLabel('الاتصال بـ Natasya Wilodra'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(translate(AppLocalization.arabic, 'details.call_failed')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('no gallery for a single photo, no overview or reviews '
@@ -236,7 +355,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ErrorView), findsNothing);
-      expect(find.text(sampleDetailedProperty.description!), findsOneWidget);
+      await _scrollTo(tester, find.text(sampleDetailedProperty.description!));
       expect(properties.detailRequests, [1, 1]);
     });
 
@@ -257,7 +376,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ErrorView), findsNothing);
-      expect(find.text(sampleDetailedProperty.description!), findsOneWidget);
+      await _scrollTo(tester, find.text(sampleDetailedProperty.description!));
     });
 
     testWidgets('an unknown id says it was not found', (tester) async {

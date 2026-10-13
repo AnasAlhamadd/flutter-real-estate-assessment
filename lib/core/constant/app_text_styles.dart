@@ -41,6 +41,33 @@ abstract final class AppTextStyles {
   static TextStyle get detailsPrice =>
       _rubik(24, FontWeight.w600, 1.2, color: ColorsApp.primary);
 
+  /// Details body `1:4273`: stats, Agent, Facilities, Location, review likes.
+  static TextStyle get detailsStat => _rubik(14, FontWeight.w500, 1.4);
+  static TextStyle get agentName => _rubik(18, FontWeight.w600, 1.2);
+  static TextStyle get agentRole =>
+      _rubik(14, FontWeight.w500, 1.4, color: ColorsApp.black02);
+  static TextStyle get facilityLabel => _rubik(14, FontWeight.w400, 1.4);
+  static TextStyle get detailsAddress => _rubik(
+    14,
+    FontWeight.w500,
+    1.4,
+    color: ColorsApp.black02,
+    letterSpacing: 0.2,
+  );
+  static TextStyle get reviewLikes => _rubik(14, FontWeight.w500, null);
+
+  /// Street names drawn on the map art (Figma `body / xsmall / regular`).
+  /// Figma uses Urbanist, which isn't bundled, so Rubik keeps the size and
+  /// tracking. Not scaled with ScreenUtil or the text scale: the whole map
+  /// is scaled as one picture.
+  static const TextStyle mapLabel = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 10,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.2,
+    color: ColorsApp.black03,
+  );
+
   static TextStyle get featuredTitle =>
       _rubik(20, FontWeight.w700, 1.1, color: ColorsApp.white);
   static TextStyle get featuredPrice =>

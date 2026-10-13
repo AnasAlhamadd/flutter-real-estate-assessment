@@ -46,7 +46,40 @@
       "other": "{rating} ({} reviews)"
     },
     "image_position": "Image {index} of {total}",
-    "show_image": "Show image {index} of {total}"
+    "show_image": "Show image {index} of {total}",
+    "beds": {
+      "one": "{} Bed",
+      "other": "{} Beds"
+    },
+    "baths": {
+      "one": "{} bath",
+      "other": "{} baths"
+    },
+    "area": "{area} sqft",
+    "agent": "Agent",
+    "agent_role_owner": "Owner",
+    "chat_agent": "Chat with {name}",
+    "call_agent": "Call {name}",
+    "facilities": "Facilities",
+    "facility": {
+      "car_parking": "Car Parking",
+      "swimming_pool": "Swimming Pool",
+      "gym": "Gym & Fitness",
+      "restaurant": "Restaurant",
+      "wifi": "Wi-fi & Network",
+      "pet_center": "Pet Center",
+      "sport_center": "Sport Center",
+      "laundry": "Laundry"
+    },
+    "location": "Location",
+    "map": "Map of the property location",
+    "review_likes": {
+      "one": "{} like",
+      "other": "{} likes"
+    },
+    "booking_now": "Booking Now",
+    "not_available": "This isn't available yet",
+    "call_failed": "Couldn't open the phone app"
   },
   "time": {
     "just_now": "Just now",

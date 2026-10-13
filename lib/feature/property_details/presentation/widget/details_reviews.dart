@@ -15,6 +15,7 @@ class DetailsReviews extends StatefulWidget {
     required this.rating,
     required this.reviews,
     required this.now,
+    this.likes = const [],
     super.key,
   });
 
@@ -23,6 +24,9 @@ class DetailsReviews extends StatefulWidget {
   /// Not empty.
   final List<ReviewEntity> reviews;
   final DateTime now;
+
+  /// Like count per review, by index; reviews without one show no count.
+  final List<int> likes;
 
   @override
   State<DetailsReviews> createState() => _DetailsReviewsState();
@@ -35,7 +39,8 @@ class _DetailsReviewsState extends State<DetailsReviews> {
   Widget build(BuildContext context) {
     final reviews = widget.reviews;
     final canExpand = !_expanded && reviews.length > 1;
-    final shown = _expanded ? reviews : reviews.take(1);
+    final shown = _expanded ? reviews.length : 1;
+    final likes = widget.likes;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -56,9 +61,13 @@ class _DetailsReviewsState extends State<DetailsReviews> {
           ),
           onSeeAll: canExpand ? () => setState(() => _expanded = true) : null,
         ),
-        for (final review in shown) ...[
+        for (var index = 0; index < shown; index++) ...[
           SizedBox(height: AppSizes.detailsReviewsGap.h),
-          ReviewTile(review: review, now: widget.now),
+          ReviewTile(
+            review: reviews[index],
+            now: widget.now,
+            likes: index < likes.length ? likes[index] : null,
+          ),
         ],
       ],
     );

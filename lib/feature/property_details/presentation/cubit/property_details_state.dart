@@ -3,20 +3,26 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/entities/property_extras_entity.dart';
 
 /// [property] is the listing item passed by the opening screen until the
 /// details arrive, so the page shows its title, image and price at once.
 /// Detail-only fields (description, images, reviews) are complete only when
 /// [status] is [RequestStatus.success].
+///
+/// [extras] (stats, Agent, Facilities, Location, review likes) arrive with
+/// the details; `null` hides those sections.
 class PropertyDetailsState extends Equatable {
   const PropertyDetailsState({
     this.status = RequestStatus.initial,
     this.property,
+    this.extras,
     this.failure,
   });
 
   final RequestStatus status;
   final PropertyEntity? property;
+  final PropertyExtrasEntity? extras;
   final Failure? failure;
 
   bool get hasDetails => status == RequestStatus.success;
@@ -24,13 +30,15 @@ class PropertyDetailsState extends Equatable {
   PropertyDetailsState copyWith({
     RequestStatus? status,
     ValueGetter<PropertyEntity?>? property,
+    ValueGetter<PropertyExtrasEntity?>? extras,
     ValueGetter<Failure?>? failure,
   }) => PropertyDetailsState(
     status: status ?? this.status,
     property: property != null ? property() : this.property,
+    extras: extras != null ? extras() : this.extras,
     failure: failure != null ? failure() : this.failure,
   );
 
   @override
-  List<Object?> get props => [status, property, failure];
+  List<Object?> get props => [status, property, extras, failure];
 }

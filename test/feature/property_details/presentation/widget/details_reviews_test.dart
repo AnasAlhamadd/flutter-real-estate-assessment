@@ -15,6 +15,7 @@ import '../../../../helpers/translations.dart';
 Future<void> _pump(
   WidgetTester tester,
   List<ReviewEntity> reviews, {
+  List<int> likes = const [],
   Locale locale = AppLocalization.english,
   Size size = const Size(430, 932),
   double textScale = 1,
@@ -22,7 +23,12 @@ Future<void> _pump(
   tester,
   SingleChildScrollView(
     padding: const EdgeInsets.all(20),
-    child: DetailsReviews(rating: 4.94, reviews: reviews, now: sampleNow),
+    child: DetailsReviews(
+      rating: 4.94,
+      reviews: reviews,
+      now: sampleNow,
+      likes: likes,
+    ),
   ),
   locale: locale,
   size: size,
@@ -32,6 +38,17 @@ Future<void> _pump(
 final List<ReviewEntity> _reviews = sampleDetailedProperty.reviews;
 
 void main() {
+  testWidgets('passes each review its likes; missing ones get none', (
+    tester,
+  ) async {
+    await _pump(tester, _reviews, likes: const [938, 254]);
+    await tester.tap(find.text('See All'));
+    await tester.pumpAndSettle();
+
+    final tiles = tester.widgetList<ReviewTile>(find.byType(ReviewTile));
+    expect(tiles.map((tile) => tile.likes), [938, 254, null]);
+  });
+
   testWidgets('shows the summary with the star and the first review', (
     tester,
   ) async {

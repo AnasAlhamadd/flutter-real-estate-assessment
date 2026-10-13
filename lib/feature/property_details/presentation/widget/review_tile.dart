@@ -11,14 +11,22 @@ import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/review_entity.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// One review (Figma `1:4406`): reviewer, comment and how long ago it was
-/// written. The API has no reviewer photo or like count (Q4), so the avatar
-/// shows initials and the like count is hidden.
+/// One review (Figma `1:4406`): reviewer, comment, likes and how long ago
+/// it was written. The API has no reviewer photo (Q4), so the avatar shows
+/// initials.
 class ReviewTile extends StatelessWidget {
-  const ReviewTile({required this.review, required this.now, super.key});
+  const ReviewTile({
+    required this.review,
+    required this.now,
+    this.likes,
+    super.key,
+  });
 
   final ReviewEntity review;
   final DateTime now;
+
+  /// Display only; `null` hides the heart and count.
+  final int? likes;
 
   /// First letters of the first two words, e.g. "John Doe" → "JD".
   static String initialsOf(String name) => name
@@ -53,14 +61,18 @@ class ReviewTile extends StatelessWidget {
           gap,
           CustomText.plain(review.comment, style: AppTextStyles.detailsBody),
         ],
-        if (review.date case final date?) ...[
+        if (likes != null || review.date != null) ...[
           gap,
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: CustomText.plain(
-              _timeAgo(context, RelativeTimes.between(date, now)),
-              style: AppTextStyles.reviewTime,
-            ),
+          Row(
+            children: [
+              if (likes case final likes?) _ReviewLikes(likes: likes),
+              const Spacer(),
+              if (review.date case final date?)
+                CustomText.plain(
+                  _timeAgo(context, RelativeTimes.between(date, now)),
+                  style: AppTextStyles.reviewTime,
+                ),
+            ],
           ),
         ],
       ],
@@ -91,6 +103,33 @@ class ReviewTile extends StatelessWidget {
           time.value,
         ),
       };
+}
+
+/// Heart and count (Figma `1:4415`), not tappable.
+class _ReviewLikes extends StatelessWidget {
+  const _ReviewLikes({required this.likes});
+
+  final int likes;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: context.plural(AppTextKeys.detailsReviewLikes, likes),
+      excludeSemantics: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const AppSvgIcon(
+            ImagePath.heart,
+            size: AppSizes.detailsReviewLikeIconSize,
+            color: ColorsApp.primary,
+          ),
+          SizedBox(width: AppSizes.detailsReviewLikeGap.w),
+          CustomText.plain('$likes', style: AppTextStyles.reviewLikes),
+        ],
+      ),
+    );
+  }
 }
 
 /// Neutral avatar like the Home guest avatar (Greyscale/400, white content).

@@ -12,6 +12,7 @@ import '../../../../helpers/pump_widget.dart';
 Future<void> _pump(
   WidgetTester tester, {
   double price = 17821,
+  VoidCallback? onBooking,
   Locale locale = AppLocalization.english,
   Size size = AppSizes.designSize,
   double textScale = 1,
@@ -19,7 +20,7 @@ Future<void> _pump(
   tester,
   Align(
     alignment: Alignment.bottomCenter,
-    child: DetailsPriceBar(price: price),
+    child: DetailsPriceBar(price: price, onBooking: onBooking ?? () {}),
   ),
   locale: locale,
   size: size,
@@ -47,10 +48,63 @@ void main() {
     expect(find.text(r'$17821'), findsOneWidget);
   });
 
-  testWidgets('has no booking button (Q9)', (tester) async {
-    await _pump(tester);
+  testWidgets('Booking Now is a tappable button', (tester) async {
+    var taps = 0;
+    await _pump(tester, onBooking: () => taps++);
 
-    expect(find.byType(AppButton), findsNothing);
+    final button = find.widgetWithText(AppButton, 'Booking Now');
+    expectVisibleAndTappable(tester, button);
+    await tester.tap(button);
+    expect(taps, 1);
+  });
+
+  for (final locale in AppLocalization.supportedLocales) {
+    testWidgets('the button fills the space up to the end edge '
+        '(${locale.languageCode})', (tester) async {
+      await _pump(tester, locale: locale);
+
+      final button = tester.getRect(find.byType(AppButton));
+      const edge = AppSizes.detailsPriceBarSide;
+      final price = tester.getRect(find.text(r'$17821'));
+      if (directionOf(locale) == TextDirection.ltr) {
+        expect(button.right, closeTo(AppSizes.designSize.width - edge, 0.5));
+        expect(
+          button.left - price.right,
+          closeTo(AppSizes.detailsPriceButtonGap, 0.5),
+        );
+      } else {
+        expect(button.left, closeTo(edge, 0.5));
+        expect(
+          price.left - button.right,
+          closeTo(AppSizes.detailsPriceButtonGap, 0.5),
+        );
+      }
+    });
+  }
+
+  testWidgets('a huge price is ellipsized, the button keeps half', (
+    tester,
+  ) async {
+    await _pump(tester, price: 1234567890123.99, size: narrowSize);
+
+    expectNoLayoutErrors(tester);
+    expect(
+      tester.getSize(find.byType(AppButton)).width,
+      greaterThanOrEqualTo(
+        (narrowSize.width / AppSizes.designSize.width) *
+                (AppSizes.designSize.width -
+                    2 * AppSizes.detailsPriceBarSide -
+                    AppSizes.detailsPriceButtonGap) /
+                2 -
+            0.5,
+      ),
+    );
+  });
+
+  testWidgets('Arabic booking label', (tester) async {
+    await _pump(tester, locale: AppLocalization.arabic);
+
+    expect(find.widgetWithText(AppButton, 'احجز الآن'), findsOneWidget);
   });
 
   testWidgets('full width, rounded top, Primary 10% border', (tester) async {

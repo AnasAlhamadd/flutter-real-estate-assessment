@@ -184,12 +184,62 @@ abstract final class AppSizes {
   static const double detailsReviewAvatarGap = 10;
   static const double detailsReviewContentGap = 12;
 
+  /// Stats row `1:4281`: icon 16 in a circle with 12 padding, icon → label 8,
+  /// 24 between stats.
+  static const double detailsStatsGap = 24;
+  static const double detailsStatIconSize = 16;
+  static const double detailsStatIconPadding = 12;
+  static const double detailsStatLabelGap = 8;
+
+  /// Agent `1:4308`: title → row 16, photo 60, photo → name 20, name → role
+  /// 4, info → actions 12, chat → call 20, action icons 28.
+  static const double detailsAgentTitleGap = 16;
+  static const double detailsAgentAvatarSize = 60;
+  static const double detailsAgentAvatarGap = 20;
+  static const double detailsAgentNameGap = 4;
+  static const double detailsAgentActionsGap = 12;
+  static const double detailsAgentActionGap = 20;
+  static const double detailsAgentActionIconSize = 28;
+
+  /// Facilities `1:4314`: title → grid 20, rows 20 apart, 4 per row 8 apart,
+  /// icon 28 in a circle with 16 padding, circle → label 8.
+  static const double detailsFacilitiesTitleGap = 20;
+  static const double detailsFacilitiesRowGap = 20;
+  static const int detailsFacilitiesPerRow = 4;
+  static const double detailsFacilityGap = 8;
+  static const double detailsFacilityIconSize = 28;
+  static const double detailsFacilityIconPadding = 16;
+
+  /// Location `1:4380`: title → address → map 20 apart, pin icon 20 + gap 8.
+  static const double detailsLocationGap = 20;
+  static const double detailsLocationIconSize = 20;
+  static const double detailsLocationIconGap = 8;
+
+  /// Map `1:4385`, drawn at 388 × 200 and scaled as one picture: corners 24,
+  /// map art `1:4387` (437.011 × 926) offset by (-24.505, -363), pin `1:4391`
+  /// (53.1365 × 61.4796) at (167.453, 69) with a 32.674 × 32 photo at
+  /// (177.663, 79) and a 3 px white border.
+  static const Size detailsMapSize = Size(388, 200);
+  static const double radiusMap = 24;
+  static const Size detailsMapArtSize = Size(437.011, 926);
+  static const Offset detailsMapArtOffset = Offset(-24.505, -363);
+  static const Size detailsMapPinSize = Size(53.1365, 61.4796);
+  static const Offset detailsMapPinOffset = Offset(167.453, 69);
+  static const Size detailsMapPhotoSize = Size(32.674, 32);
+  static const Offset detailsMapPhotoOffset = Offset(177.663, 79);
+  static const double detailsMapPhotoBorder = 3;
+
+  /// Review likes `1:4415`: heart 20, heart → count 6.
+  static const double detailsReviewLikeIconSize = 20;
+  static const double detailsReviewLikeGap = 6;
+
   /// Price bar `1:4420`: padding 24 / 24 / 36, top corners 36,
-  /// "PRICE" → price 6.
+  /// "PRICE" → price 6, price → "Booking Now" 60.
   static const double detailsPriceBarTop = 24;
   static const double detailsPriceBarSide = 24;
   static const double detailsPriceBarBottom = 36;
   static const double detailsPriceLabelGap = 6;
+  static const double detailsPriceButtonGap = 60;
   static const double radiusPriceBar = 36;
 
   // Rating badge: [S] padding, icon-text gap and inset from the image corner.

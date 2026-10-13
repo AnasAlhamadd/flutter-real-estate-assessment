@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/data/datasource/property_extras_mock_data_source.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_header.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_stats.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/property_tag.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -24,6 +26,34 @@ void main() {
     expect(find.text(sampleDetailedProperty.title), findsOneWidget);
     expect(find.widgetWithText(PropertyTag, 'BEAUTY'), findsOneWidget);
     expect(find.text('4.9 (3 reviews)'), findsOneWidget);
+  });
+
+  testWidgets('shows the stats under the rating when extras exist', (
+    tester,
+  ) async {
+    await pumpLocalizedWidget(
+      tester,
+      DetailsHeader(
+        property: sampleDetailedProperty,
+        reviewCount: 3,
+        extras: PropertyExtrasMockDataSource.sample,
+      ),
+    );
+
+    expect(find.byType(DetailsStats), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byType(DetailsStats)).dy,
+      greaterThan(tester.getBottomLeft(find.text('4.9 (3 reviews)')).dy),
+    );
+  });
+
+  testWidgets('no stats without extras', (tester) async {
+    await pumpLocalizedWidget(
+      tester,
+      DetailsHeader(property: sampleDetailedProperty, reviewCount: 3),
+    );
+
+    expect(find.byType(DetailsStats), findsNothing);
   });
 
   testWidgets('shows only the rating while the reviews are unknown', (
@@ -54,7 +84,11 @@ void main() {
       tester,
       const Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
-        child: DetailsHeader(property: property, reviewCount: 3),
+        child: DetailsHeader(
+          property: property,
+          reviewCount: 3,
+          extras: PropertyExtrasMockDataSource.sample,
+        ),
       ),
       locale: locale,
       size: size,

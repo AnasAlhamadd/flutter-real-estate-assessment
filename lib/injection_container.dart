@@ -2,6 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_real_estate_assessment/core/network/dio_client.dart';
 import 'package:flutter_real_estate_assessment/core/network/network_info.dart';
+import 'package:flutter_real_estate_assessment/core/services/phone_dialer.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/data/datasource/favorites_local_data_source.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/data/repositories/favorites_repository_impl.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/domain/repositories/favorites_repository.dart';
@@ -23,6 +24,10 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/reposit
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/filter_properties_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/get_property_details_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/search_properties_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/data/datasource/property_extras_mock_data_source.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/data/repositories/property_extras_repository_impl.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/repositories/property_extras_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/usecases/get_property_extras_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/cubit/property_details_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,6 +45,7 @@ Future<void> init() async {
     // Core
     ..registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()))
     ..registerLazySingleton<DioClient>(() => DioClient(sl()))
+    ..registerLazySingleton<PhoneDialer>(UrlLauncherPhoneDialer.new)
     // Data sources
     ..registerLazySingleton<HomeRemoteDataSource>(
       () => HomeRemoteDataSourceImpl(sl()),
@@ -53,6 +59,8 @@ Future<void> init() async {
     ..registerLazySingleton<FavoritesLocalDataSource>(
       () => FavoritesLocalDataSourceImpl(sl()),
     )
+    // this mock: stands in for a remote source until an API has these fields.
+    ..registerLazySingleton(PropertyExtrasMockDataSource.new)
     // Repositories
     ..registerLazySingleton<HomeRepository>(
       () => HomeRepositoryImpl(remote: sl(), local: sl(), networkInfo: sl()),
@@ -63,12 +71,16 @@ Future<void> init() async {
     ..registerLazySingleton<FavoritesRepository>(
       () => FavoritesRepositoryImpl(sl()),
     )
+    ..registerLazySingleton<PropertyExtrasRepository>(
+      () => PropertyExtrasRepositoryImpl(mockDataSource: sl()),
+    )
     // Use cases
     ..registerLazySingleton(() => GetFeaturedPropertiesUseCase(sl()))
     ..registerLazySingleton(() => GetCategoriesUseCase(sl()))
     ..registerLazySingleton(() => GetRecommendationsUseCase(sl()))
     ..registerLazySingleton(() => SearchPropertiesUseCase(sl()))
     ..registerLazySingleton(() => GetPropertyDetailsUseCase(sl()))
+    ..registerLazySingleton(() => GetPropertyExtrasUseCase(sl()))
     ..registerLazySingleton(FilterPropertiesUseCase.new)
     ..registerLazySingleton(() => GetFavoritesUseCase(sl()))
     ..registerLazySingleton(() => SaveFavoritesUseCase(sl()))
@@ -82,7 +94,12 @@ Future<void> init() async {
         connectivityChanges: sl<NetworkInfo>().onStatusChange,
       ),
     )
-    ..registerFactory(() => PropertyDetailsCubit(getPropertyDetails: sl()))
+    ..registerFactory(
+      () => PropertyDetailsCubit(
+        getPropertyDetails: sl(),
+        getPropertyExtras: sl(),
+      ),
+    )
     ..registerFactory(
       () => FavoritesCubit(
         getFavorites: sl(),

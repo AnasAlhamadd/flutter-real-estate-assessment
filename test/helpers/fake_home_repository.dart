@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
+import 'package:flutter_real_estate_assessment/core/services/phone_dialer.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/domain/repositories/favorites_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/presentation/cubit/favorites_cubit.dart';
 import 'package:flutter_real_estate_assessment/feature/home/domain/repositories/home_repository.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_real_estate_assessment/injection_container.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fake_favorites_repository.dart';
+import 'fake_phone_dialer.dart';
 import 'fake_properties_repository.dart';
 import 'sample_properties.dart';
 
@@ -90,15 +92,18 @@ HomeCubit homeCubitFor(HomeRepository repository) => HomeCubit(
 
 /// Registers what routed screens resolve from GetIt, backed by [repository],
 /// [favorites] (empty in memory by default) and [properties] (sample
-/// details by default). GetIt is reset after the test.
+/// details by default). The phone dialer is [phoneDialer] or a fake that
+/// only records numbers. GetIt is reset after the test.
 void registerScreenDependencies(
   HomeRepository repository, {
   FavoritesRepository? favorites,
   PropertiesRepository? properties,
+  PhoneDialer? phoneDialer,
 }) {
   final favoritesRepository = favorites ?? FakeFavoritesRepository();
   final propertiesRepository = properties ?? FakePropertiesRepository();
   sl
+    ..registerLazySingleton<PhoneDialer>(() => phoneDialer ?? FakePhoneDialer())
     ..registerFactory<HomeCubit>(() => homeCubitFor(repository))
     ..registerFactory<PropertyDetailsCubit>(
       () => propertyDetailsCubitFor(propertiesRepository),

@@ -5,19 +5,28 @@ import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_svg_icon.dart';
 import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/entities/property_extras_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_rating_text.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/details_stats.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/widget/property_tag.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// Title, category tag and rating (Figma `1:4274`). The stats row
-/// (beds, baths, area) is hidden: the API has no such data (Q4).
+/// Title, category tag, rating and stats row (Figma `1:4274`).
 class DetailsHeader extends StatelessWidget {
-  const DetailsHeader({required this.property, this.reviewCount, super.key});
+  const DetailsHeader({
+    required this.property,
+    this.reviewCount,
+    this.extras,
+    super.key,
+  });
 
   final PropertyEntity property;
 
   /// `null` until the details (and their reviews) are loaded.
   final int? reviewCount;
+
+  /// Beds, baths and area; `null` hides the stats row.
+  final PropertyExtrasEntity? extras;
 
   /// The category slug as words: `home-decoration` → `home decoration`. Shown
   /// uppercase, so it reads like the API category name.
@@ -45,6 +54,10 @@ class DetailsHeader extends StatelessWidget {
             ),
           ],
         ),
+        if (extras case final extras?) ...[
+          SizedBox(height: AppSizes.detailsTitleRowGap.h),
+          DetailsStats(extras: extras),
+        ],
       ],
     );
   }

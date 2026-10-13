@@ -47,6 +47,34 @@ abstract final class AppTextKeys {
   static const String detailsImagePosition = 'details.image_position';
   static const String detailsShowImage = 'details.show_image';
 
+  /// Plurals.
+  static const String detailsBeds = 'details.beds';
+  static const String detailsBaths = 'details.baths';
+  static const String detailsReviewLikes = 'details.review_likes';
+
+  /// Named arg `area`.
+  static const String detailsArea = 'details.area';
+  static const String detailsAgent = 'details.agent';
+  static const String detailsAgentRoleOwner = 'details.agent_role_owner';
+
+  /// Named arg `name`.
+  static const String detailsChatAgent = 'details.chat_agent';
+  static const String detailsCallAgent = 'details.call_agent';
+  static const String detailsFacilities = 'details.facilities';
+  static const String facilityCarParking = 'details.facility.car_parking';
+  static const String facilitySwimmingPool = 'details.facility.swimming_pool';
+  static const String facilityGym = 'details.facility.gym';
+  static const String facilityRestaurant = 'details.facility.restaurant';
+  static const String facilityWifi = 'details.facility.wifi';
+  static const String facilityPetCenter = 'details.facility.pet_center';
+  static const String facilitySportCenter = 'details.facility.sport_center';
+  static const String facilityLaundry = 'details.facility.laundry';
+  static const String detailsLocation = 'details.location';
+  static const String detailsMap = 'details.map';
+  static const String detailsBookingNow = 'details.booking_now';
+  static const String detailsNotAvailable = 'details.not_available';
+  static const String detailsCallFailed = 'details.call_failed';
+
   static const String timeJustNow = 'time.just_now';
 
   /// Plurals.

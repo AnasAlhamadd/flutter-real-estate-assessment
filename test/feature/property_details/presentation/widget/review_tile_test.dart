@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
 import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_svg_icon.dart';
@@ -13,6 +14,7 @@ import '../../../../helpers/sample_properties.dart';
 Future<void> _pump(
   WidgetTester tester,
   ReviewEntity review, {
+  int? likes,
   Locale locale = AppLocalization.english,
   Size size = const Size(430, 932),
   double textScale = 1,
@@ -20,7 +22,7 @@ Future<void> _pump(
   tester,
   SingleChildScrollView(
     padding: const EdgeInsets.all(20),
-    child: ReviewTile(review: review, now: sampleNow),
+    child: ReviewTile(review: review, now: sampleNow, likes: likes),
   ),
   locale: locale,
   size: size,
@@ -74,6 +76,45 @@ void main() {
     expect(find.textContaining('ago'), findsNothing);
   });
 
+  testWidgets('likes: Primary heart and count, a plural label', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await _pump(tester, sampleDetailedProperty.reviews.first, likes: 938);
+
+    expect(find.text('938'), findsOneWidget);
+    final heart = tester.widget<AppSvgIcon>(
+      find.byWidgetPredicate(
+        (widget) => widget is AppSvgIcon && widget.assetPath == ImagePath.heart,
+      ),
+    );
+    expect(heart.color, ColorsApp.primary);
+    expect(find.bySemanticsLabel('938 likes'), findsOneWidget);
+    semantics.dispose();
+  });
+
+  testWidgets('Arabic likes label uses the plural forms', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await _pump(
+      tester,
+      sampleDetailedProperty.reviews.first,
+      likes: 938,
+      locale: AppLocalization.arabic,
+    );
+
+    expect(find.bySemanticsLabel('938 إعجابًا'), findsOneWidget);
+    semantics.dispose();
+  });
+
+  testWidgets('likes without a date keep the likes row', (tester) async {
+    await _pump(
+      tester,
+      const ReviewEntity(reviewerName: 'Zoe', comment: 'Fine', rating: 4),
+      likes: 1,
+    );
+
+    expect(find.text('1'), findsOneWidget);
+    expect(find.textContaining('ago'), findsNothing);
+  });
+
   testWidgets('English relative times', (tester) async {
     for (final (elapsed, text) in [
       (const Duration(seconds: 5), 'Just now'),
@@ -118,6 +159,7 @@ void main() {
         rating: 4,
         date: sampleNow.subtract(const Duration(days: 6)),
       ),
+      likes: 938,
       locale: locale,
       size: size,
       textScale: textScale,

@@ -5,6 +5,10 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/entitie
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/repositories/properties_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/get_property_details_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/data/datasource/property_extras_mock_data_source.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/data/repositories/property_extras_repository_impl.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/repositories/property_extras_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/property_details/domain/usecases/get_property_extras_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/cubit/property_details_cubit.dart';
 
 import 'sample_properties.dart';
@@ -41,7 +45,13 @@ class FakePropertiesRepository implements PropertiesRepository {
   }) async => Right(pageOf(const []));
 }
 
-PropertyDetailsCubit propertyDetailsCubitFor(PropertiesRepository repository) =>
-    PropertyDetailsCubit(
-      getPropertyDetails: GetPropertyDetailsUseCase(repository),
-    );
+/// [extras] defaults to the app's mock source.
+PropertyDetailsCubit propertyDetailsCubitFor(
+  PropertiesRepository repository, {
+  PropertyExtrasRepository extras = const PropertyExtrasRepositoryImpl(
+    mockDataSource: PropertyExtrasMockDataSource(),
+  ),
+}) => PropertyDetailsCubit(
+  getPropertyDetails: GetPropertyDetailsUseCase(repository),
+  getPropertyExtras: GetPropertyExtrasUseCase(extras),
+);
