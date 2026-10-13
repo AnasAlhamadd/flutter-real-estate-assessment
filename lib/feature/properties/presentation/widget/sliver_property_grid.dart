@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
+import 'package:flutter_real_estate_assessment/core/widget/appear_animation.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_card_skeletons.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_grid_card.dart';
@@ -15,7 +16,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// item height and the card height grows with the user's text scale. The
 /// column count follows the available width: two on phones (as in Figma),
 /// more on wide screens so cards don't stretch.
-class SliverPropertyGrid extends StatelessWidget {
+///
+/// Each card plays [AppearAnimation] the first time it is built, one column
+/// after another, so a new page arrives row by row. Cards rebuilt after
+/// scrolling back don't replay it; a replaced list (new category, refresh)
+/// does.
+class SliverPropertyGrid extends StatefulWidget {
   const SliverPropertyGrid({
     required this.properties,
     required this.onTap,
@@ -43,17 +49,56 @@ class SliverPropertyGrid extends StatelessWidget {
     );
   }
 
+  /// Delay between neighbouring columns of one row.
+  static const Duration columnStagger = Duration(milliseconds: 70);
+
+  @override
+  State<SliverPropertyGrid> createState() => _SliverPropertyGridState();
+}
+
+class _SliverPropertyGridState extends State<SliverPropertyGrid> {
+  final Set<int> _appeared = {};
+
+  /// Part of each card's key, so a replaced list builds new cards even where
+  /// the same id sits in the same place.
+  int _generation = 0;
+
+  @override
+  void didUpdateWidget(SliverPropertyGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_extends(oldWidget.properties, widget.properties)) return;
+    _appeared.clear();
+    _generation++;
+  }
+
+  /// Whether [next] is [previous] with more items appended (a new page).
+  static bool _extends(
+    List<PropertyEntity> previous,
+    List<PropertyEntity> next,
+  ) {
+    if (next.length < previous.length) return false;
+    for (var i = 0; i < previous.length; i++) {
+      if (previous[i].id != next[i].id) return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return _SliverGridRows(
-      itemCount: (_) => properties.length,
-      cellBuilder: (index) {
-        final property = properties[index];
-        return PropertyGridCard(
-          property: property,
-          categoryName: categoryNameFor?.call(property.category),
-          onTap: () => onTap(property),
-          favoriteButton: favoriteButtonBuilder?.call(property),
+      itemCount: (_) => widget.properties.length,
+      cellBuilder: (index, column) {
+        final property = widget.properties[index];
+        return AppearAnimation(
+          key: ValueKey((_generation, property.id)),
+          animate: _appeared.add(property.id),
+          delay: SliverPropertyGrid.columnStagger * column,
+          child: PropertyGridCard(
+            property: property,
+            categoryName: widget.categoryNameFor?.call(property.category),
+            onTap: () => widget.onTap(property),
+            favoriteButton: widget.favoriteButtonBuilder?.call(property),
+          ),
         );
       },
     );
@@ -74,7 +119,7 @@ class SliverPropertyGridSkeleton extends StatelessWidget {
       excludeSemantics: true,
       sliver: _SliverGridRows(
         itemCount: (columns) => rows * columns,
-        cellBuilder: (_) => const PropertyGridCardSkeleton(),
+        cellBuilder: (_, _) => const PropertyGridCardSkeleton(),
       ),
     );
   }
@@ -84,7 +129,9 @@ class _SliverGridRows extends StatelessWidget {
   const _SliverGridRows({required this.itemCount, required this.cellBuilder});
 
   final int Function(int columns) itemCount;
-  final Widget Function(int index) cellBuilder;
+
+  /// Builds the item at [index], shown in [column] (0 at the reading start).
+  final Widget Function(int index, int column) cellBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +152,7 @@ class _SliverGridRows extends StatelessWidget {
             children: [
               for (var column = 0; column < columns; column++) ...[
                 if (column > 0) SizedBox(width: gap),
-                Expanded(child: _cell(row * columns + column, count)),
+                Expanded(child: _cell(row * columns + column, column, count)),
               ],
             ],
           ),
@@ -115,6 +162,6 @@ class _SliverGridRows extends StatelessWidget {
   }
 
   /// An empty cell keeps the last, incomplete row aligned to the columns.
-  Widget _cell(int index, int count) =>
-      index < count ? cellBuilder(index) : const SizedBox.shrink();
+  Widget _cell(int index, int column, int count) =>
+      index < count ? cellBuilder(index, column) : const SizedBox.shrink();
 }

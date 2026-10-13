@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_grid_card.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/sliver_property_grid.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -66,6 +67,105 @@ void main() {
       expect(find.text('BEAUTY'), findsOneWidget);
       await tester.tap(find.text('Eyeshadow Palette with Mirror'));
       expect(taps, [2]);
+    });
+  });
+
+  group('appear animation', () {
+    List<PropertyEntity> items(int from, int to) => [
+      for (var id = from; id <= to; id++)
+        PropertyEntity(
+          id: id,
+          title: 'Item $id',
+          price: id.toDouble(),
+          rating: 4,
+          category: 'beauty',
+        ),
+    ];
+
+    late ValueNotifier<List<PropertyEntity>> properties;
+    late ScrollController controller;
+
+    setUp(() {
+      properties = ValueNotifier(items(1, 4));
+      controller = ScrollController();
+    });
+    tearDown(() {
+      properties.dispose();
+      controller.dispose();
+    });
+
+    Future<void> pumpGrid(WidgetTester tester) => pumpLocalizedWidget(
+      tester,
+      ValueListenableBuilder(
+        valueListenable: properties,
+        builder: (_, list, _) => CustomScrollView(
+          controller: controller,
+          slivers: [SliverPropertyGrid(properties: list, onTap: (_) {})],
+        ),
+      ),
+    );
+
+    double opacityOf(WidgetTester tester, int id) => tester
+        .widget<FadeTransition>(
+          find
+              .ancestor(
+                of: find.text('Item $id'),
+                matching: find.byType(FadeTransition),
+              )
+              .first,
+        )
+        .opacity
+        .value;
+
+    testWidgets('a new page animates in while loaded cards stay put', (
+      tester,
+    ) async {
+      await pumpGrid(tester);
+      expect(opacityOf(tester, 1), 1);
+
+      properties.value = [...properties.value, ...items(5, 6)];
+      await tester.pump();
+
+      expect(opacityOf(tester, 1), 1, reason: 'already shown');
+      expect(opacityOf(tester, 5), 0);
+      await tester.pumpAndSettle();
+      expect(opacityOf(tester, 5), 1);
+    });
+
+    testWidgets('the second column starts after the first', (tester) async {
+      await pumpGrid(tester);
+      properties.value = [...properties.value, ...items(5, 6)];
+      await tester.pump();
+
+      await tester.pump(SliverPropertyGrid.columnStagger ~/ 2);
+
+      expect(opacityOf(tester, 5), greaterThan(0));
+      expect(opacityOf(tester, 6), 0);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('scrolling back does not replay it', (tester) async {
+      properties.value = items(1, 40);
+      await pumpGrid(tester);
+
+      controller.jumpTo(controller.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      controller.jumpTo(0);
+      await tester.pump();
+
+      expect(opacityOf(tester, 1), 1);
+    });
+
+    testWidgets('a replaced list (new category) animates again', (
+      tester,
+    ) async {
+      await pumpGrid(tester);
+
+      properties.value = items(1, 2);
+      await tester.pump();
+
+      expect(opacityOf(tester, 1), 0);
+      await tester.pumpAndSettle();
     });
   });
 }
