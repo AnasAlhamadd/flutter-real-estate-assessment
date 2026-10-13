@@ -20,7 +20,13 @@ abstract final class AppTextKeys {
   static const String authSignInUnavailable = 'auth.sign_in_unavailable';
   static const String authContinueAsGuest = 'auth.continue_as_guest';
 
-  static const String homeTitle = 'home.title';
+  static const String homeGoodMorning = 'home.good_morning';
+  static const String homeGoodAfternoon = 'home.good_afternoon';
+  static const String homeGoodEvening = 'home.good_evening';
+  static const String homeWelcomeGuest = 'home.welcome_guest';
+  static const String homeFeatured = 'home.featured';
+  static const String homeRecommendation = 'home.recommendation';
+
   static const String exploreTitle = 'explore.title';
   static const String detailsTitle = 'details.title';
   static const String profileTitle = 'profile.title';
@@ -36,6 +42,8 @@ abstract final class AppTextKeys {
   static const String commonSearchHint = 'common.search_hint';
   static const String commonFilter = 'common.filter';
   static const String commonEmpty = 'common.empty';
+  static const String commonAll = 'common.all';
+  static const String commonOfflineSavedData = 'common.offline_saved_data';
 
   static const String errorsNoInternet = 'errors.no_internet';
   static const String errorsTimeout = 'errors.timeout';

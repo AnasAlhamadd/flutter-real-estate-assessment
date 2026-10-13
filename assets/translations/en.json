@@ -20,7 +20,12 @@
     "continue_as_guest": "Continue as guest"
   },
   "home": {
-    "title": "Home"
+    "good_morning": "Good Morning",
+    "good_afternoon": "Good Afternoon",
+    "good_evening": "Good Evening",
+    "welcome_guest": "Welcome, Guest",
+    "featured": "Featured",
+    "recommendation": "Our Recommendation"
   },
   "explore": {
     "title": "Search for Your Ideal Home"
@@ -43,7 +48,9 @@
     "see_all": "See All",
     "search_hint": "Search something",
     "filter": "Filter",
-    "empty": "Nothing to show here yet."
+    "empty": "Nothing to show here yet.",
+    "all": "All",
+    "offline_saved_data": "You're offline. Showing saved results."
   },
   "errors": {
     "no_internet": "No internet connection. Check your network and try again.",

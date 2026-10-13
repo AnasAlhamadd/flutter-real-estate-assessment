@@ -68,6 +68,23 @@ abstract final class AppSizes {
   /// small screens don't shrink it.
   static const double minTapTarget = 44;
 
+  // Home (Figma `1:4426`).
+
+  /// Header top below the status bar (Figma: 60 from the frame top − 44).
+  static const double homeHeaderTop = 16;
+  static const double homeAvatarSize = 44;
+  static const double homeAvatarTextGap = 10;
+  static const double homeSectionTitleContentGap = 20;
+
+  /// Gap from the Featured cards to the "Our Recommendation" title.
+  static const double homeFeaturedRecommendationGap = 32;
+
+  /// Figma grid card width (2 columns of 187 in a 390 row). Wider screens fit
+  /// more columns of at least this many logical pixels.
+  static const double gridCardMinWidth = 187;
+  static const int gridMinColumns = 2;
+  static const int gridMaxColumns = 4;
+
   // Featured card.
   static const double featuredCardWidth = 250;
   static const double featuredCardHeight = 340;

@@ -54,10 +54,27 @@ void main() {
     await pumpApp(tester, preferences: {'locale': 'ar'});
 
     expectDirectionFor(tester, ar);
-    expect(
-      find.widgetWithText(AppBar, translate(ar, 'home.title')),
-      findsOneWidget,
-    );
+    expect(find.text(translate(ar, 'home.featured')), findsOneWidget);
+  });
+
+  testWidgets('switching language updates Home without a restart', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    expect(find.text(translate(en, 'home.featured')), findsOneWidget);
+
+    await tester.tap(find.text(translate(en, 'nav.profile')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(translate(en, 'language.arabic')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(translate(ar, 'nav.home')));
+    await tester.pumpAndSettle();
+
+    expectNoLayoutErrors(tester);
+    expectDirectionFor(tester, ar);
+    expect(find.text(translate(ar, 'home.featured')), findsOneWidget);
+    expect(find.text(translate(ar, 'home.welcome_guest')), findsOneWidget);
+    expect(find.text(translate(en, 'home.featured')), findsNothing);
   });
 
   testWidgets('language switch keeps the current tab', (tester) async {

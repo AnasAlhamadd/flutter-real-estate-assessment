@@ -88,6 +88,11 @@ abstract final class AppTextStyles {
       _rubik(18, FontWeight.w400, 1.8, color: ColorsApp.black02);
   static TextStyle get authButton => _rubik(18, FontWeight.w500, 1.3);
 
+  /// Home header greeting (Figma `1:4452`): `Paragraph/Regular/P12 - LH 180%`
+  /// in Black/03. The name line below it uses [bodyMedium16].
+  static TextStyle get homeGreeting =>
+      _rubik(12, FontWeight.w400, 1.8, color: ColorsApp.black03);
+
   /// `Paragraph/Medium/P12 - LH 130%`.
   static TextStyle get navLabel => _rubik(12, FontWeight.w500, 1.3);
 
