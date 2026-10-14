@@ -249,7 +249,7 @@ Every data-driven area has loading (shimmer skeletons shaped like the real cards
 | Superseded request (cancelled) | Nothing; it is ignored |
 
 - **Pagination failures** keep the loaded items and show a small retry row under them.
-- **Pull to refresh** keeps the current content if the refresh fails and shows a snackbar.
+- **Pull to refresh** shows skeletons until the new data arrives; if the refresh fails, the previous content comes back with a snackbar. Background refreshes (a stale cached search, coming back online) don't show skeletons.
 - **Offline launch:** the first "All" page and the categories are saved on the device. Home and Explore show the saved page when it is less than 24 h old, with an "offline: showing saved results" notice; the saved categories are used at any age when the API can't be reached. Featured, later pages and category pages have no saved copy and show their error with Retry. Coming back online refreshes once.
 - **Broken or missing images** never crash a screen: `AppNetworkImage` (`cached_network_image`) shows a placeholder and an error widget, and handles `null` or empty URLs.
 

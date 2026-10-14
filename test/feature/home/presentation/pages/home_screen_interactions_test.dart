@@ -12,7 +12,9 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/entitie
 import 'package:flutter_real_estate_assessment/feature/home/presentation/cubit/home_cubit.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/cubit/home_state.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/home/presentation/widget/featured_property_list.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/featured_property_card.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_card_skeletons.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/property_grid_card.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/sliver_property_grid.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
@@ -276,6 +278,31 @@ void main() {
         );
       });
     }
+
+    testWidgets('shows skeletons until the new data arrives', (tester) async {
+      final repository = FakeHomeRepository();
+      await pumpApp(tester, repository: repository);
+      final gate = Completer<void>();
+      repository.gate = gate.future;
+
+      await _scrollHomeToTop(tester);
+      await tester.fling(homePageScrollable, const Offset(0, 500), 1000);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.byType(FeaturedPropertyListSkeleton), findsOneWidget);
+      expect(find.byType(PropertyGridCardSkeleton), findsWidgets);
+      expect(find.byType(FeaturedPropertyCard), findsNothing);
+      expect(find.byType(PropertyGridCard), findsNothing);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(FeaturedPropertyListSkeleton), findsNothing);
+      expect(find.byType(PropertyGridCardSkeleton), findsNothing);
+      expect(find.byType(FeaturedPropertyCard), findsWidgets);
+      expect(find.byType(PropertyGridCard), findsWidgets);
+    });
 
     testWidgets('works when a section shows an error', (tester) async {
       final repository = FakeHomeRepository(

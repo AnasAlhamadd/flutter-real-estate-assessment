@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_real_estate_assessment/core/enums/data_source.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/category_entity.dart';
@@ -20,9 +21,11 @@ enum SearchMode {
   filtered,
 }
 
-/// One listing at a time (browse or one query). [status] describes its first
-/// load only; work on visible results has its own flags ([isLoadingMore],
-/// [isRefreshing]), so results are never replaced by a loading state.
+/// One listing at a time (browse or one query). [status] is `loading` during
+/// the first load and during the user's pull to refresh; the refresh keeps
+/// [items] in the state, so a failure goes back to the previous status with
+/// the same results ([refreshFailed]). Background refreshes and next pages
+/// keep the status ([isRefreshing], [isLoadingMore]).
 class SearchState extends Equatable {
   const SearchState({
     this.mode = SearchMode.browse,
@@ -37,7 +40,7 @@ class SearchState extends Equatable {
     this.loadMoreFailure,
     this.isRefreshing = false,
     this.refreshFailed = false,
-    this.isFromCache = false,
+    this.source = DataSource.remote,
     this.categories = const [],
     this.filter = PropertyFilter.none,
   });
@@ -73,9 +76,9 @@ class SearchState extends Equatable {
   /// The last refresh couldn't update the results already shown.
   final bool refreshFailed;
 
-  /// Browse only: the persisted "All" first page, shown after a remote
-  /// failure. Pagination waits for a successful refresh.
-  final bool isFromCache;
+  /// [DataSource.saved] in browse mode only: the persisted "All" first page,
+  /// shown after a remote failure.
+  final DataSource source;
 
   /// For the card location fallback (brand → category name → slug).
   final List<CategoryEntity> categories;
@@ -89,7 +92,7 @@ class SearchState extends Equatable {
       !isLoadingMore &&
       loadMoreFailure == null &&
       !isRefreshing &&
-      !isFromCache;
+      source == DataSource.remote;
 
   String? categoryNameFor(String slug) {
     for (final category in categories) {
@@ -111,7 +114,7 @@ class SearchState extends Equatable {
     ValueGetter<Failure?>? loadMoreFailure,
     bool? isRefreshing,
     bool? refreshFailed,
-    bool? isFromCache,
+    DataSource? source,
     List<CategoryEntity>? categories,
     PropertyFilter? filter,
   }) => SearchState(
@@ -129,7 +132,7 @@ class SearchState extends Equatable {
         : this.loadMoreFailure,
     isRefreshing: isRefreshing ?? this.isRefreshing,
     refreshFailed: refreshFailed ?? this.refreshFailed,
-    isFromCache: isFromCache ?? this.isFromCache,
+    source: source ?? this.source,
     categories: categories ?? this.categories,
     filter: filter ?? this.filter,
   );
@@ -159,7 +162,7 @@ class SearchState extends Equatable {
     loadMoreFailure,
     isRefreshing,
     refreshFailed,
-    isFromCache,
+    source,
     categories,
     filter,
   ];

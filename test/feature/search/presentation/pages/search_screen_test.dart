@@ -540,8 +540,8 @@ void main() {
       expectNoLayoutErrors(tester);
     });
 
-    testWidgets('pull to refresh moves only the results, keeps them shown '
-        'and refreshes once', (tester) async {
+    testWidgets('pull to refresh moves only the results, shows skeletons '
+        'until the new results arrive, and refreshes once', (tester) async {
       final search = FakeSearchRepository();
       await _pumpExplore(tester, search: search);
       await _type(tester, 'mirror');
@@ -563,13 +563,66 @@ void main() {
       expect(spinner.top, greaterThanOrEqualTo(field.bottom));
       expect(_rectOf(tester, find.byType(SearchHeader)), header);
       expect(_rectOf(tester, find.byType(AppSearchField)), field);
-      expect(find.byType(PropertyListCard), findsNWidgets(2));
-      expect(find.byType(PropertyListCardSkeleton), findsNothing);
+      expect(find.byType(PropertyListCardSkeleton), findsWidgets);
+      expect(find.byType(PropertyListCard), findsNothing);
 
       gate.complete();
       await tester.pumpAndSettle();
 
       expect(search.requests, ['first:mirror', 'refresh:mirror']);
+      expect(find.byType(PropertyListCardSkeleton), findsNothing);
+      expect(find.byType(PropertyListCard), findsNWidgets(2));
+    });
+
+    testWidgets('a failed pull to refresh brings the results back and says '
+        'so', (tester) async {
+      final search = FakeSearchRepository();
+      await _pumpExplore(tester, search: search);
+      await _type(tester, 'mirror');
+      await tester.pumpAndSettle();
+      search.firstPages = {'mirror': const Left(NetworkFailure())};
+
+      await tester.fling(
+        find.byType(PropertyListCard).first,
+        const Offset(0, 300),
+        1000,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PropertyListCard), findsNWidgets(2));
+      expect(find.byType(PropertyListCardSkeleton), findsNothing);
+      expect(
+        find.text(translate(_en, 'search.refresh_failed')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a stale cached query refreshes in the background without '
+        'skeletons', (tester) async {
+      final cached = _results('mirror', [sampleProperties.first]);
+      final search = FakeSearchRepository(
+        cached: {
+          'mirror': SearchResultsEntity(
+            query: cached.query,
+            items: cached.items,
+            total: cached.total,
+            hasReachedMax: true,
+            isStale: true,
+          ),
+        },
+      );
+      final gate = Completer<void>();
+      search.gate = gate.future;
+      await _pumpExplore(tester, search: search);
+
+      await _type(tester, 'mirror');
+
+      expect(search.requests, ['refresh:mirror']);
+      expect(find.byType(PropertyListCard), findsOneWidget);
+      expect(find.byType(PropertyListCardSkeleton), findsNothing);
+
+      gate.complete();
+      await tester.pumpAndSettle();
       expect(find.byType(PropertyListCard), findsNWidgets(2));
     });
   });

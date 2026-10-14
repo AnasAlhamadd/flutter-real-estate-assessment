@@ -60,8 +60,8 @@ The quotes above are short summaries of longer briefs, not verbatim prompts.
 
 **Who decided what (UI/UX additions not in Figma):** see [§4.10](docs/PROJECT_REFERENCE.md#410-decision-records-uiux-additions-not-in-figma).
 
-- **My requests:** the Details hero zoom, blur and gradient tied to the drag; a back-to-top button on Home; a clear (×) button in the search field; an appear animation for product cards with pagination; tabs that keep their scroll position and data when switching, so the product requests aren't sent again (`StatefulShellRoute.indexedStack` instead of rebuilding the screen for each tab); a search bar pinned on Explore, with pull to refresh moving only the results.
-- **Agent choices:** the values (timings, sizes, thresholds), and blurring the hero as it scrolls away rather than while pulling, so the zoomed photo stays sharp.
+- **My requests:** the Details hero zoom, blur and gradient tied to the drag; a back-to-top button on Home; a clear (×) button in the search field; an appear animation for product cards with pagination; tabs that keep their scroll position and data when switching, so the product requests aren't sent again (`StatefulShellRoute.indexedStack` instead of rebuilding the screen for each tab); a search bar pinned on Explore, with pull to refresh moving only the results; a fresh shimmer while pull to refresh reloads Home and Explore, driven by the Cubit status (`loading` with the old data kept) rather than a flag in the view; a `DataSource` enum for saved (offline) data instead of a bool.
+- **Agent choices:** the values (timings, sizes, thresholds), blurring the hero as it scrolls away rather than while pulling, so the zoomed photo stays sharp, and keeping background refreshes (stale cache, reconnect) free of skeletons.
 
 ## 4. How the output was verified
 

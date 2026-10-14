@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_real_estate_assessment/core/enums/data_source.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/core/usecase/usecase.dart';
@@ -142,12 +143,13 @@ class SearchCubit extends Cubit<SearchState> {
     };
   }
 
-  /// Pull to refresh. Shown results stay when the refresh fails
+  /// The user's pull to refresh: shown results switch to `loading`
+  /// (skeletons) and come back when the refresh fails
   /// ([SearchState.refreshFailed]); a failed first load is retried.
   Future<void> refresh() async {
     if (state.isRefreshing) return;
     if (!_hasResultsState(state)) return retry();
-    await _refreshShown();
+    await _refreshShown(showLoading: true);
   }
 
   @override
@@ -181,8 +183,8 @@ class SearchCubit extends Cubit<SearchState> {
     if (!restored || isClosed) return;
     if (state.status == RequestStatus.failure) {
       unawaited(retry());
-    } else if (state.isFromCache) {
-      unawaited(refresh());
+    } else if (state.source == DataSource.saved && !state.isRefreshing) {
+      unawaited(_refreshShown(showLoading: false));
     } else if (state.loadMoreFailure != null) {
       unawaited(retryLoadMore());
     }
@@ -249,7 +251,7 @@ class SearchCubit extends Cubit<SearchState> {
     final cached = _getCachedResults(query);
     if (cached != null) {
       emit(_withResults(base, cached));
-      if (cached.isStale) unawaited(_refreshShown());
+      if (cached.isStale) unawaited(_refreshShown(showLoading: false));
       return;
     }
     emit(base);
@@ -333,17 +335,28 @@ class SearchCubit extends Cubit<SearchState> {
     );
   }
 
-  Future<void> _refreshShown() async {
+  /// [showLoading] is false for refreshes the user didn't ask for (stale
+  /// cache, reconnect): the results stay visible while they run.
+  Future<void> _refreshShown({required bool showLoading}) async {
     final generation = ++_generation;
-    emit(state.copyWith(isRefreshing: true, refreshFailed: false));
+    final previousStatus = state.status;
+    emit(
+      state.copyWith(
+        status: showLoading ? RequestStatus.loading : null,
+        isRefreshing: true,
+        refreshFailed: false,
+      ),
+    );
     final SearchState? updated = switch (state.mode) {
       SearchMode.browse => await _refreshedBrowse(),
       SearchMode.search => await _refreshedSearch(),
       SearchMode.filtered => await _refreshedFiltered(),
     };
     if (_isOutdated(generation)) return;
+    final next = updated ?? state.copyWith(refreshFailed: true);
     emit(
-      (updated ?? state.copyWith(refreshFailed: true)).copyWith(
+      next.copyWith(
+        status: next.status == RequestStatus.loading ? previousStatus : null,
         isRefreshing: false,
         isLoadingMore: false,
       ),
@@ -404,7 +417,7 @@ class SearchCubit extends Cubit<SearchState> {
       failure: () => null,
       isLoadingMore: false,
       loadMoreFailure: () => null,
-      isFromCache: false,
+      source: DataSource.remote,
     );
   }
 
@@ -419,7 +432,7 @@ class SearchCubit extends Cubit<SearchState> {
     browsePage: 0,
     isLoadingMore: false,
     loadMoreFailure: () => null,
-    isFromCache: page.isFromCache,
+    source: page.isFromCache ? DataSource.saved : DataSource.remote,
   );
 
   static SearchState _withResults(
@@ -435,6 +448,6 @@ class SearchCubit extends Cubit<SearchState> {
     failure: () => null,
     isLoadingMore: false,
     loadMoreFailure: () => null,
-    isFromCache: false,
+    source: DataSource.remote,
   );
 }
