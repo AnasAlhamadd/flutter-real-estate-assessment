@@ -12,12 +12,17 @@ class CategoryChip extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.verticalPadding = AppSizes.chipVerticalPadding,
     super.key,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
+
+  /// Design pixels; the Filter sheet's chips use
+  /// [AppSizes.filterChipVerticalPadding].
+  final double verticalPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +44,7 @@ class CategoryChip extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: AppSizes.chipHorizontalPadding.w,
-              vertical: AppSizes.chipVerticalPadding.h,
+              vertical: verticalPadding.h,
             ),
             child: CustomText.plain(
               label,

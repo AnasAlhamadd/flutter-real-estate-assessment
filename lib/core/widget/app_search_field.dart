@@ -19,6 +19,7 @@ class AppSearchField extends StatelessWidget {
     this.onSubmitted,
     this.onTap,
     this.onFilterTap,
+    this.filterActive = false,
     this.readOnly = false,
     this.autofocus = false,
     super.key,
@@ -32,6 +33,10 @@ class AppSearchField extends StatelessWidget {
 
   /// Hides the filter button when `null`.
   final VoidCallback? onFilterTap;
+
+  /// Not in Figma: tints the filter icon primary while filters are applied,
+  /// so filtered results are never mistaken for the full list.
+  final bool filterActive;
   final bool readOnly;
   final bool autofocus;
 
@@ -56,7 +61,10 @@ class AppSearchField extends StatelessWidget {
           ),
           SizedBox(width: AppSizes.searchFieldIconGap.w),
           Expanded(child: _buildInput(context)),
-          if (onFilterTap != null) _FilterButton(onTap: onFilterTap!),
+          if (controller != null && !readOnly)
+            _ClearButton(controller: controller!, onCleared: onChanged),
+          if (onFilterTap != null)
+            _FilterButton(onTap: onFilterTap!, active: filterActive),
         ],
       ),
     );
@@ -87,28 +95,92 @@ class AppSearchField extends StatelessWidget {
   }
 }
 
+/// Not in Figma: clears the typed query. Shown only while there is text, and
+/// reports the empty text through [onCleared] like a normal edit.
+class _ClearButton extends StatelessWidget {
+  const _ClearButton({required this.controller, this.onCleared});
+
+  final TextEditingController controller;
+  final ValueChanged<String>? onCleared;
+
+  void _clear() {
+    controller.clear();
+    onCleared?.call('');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, _) {
+        if (value.text.isEmpty) return const SizedBox.shrink();
+        return Semantics(
+          button: true,
+          label: context.tr(AppTextKeys.commonClearSearch),
+          excludeSemantics: true,
+          onTap: _clear,
+          child: InkResponse(
+            onTap: _clear,
+            radius: AppSizes.minTapTarget / 2,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppSizes.minTapTarget,
+              ),
+              child: Center(
+                widthFactor: 1,
+                child: Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    start: AppSizes.searchFieldIconGap.w,
+                  ),
+                  child: const AppSvgIcon(
+                    ImagePath.close,
+                    size: AppSizes.smallIconSize,
+                    color: ColorsApp.black03,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Filter icon at the field's end (Search-v1 `1:4146`). The tap area spans
+/// the field's height and the icon gap, so it stays [AppSizes.minTapTarget]
+/// tall without moving the Figma icon.
 class _FilterButton extends StatelessWidget {
-  const _FilterButton({required this.onTap});
+  const _FilterButton({required this.onTap, required this.active});
 
   final VoidCallback onTap;
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
       label: context.tr(AppTextKeys.commonFilter),
+      value: active ? context.tr(AppTextKeys.filterActive) : null,
       excludeSemantics: true,
+      onTap: onTap,
       child: InkResponse(
         onTap: onTap,
-        radius: AppSizes.smallIconSize.r,
-        child: Padding(
-          padding: EdgeInsetsDirectional.only(
-            start: AppSizes.searchFieldIconGap.w,
-          ),
-          child: const AppSvgIcon(
-            ImagePath.filter,
-            size: AppSizes.smallIconSize,
-            color: ColorsApp.black03,
+        radius: AppSizes.minTapTarget / 2,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
+          child: Center(
+            widthFactor: 1,
+            child: Padding(
+              padding: EdgeInsetsDirectional.only(
+                start: AppSizes.searchFieldIconGap.w,
+              ),
+              child: AppSvgIcon(
+                ImagePath.filter,
+                size: AppSizes.smallIconSize,
+                color: active ? ColorsApp.primary : ColorsApp.black03,
+              ),
+            ),
           ),
         ),
       ),

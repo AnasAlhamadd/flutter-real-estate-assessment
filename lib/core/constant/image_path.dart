@@ -6,6 +6,7 @@ abstract final class ImagePath {
 
   static const String arrowLeft = '$_svg/arrow_left.svg';
   static const String arrowRight = '$_svg/arrow_right.svg';
+  static const String close = '$_svg/close.svg';
   static const String filter = '$_svg/filter.svg';
 
   /// Iconly Light-Outline Heart from the Home cards (`I1:4470;85001:13415`).
@@ -67,6 +68,7 @@ abstract final class ImagePath {
   static const List<String> icons = [
     arrowLeft,
     arrowRight,
+    close,
     filter,
     heart,
     heartBold,

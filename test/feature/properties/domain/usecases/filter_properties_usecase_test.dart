@@ -30,10 +30,21 @@ void main() {
 
   test('keeps only the selected category', () {
     final result = filter(
-      FilterParams(items: items, categorySlug: 'smartphones'),
+      FilterParams(items: items, categorySlugs: const {'smartphones'}),
     );
 
     expect(ids(result), [1, 2]);
+  });
+
+  test('keeps items in any of several selected categories', () {
+    final result = filter(
+      FilterParams(
+        items: items,
+        categorySlugs: const {'laptops', 'smartphones'},
+      ),
+    );
+
+    expect(ids(result), [1, 2, 4]);
   });
 
   test('price bounds are inclusive', () {
@@ -51,7 +62,7 @@ void main() {
     final result = filter(
       FilterParams(
         items: items,
-        categorySlug: 'smartphones',
+        categorySlugs: const {'smartphones'},
         priceRange: const PriceRange(min: 0, max: 100),
       ),
     );
@@ -61,7 +72,7 @@ void main() {
 
   test('an unknown category or empty input yields an empty list', () {
     expect(
-      filter(FilterParams(items: items, categorySlug: 'vehicle')),
+      filter(FilterParams(items: items, categorySlugs: const {'vehicle'})),
       isEmpty,
     );
     expect(filter(const FilterParams(items: [])), isEmpty);

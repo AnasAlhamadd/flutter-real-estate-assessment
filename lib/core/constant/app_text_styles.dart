@@ -84,6 +84,16 @@ abstract final class AppTextStyles {
   /// lost and the MCP limit is reached; uses `Paragraph/Medium/P16 - LH 130%`.
   static TextStyle get searchHeaderTitle => _rubik(16, FontWeight.w500, 1.3);
 
+  /// Filter sheet (Figma `1:3867`): section titles SemiBold 16/24px, "Reset"
+  /// Medium 14/1.8, price labels SemiBold 12/16px. The title uses
+  /// [bodyMedium16].
+  static TextStyle get filterSectionTitle =>
+      _rubik(16, FontWeight.w600, 24 / 16);
+  static TextStyle get filterReset =>
+      _rubik(14, FontWeight.w500, 1.8, color: ColorsApp.primary);
+  static TextStyle get filterPriceLabel =>
+      _rubik(12, FontWeight.w600, 16 / 12, color: ColorsApp.primary);
+
   static TextStyle get listTitle => _rubik(18, FontWeight.w600, 1.4);
   static TextStyle get listPrice =>
       _rubik(18, FontWeight.w600, 1.2, color: ColorsApp.primary);

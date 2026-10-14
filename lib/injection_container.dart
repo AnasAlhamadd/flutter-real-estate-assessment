@@ -36,6 +36,7 @@ import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/ge
 import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/load_more_search_results_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/refresh_search_results_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/search_first_page_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/filter_cubit.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/search_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -121,8 +122,13 @@ Future<void> init() async {
         refreshResults: sl(),
         getBrowsePage: sl(),
         getCategories: sl(),
+        getAllMatches: sl(),
+        filterProperties: sl(),
         connectivityChanges: sl<NetworkInfo>().onStatusChange,
       ),
+    )
+    ..registerFactory(
+      () => FilterCubit(getAllMatches: sl(), getCategories: sl()),
     )
     ..registerFactory(
       () => PropertyDetailsCubit(

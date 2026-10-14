@@ -4,14 +4,18 @@ import 'package:flutter_real_estate_assessment/core/utils/cancellation_signal.da
 import 'package:flutter_real_estate_assessment/feature/home/domain/repositories/home_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/home/domain/usecases/get_categories_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/home/domain/usecases/get_recommendations_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/repositories/properties_repository.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/search_properties_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/entities/search_results_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/repositories/search_repository.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/get_cached_search_results_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/load_more_search_results_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/refresh_search_results_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/search_first_page_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/filter_cubit.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/search_cubit.dart';
 
+import 'fake_properties_repository.dart';
 import 'sample_properties.dart';
 
 /// In-memory [SearchRepository] for widget tests. A query's first page is
@@ -85,11 +89,13 @@ class FakeSearchRepository implements SearchRepository {
   }
 }
 
-/// A real [SearchCubit] over [search] (results) and [home] (the browse
-/// listing and categories), with the app's debounce.
+/// A real [SearchCubit] over [search] (results), [home] (the browse listing
+/// and categories) and [properties] (full sets while filtered; sample
+/// matches by default), with the app's debounce.
 SearchCubit searchCubitFor(
   SearchRepository search,
   HomeRepository home, {
+  PropertiesRepository? properties,
   Duration debounce = SearchCubit.defaultDebounce,
 }) => SearchCubit(
   getCachedResults: GetCachedSearchResultsUseCase(search),
@@ -98,5 +104,18 @@ SearchCubit searchCubitFor(
   refreshResults: RefreshSearchResultsUseCase(search),
   getBrowsePage: GetRecommendationsUseCase(home),
   getCategories: GetCategoriesUseCase(home),
+  getAllMatches: SearchPropertiesUseCase(
+    properties ?? FakePropertiesRepository(),
+  ),
   debounce: debounce,
+);
+
+/// A real [FilterCubit] over [properties] (full sets) and [home]
+/// (categories).
+FilterCubit filterCubitFor(
+  PropertiesRepository properties,
+  HomeRepository home,
+) => FilterCubit(
+  getAllMatches: SearchPropertiesUseCase(properties),
+  getCategories: GetCategoriesUseCase(home),
 );

@@ -21,15 +21,18 @@ void main() {
   late MockPropertiesRemoteDataSource remote;
   late MockNetworkInfo networkInfo;
   late PropertiesRepositoryImpl repository;
+  late DateTime now;
 
   setUpAll(() => registerFallbackValue(CancellationSignal()));
 
   setUp(() {
     remote = MockPropertiesRemoteDataSource();
     networkInfo = MockNetworkInfo();
+    now = DateTime.utc(2026, 10, 13, 12);
     repository = PropertiesRepositoryImpl(
       remote: remote,
       networkInfo: networkInfo,
+      clock: () => now,
     );
     when(() => networkInfo.isConnected).thenAnswer((_) async => true);
   });
@@ -86,6 +89,98 @@ void main() {
         const Left(NetworkFailure()),
       );
       verifyZeroInteractions(remote);
+    });
+  });
+
+  group('full-set memory', () {
+    void answerSearches() {
+      when(
+        () => remote.searchProducts(
+          any(),
+          cancellation: any(named: 'cancellation'),
+        ),
+      ).thenAnswer((_) async => catalog);
+    }
+
+    void answerCatalog() {
+      when(
+        () => remote.getAllProducts(cancellation: any(named: 'cancellation')),
+      ).thenAnswer((_) async => catalog);
+    }
+
+    VerificationResult verifySearches(String query) => verify(
+      () => remote.searchProducts(
+        query,
+        cancellation: any(named: 'cancellation'),
+      ),
+    );
+
+    test('a fresh full set is served without a request', () async {
+      answerSearches();
+      answerCatalog();
+
+      final first = rightValue(await repository.searchProperties(query: 'a'));
+      now = now.add(PropertiesRepositoryImpl.fullSetFreshFor);
+      final second = rightValue(await repository.searchProperties(query: 'a'));
+      await repository.getAllProperties();
+      await repository.getAllProperties();
+
+      expect(second, first);
+      verifySearches('a').called(1);
+      verify(
+        () => remote.getAllProducts(cancellation: any(named: 'cancellation')),
+      ).called(1);
+    });
+
+    test('forceRefresh and staleness request again', () async {
+      answerSearches();
+
+      await repository.searchProperties(query: 'a');
+      await repository.searchProperties(query: 'a', forceRefresh: true);
+      now = now.add(
+        PropertiesRepositoryImpl.fullSetFreshFor + const Duration(seconds: 1),
+      );
+      await repository.searchProperties(query: 'a');
+
+      verifySearches('a').called(3);
+    });
+
+    test('failures are not kept', () async {
+      when(
+        () => remote.searchProducts(
+          'a',
+          cancellation: any(named: 'cancellation'),
+        ),
+      ).thenThrow(const NetworkException());
+      expect(
+        await repository.searchProperties(query: 'a'),
+        const Left(NetworkFailure()),
+      );
+
+      answerSearches();
+      expect((await repository.searchProperties(query: 'a')).isRight(), isTrue);
+      verifySearches('a').called(2);
+    });
+
+    test('keeps the 5 most recently used full sets', () async {
+      answerSearches();
+      for (final query in ['a', 'b', 'c', 'd', 'e']) {
+        await repository.searchProperties(query: query);
+      }
+      await repository.searchProperties(query: 'a');
+      await repository.searchProperties(query: 'f');
+      clearInteractions(remote);
+
+      await repository.searchProperties(query: 'a');
+      await repository.searchProperties(query: 'b');
+
+      verifyNever(
+        () => remote.searchProducts(
+          'a',
+          cancellation: any(named: 'cancellation'),
+        ),
+      );
+      verifySearches('b').called(1);
     });
   });
 

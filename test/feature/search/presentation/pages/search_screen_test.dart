@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
+import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
 import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
+import 'package:flutter_real_estate_assessment/core/utils/formatters.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_back_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_search_field.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_svg_icon.dart';
+import 'package:flutter_real_estate_assessment/core/widget/category_chip.dart';
 import 'package:flutter_real_estate_assessment/core/widget/error_view.dart';
 import 'package:flutter_real_estate_assessment/core/widget/favorite_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/load_more_error_view.dart';
@@ -19,10 +22,12 @@ import 'package:flutter_real_estate_assessment/feature/properties/presentation/w
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/entities/search_results_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/search_cubit.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/widget/filter_sheet.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/widget/search_header.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/widget/search_results_count.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/fake_properties_repository.dart';
 import '../../../../helpers/fake_search_repository.dart';
 import '../../../../helpers/layout_expectations.dart';
 import '../../../../helpers/pump_app.dart';
@@ -36,6 +41,7 @@ const Locale _ar = AppLocalization.arabic;
 Future<void> _pumpExplore(
   WidgetTester tester, {
   FakeSearchRepository? search,
+  FakePropertiesRepository? properties,
   Locale locale = _en,
   TestViewport viewport = defaultViewport,
   double textScale = 1,
@@ -43,6 +49,7 @@ Future<void> _pumpExplore(
   tester,
   initialLocation: AppRouter.explore,
   search: search,
+  properties: properties,
   locale: locale,
   viewport: viewport,
   textScale: textScale,
@@ -84,6 +91,26 @@ SearchResultsEntity _results(
 Rect _rectOf(WidgetTester tester, Finder finder) =>
     tester.getRect(finder.first);
 
+final Finder _filterIcon = find.byWidgetPredicate(
+  (widget) => widget is AppSvgIcon && widget.assetPath == ImagePath.filter,
+);
+
+Color? _filterIconColor(WidgetTester tester) =>
+    tester.widget<AppSvgIcon>(_filterIcon).color;
+
+Finder _inSheet(Finder finder) =>
+    find.descendant(of: find.byType(FilterSheet), matching: finder);
+
+Future<void> _openFilter(WidgetTester tester) async {
+  await tester.tap(_filterIcon);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _setFilter(WidgetTester tester) async {
+  await tester.tap(_inSheet(find.text(translate(_en, 'filter.apply'))));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   group('Figma layout (430 × 932)', () {
     testWidgets('stacks header, search field, count and list with the '
@@ -121,16 +148,17 @@ void main() {
       expect(tester.getRect(title).center.dx, closeTo(215, 0.01));
     });
 
-    testWidgets('has no filter icon until the Filter task', (tester) async {
+    testWidgets('puts the filter icon at the end of the search field '
+        '(Figma 1:4146)', (tester) async {
       await _pumpExplore(tester);
 
-      expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is AppSvgIcon && widget.assetPath == ImagePath.filter,
-        ),
-        findsNothing,
-      );
+      final field = _rectOf(tester, find.byType(AppSearchField));
+      final icon = tester.getRect(_filterIcon);
+      expect(icon.size, const Size(20, 20));
+      const border = 1;
+      expect(icon.right, closeTo(field.right - border - 13.5, 0.01));
+      expect(icon.center.dy, closeTo(field.center.dy, 0.01));
+      expect(_filterIconColor(tester), ColorsApp.black03);
     });
 
     testWidgets('puts the back button on the start side in Arabic', (
@@ -342,6 +370,124 @@ void main() {
 
       expect(find.byType(LoadMoreErrorView), findsNothing);
       expect(find.byType(PropertyListCard), findsNWidgets(2));
+    });
+  });
+
+  group('filter', () {
+    testWidgets('the filter icon opens the sheet over the whole catalog', (
+      tester,
+    ) async {
+      final properties = FakePropertiesRepository();
+      await _pumpExplore(tester, properties: properties);
+
+      await _openFilter(tester);
+
+      expect(find.byType(FilterSheet), findsOneWidget);
+      expect(_inSheet(find.text('Furniture')), findsOneWidget);
+      expect(_inSheet(find.text(Formatters.price(9))), findsOneWidget);
+      expect(_inSheet(find.text(Formatters.price(1900))), findsOneWidget);
+      expect(properties.fullSetRequests, ['']);
+    });
+
+    testWidgets('Set Filter narrows the results and tints the icon', (
+      tester,
+    ) async {
+      final search = FakeSearchRepository();
+      await _pumpExplore(tester, search: search);
+
+      await _openFilter(tester);
+      await tester.tap(_inSheet(find.text('Furniture')));
+      await tester.pump();
+      await _setFilter(tester);
+
+      expect(find.byType(FilterSheet), findsNothing);
+      expect(find.text(_found(_en, 2)), findsOneWidget);
+      expect(find.byType(PropertyListCard), findsNWidgets(2));
+      expect(find.text('Calvin Klein CK One'), findsNothing);
+      expect(_filterIconColor(tester), ColorsApp.primary);
+      expect(search.requests, isEmpty);
+    });
+
+    testWidgets('dragging the low thumb sets a minimum price', (tester) async {
+      await _pumpExplore(tester);
+      await _openFilter(tester);
+
+      final slider = tester.getRect(_inSheet(find.byType(RangeSlider)));
+      await tester.dragFrom(
+        Offset(slider.left + 12, slider.center.dy),
+        Offset(slider.width * 0.6, 0),
+      );
+      await tester.pumpAndSettle();
+      await _setFilter(tester);
+
+      expect(find.text('Annibale Colombo Bed'), findsOneWidget);
+      expect(find.text('Essence Mascara Lash Princess'), findsNothing);
+    });
+
+    testWidgets('back closes the sheet without applying', (tester) async {
+      await _pumpExplore(tester);
+      await _openFilter(tester);
+
+      await tester.tap(_inSheet(find.text('Furniture')));
+      await tester.tap(_inSheet(find.byType(AppBackButton)));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(FilterSheet), findsNothing);
+      expect(find.text(_found(_en, sampleProperties.length)), findsOneWidget);
+      expect(_filterIconColor(tester), ColorsApp.black03);
+    });
+
+    testWidgets('reopening shows the applied filter, and Reset clears it', (
+      tester,
+    ) async {
+      await _pumpExplore(tester);
+      await _openFilter(tester);
+      await tester.tap(_inSheet(find.text('Furniture')));
+      await _setFilter(tester);
+
+      await _openFilter(tester);
+      final furniture = _inSheet(find.byType(CategoryChip)).at(2);
+      expect(tester.widget<CategoryChip>(furniture).selected, isTrue);
+
+      await tester.tap(_inSheet(find.text(translate(_en, 'filter.reset'))));
+      await tester.pump();
+      expect(tester.widget<CategoryChip>(furniture).selected, isFalse);
+      await _setFilter(tester);
+
+      expect(find.text(_found(_en, sampleProperties.length)), findsOneWidget);
+      expect(_filterIconColor(tester), ColorsApp.black03);
+    });
+
+    testWidgets('typing while filtered keeps the filter', (tester) async {
+      final search = FakeSearchRepository();
+      await _pumpExplore(tester, search: search);
+      await _openFilter(tester);
+      await tester.tap(_inSheet(find.text('Furniture')));
+      await _setFilter(tester);
+
+      await _type(tester, 'mirror');
+      await tester.pumpAndSettle();
+
+      expect(find.text(_found(_en, 1)), findsOneWidget);
+      expect(find.text('Wooden Bathroom Sink With Mirror'), findsOneWidget);
+      expect(search.requests, isEmpty);
+    });
+
+    testWidgets('nothing matching offers to clear the filters', (tester) async {
+      await _pumpExplore(tester);
+      await _type(tester, 'mirror');
+      await tester.pumpAndSettle();
+      await _openFilter(tester);
+      await tester.tap(_inSheet(find.text('Fragrances')));
+      await _setFilter(tester);
+
+      expect(find.text(translate(_en, 'filter.no_results')), findsOneWidget);
+
+      await tester.tap(find.text(translate(_en, 'filter.clear')));
+      await tester.pumpAndSettle();
+
+      expect(find.text(_found(_en, 2)), findsOneWidget);
+      expect(_filterIconColor(tester), ColorsApp.black03);
     });
   });
 
