@@ -1,7 +1,7 @@
 # PROJECT_REFERENCE: Flutter Real Estate Assessment
 
 > **Single source of truth for this project.** Agent rules live in `.cursor/rules/*.mdc` and point here.
-> Last updated: 2026-10-13 · Status: **Home screen (Figma `1:4426`) implemented on `feature/home` (from `feature/auth` `34700e4`), with its own domain + data layers (`HomeRepository`, remote + local data sources). Flow: Splash → Auth → Home (guest). Property Details (Figma `1:4236`) implemented on `feature/property-details` (from `origin/main` `d0646e1`). Explore (Figma `1:4120`, Search-v1) implemented on `feature/search`, uncommitted (paged search, §4.5.1 update). Filter sheet (Figma `1:3867`) implemented on `feat/add_filter`, uncommitted, opened from Explore's filter icon (`1:4146`); backend interaction in §4.5.1 "Filter sheet". Profile is still a placeholder; the rest of Phase 5 waits for your go-ahead.**
+> Last updated: 2026-10-14 · Status: **All approved screens are built (Splash, Auth, Home, Explore, Filter sheet, Property Details, Profile). Phase 9 docs written 2026-10-14: `README.md`, `AI_USAGE.md`, §3 ticked. Before delivery: screenshots (G7), merge into `main` and push (G1).** Earlier status: **Home screen (Figma `1:4426`) implemented on `feature/home` (from `feature/auth` `34700e4`), with its own domain + data layers (`HomeRepository`, remote + local data sources). Flow: Splash → Auth → Home (guest). Property Details (Figma `1:4236`) implemented on `feature/property-details` (from `origin/main` `d0646e1`). Explore (Figma `1:4120`, Search-v1) implemented on `feature/search`, uncommitted (paged search, §4.5.1 update). Filter sheet (Figma `1:3867`) implemented on `feat/add_filter`, uncommitted, opened from Explore's filter icon (`1:4146`); backend interaction in §4.5.1 "Filter sheet". Profile is still a placeholder; the rest of Phase 5 waits for your go-ahead.**
 
 ---
 
@@ -81,67 +81,69 @@ Execute ONLY Phase {{N}}: {{PHASE NAME}} exactly as defined in reference §7.
 ## 3. Requirements checklist (from the assessment brief)
 
 Each phase in §7 references these IDs. Tick them in Phase 9.
-⚠️ The repo is **public**: don't commit the assessment PDF without permission.
+⚠️ The repo is **public**: don't commit the assessment PDF without permission (`*.pdf` is in `.gitignore` since 2026-10-14).
+
+**Audit 2026-10-14** (all features done, branch `docs/final-audit`): ticked items were checked against the code and tests. Still open: **G1** (merge `docs/final-audit` into `main` through a PR), **G7** (capture the screenshots the README links to in `docs/screenshots/{en,ar}/`), **F6** (yours: be ready to explain the code). Partial, documented in README §14: A1/A2 for Explore (category chip row `1:4149` not shown, pixel values not re-checked against Figma), Home's filter icon hidden and "See All" without category/sort.
 
 ### A. Implement the Figma design
-- [ ] **A1** Implement the **screens specified by the recruiter** from the Figma design.
-- [ ] **A2** Match the design as closely as possible: colors, spacing, sizes, fonts, icons, borders, shadows, images, and image cropping.
-- [ ] **A3** Reusable widgets for repeated elements (property cards, buttons, section headers).
-- [ ] **A4** Support different phone sizes with **no clipped content and no overflow errors**.
-- [ ] **A5** Don't replace design elements with generic ones that visibly change the look.
+- [x] **A1** Implement the **screens specified by the recruiter** from the Figma design.
+- [x] **A2** Match the design as closely as possible: colors, spacing, sizes, fonts, icons, borders, shadows, images, and image cropping.
+- [x] **A3** Reusable widgets for repeated elements (property cards, buttons, section headers).
+- [x] **A4** Support different phone sizes with **no clipped content and no overflow errors**.
+- [x] **A5** Don't replace design elements with generic ones that visibly change the look.
 
 ### B. Arabic/English and RTL/LTR
-- [ ] **B1** Both languages, **switchable in-app without restarting**.
-- [ ] **B2** Arabic → RTL layout; English → LTR.
-- [ ] **B3** Translate **all** static text: buttons, titles, error messages, loading states, navigation.
-- [ ] **B4** Correct direction for lists, arrows, back buttons, fields, alignment, content cards.
-- [ ] **B5** Long text handled without overlapping or overflowing its container.
-- [ ] **B6** Readable mixed content: numbers, prices, phone numbers, Latin text inside the Arabic UI.
-- [ ] **B7** **Persist the language choice** and restore it on next launch.
+- [x] **B1** Both languages, **switchable in-app without restarting**.
+- [x] **B2** Arabic → RTL layout; English → LTR.
+- [x] **B3** Translate **all** static text: buttons, titles, error messages, loading states, navigation.
+- [x] **B4** Correct direction for lists, arrows, back buttons, fields, alignment, content cards.
+- [x] **B5** Long text handled without overlapping or overflowing its container.
+- [x] **B6** Readable mixed content: numbers, prices, phone numbers, Latin text inside the Arabic UI.
+- [x] **B7** **Persist the language choice** and restore it on next launch.
 
 ### C. API integration
-- [ ] **C0** Dynamic data comes from the API and is never hard-coded in UI. DummyJSON products may be used as card data.
-- [ ] **C1** JSON → clear **models**.
-- [ ] **C2** Network calls **separated from widgets**.
-- [ ] **C3** Loading, success, empty, and error states.
-- [ ] **C4** **Retry** on failure where appropriate.
-- [ ] **C5** Handle **no internet, timeouts, server errors, unexpected responses**.
-- [ ] **C6** Unavailable images must not crash the screen.
-- [ ] **C7** **Avoid repeated or unnecessary requests**.
-- [ ] **C8** **Search and filtering**.
-- [ ] **C9** DummyJSON simulates POST/PATCH/DELETE but **does not persist them**. State this in README and never claim data survives restarts.
+- [x] **C0** Dynamic data comes from the API and is never hard-coded in UI. DummyJSON products may be used as card data.
+- [x] **C1** JSON → clear **models**.
+- [x] **C2** Network calls **separated from widgets**.
+- [x] **C3** Loading, success, empty, and error states.
+- [x] **C4** **Retry** on failure where appropriate.
+- [x] **C5** Handle **no internet, timeouts, server errors, unexpected responses**.
+- [x] **C6** Unavailable images must not crash the screen.
+- [x] **C7** **Avoid repeated or unnecessary requests**.
+- [x] **C8** **Search and filtering**.
+- [x] **C9** DummyJSON simulates POST/PATCH/DELETE but **does not persist them**. State this in README and never claim data survives restarts.
 
 ### D. UX & navigation
-- [ ] **D1** Clear navigation between required screens.
-- [ ] **D2** Selected language preserved while navigating.
-- [ ] **D3** User-friendly messages, never raw technical errors.
-- [ ] **D4** **No buttons that look active but do nothing.**
+- [x] **D1** Clear navigation between required screens.
+- [x] **D2** Selected language preserved while navigating.
+- [x] **D3** User-friendly messages, never raw technical errors.
+- [x] **D4** **No buttons that look active but do nothing.**
 
 ### E. Code quality & tests
-- [ ] **E1** Organized files; UI separated from data logic and app state.
-- [ ] **E2** A suitable state management approach applied consistently.
-- [ ] **E3** Clear names, minimal duplication, no giant hard-to-maintain widgets.
-- [ ] **E4** Basic tests for important logic (e.g., JSON parsing, search logic).
-- [ ] **E5** Document important external packages and why they're used.
+- [x] **E1** Organized files; UI separated from data logic and app state.
+- [x] **E2** A suitable state management approach applied consistently.
+- [x] **E3** Clear names, minimal duplication, no giant hard-to-maintain widgets.
+- [x] **E4** Basic tests for important logic (e.g., JSON parsing, search logic).
+- [x] **E5** Document important external packages and why they're used.
 
 ### F. AI usage policy (documented in `AI_USAGE.md`)
-- [ ] **F1** AI tools used and the purpose of each.
-- [ ] **F2** Parts AI helped create or review (planning, components, tests, debugging, API).
-- [ ] **F3** Short examples or summaries of the most important prompts.
-- [ ] **F4** How outputs were verified (tests, reviews, experiments).
-- [ ] **F5** **At least one** AI output that was modified or rejected, and why.
+- [x] **F1** AI tools used and the purpose of each.
+- [x] **F2** Parts AI helped create or review (planning, components, tests, debugging, API).
+- [x] **F3** Short examples or summaries of the most important prompts.
+- [x] **F4** How outputs were verified (tests, reviews, experiments).
+- [x] **F5** **At least one** AI output that was modified or rejected, and why.
 - [ ] **F6** Be able to explain and modify all delivered code. Full responsibility for correctness, security, and quality.
 
 ### G. Deliverables
 - [ ] **G1** Git repository link with the complete code.
-- [ ] **G2** README: requirements, install & run steps, **API base URL setup**.
-- [ ] **G3** Short explanation of architecture, state management, key packages.
-- [ ] **G4** `AI_USAGE.md`.
-- [ ] **G5** How language switching works and how RTL/LTR is implemented.
-- [ ] **G6** AI usage summary per section F.
+- [x] **G2** README: requirements, install & run steps, **API base URL setup**.
+- [x] **G3** Short explanation of architecture, state management, key packages.
+- [x] **G4** `AI_USAGE.md`.
+- [x] **G5** How language switching works and how RTL/LTR is implemented.
+- [x] **G6** AI usage summary per section F.
 - [ ] **G7** Screenshots of required screens **in both languages**, or a short video showing navigation + language switch.
-- [ ] **G8** Assumptions and known limitations, especially the demo API's behavior.
-- [ ] **G9** Clear, meaningful commit messages reflecting a natural work history (commit count isn't a quality metric).
+- [x] **G8** Assumptions and known limitations, especially the demo API's behavior.
+- [x] **G9** Clear, meaningful commit messages reflecting a natural work history (commit count isn't a quality metric).
 
 ---
 
@@ -202,8 +204,7 @@ lib/
 │   ├── usecase/usecase.dart          # UseCase<T, Params>, NoParams
 │   ├── enums/request_status.dart
 │   ├── services/phone_dialer.dart    # PhoneDialer (tel: through url_launcher); faked in tests
-│   ├── function/show_snack_bar.dart
-│   ├── utils/{debouncer, formatters, bidi_text, cancellation_signal, relative_time}.dart
+│   ├── utils/{formatters, cancellation_signal, relative_time}.dart  # debounce lives in SearchCubit (Timer); Latin/number runs use TextDirection.ltr (no bidi_text helper)
 │   └── widget/                       # CustomText (translated key / .plain), AppButton, SectionHeader, AppNetworkImage, LoadingView,
 │                                     # ErrorView, EmptyView, AppSearchField, AppBackButton (+ .plain), AppSvgIcon,
 │                                     # CircleIconButton, CategoryChip, RatingBadge, AppBottomNavBar, AppDivider,
@@ -471,7 +472,7 @@ test/
 ├── core/
 │   ├── error/failure_message_test.dart
 │   ├── network/dio_exception_mapping_test.dart
-│   └── utils/{formatters, debouncer, bidi_text, relative_time}_test.dart
+│   └── utils/{formatters, cancellation_signal, relative_time}_test.dart
 ├── feature/property_details/presentation/
 │   ├── cubit/property_details_cubit_test.dart
 │   ├── widget/<one file per widget>_test.dart
@@ -485,7 +486,9 @@ test/
 │   └── presentation/pages/home_screen_test.dart, home_screen_interactions_test.dart  # finders in helpers/home_screen_finders.dart
 ├── feature/favorites/            # one test file per lib file, e.g. domain/usecases/toggle_favorite_usecase_test.dart
 ├── feature/search/
-│   ├── domain/entities/price_histogram_test.dart     # log buckets, rounding, open ends, single price
+│   ├── domain/entities/{price_histogram, search_query}_test.dart  # log buckets, open ends; normalization, 2-char minimum
+│   ├── data/datasource/search_results_local_data_source_test.dart # LRU 20, freshness window
+│   ├── data/repositories/search_repository_impl_test.dart         # offline, cache hit, failures not cached, next page, dedupe, refresh
 │   ├── presentation/cubit/{filter_cubit, search_cubit_filter}_test.dart
 │   ├── presentation/widget/filter_sheet_test.dart    # Figma geometry at 430, en/ar mirror, price states, layout matrix
 │   └── presentation/pages/search_screen_test.dart    # incl. filter icon, apply, back, reset, typing, clear
@@ -855,6 +858,7 @@ Manual checklist:
 | 2026-10-13 | 5: Filter sheet (`1:3867`) + Explore filter icon (`1:4146`) | 🟡 Implemented on `feat/add_filter` (from `a4a0236`), **uncommitted** | Your request: build the sheet, open it from the icon in Explore's search field, decide the backend interaction and record it. **Backend decision (§4.5.1 "Filter sheet"):** any active filter → full matching set of the current query (`limit=0`), filtered on the device (several categories + open-ended price range); no filter → Explore unchanged (paged). Full sets kept in `PropertiesRepositoryImpl` memory (last 5, 10 min, successes only, `forceRefresh` for pull to refresh), so the sheet's histogram load and "Set Filter" share one request. **Domain:** `PropertyFilter`, `PriceHistogram` (20 log-scale buckets, whole-dollar bounds, open ends, disabled with < 2 different prices); `FilterParams.categorySlugs` (set) replaces `categorySlug`; `forceRefresh` on the full-set repository calls. **Presentation:** `FilterCubit` (draft, categories ‖ prices in parallel, retry, Reset, cancels on close), `SearchCubit` filtered mode (`applyFilter`, typing while filtered re-filters the new query's full set, clearing restores the paged listing, retry/refresh per mode), `showFilterSheet` on the root navigator (overlay covers the nav bar), `FilterSheetHeader`, `FilterPriceSection` (skeleton / retry / chart), `PriceRangeChart` (bars + themed `RangeSlider` + labels that merge when the thumbs are close), `FilterCategorySection`, `AppBackButton.compact`, `CategoryChip.verticalPadding`, `AppSearchField.filterActive` (Primary tint, not in Figma), filtered empty state with "Clear filters". Bedrooms/Bathrooms/Building Size hidden (Q4/Q14). Tokens from the saved Phase 1 `1:3867` design context (no Figma call this chat). 8 keys `filter.*` (en/ar). **Bugs found by tests and fixed:** the sheet opened in Explore's branch navigator and stopped above the nav bar (fixed with `useRootNavigator`); the loose title `Flexible` packed the header to the start, so "Filter" wasn't centered and Reset didn't reach the edge; Reset's 48 px Material tap target made the header 2 px too tall; a single $9.99 price produced a selectable $9–$10 range. Tests: histogram, full-set memory (fresh, `forceRefresh`, stale, failure not kept, LRU 5), `FilterCubit`, `SearchCubit` filter flows, sheet (Figma geometry at 430×932, Arabic mirror, chips, skeleton, retry, single price, 4 viewports × en/ar × 1.0/1.3), Explore (icon position and tint, apply, slider drag, back, reopen + Reset, typing while filtered, clear filters), DI (shared repository, new `FilterCubit` per sheet). Temporary real-font renders in en/ar checked, then deleted. `flutter analyze` 0; `flutter test` 958/958. **Gaps:** Home's filter icon stays hidden (TODO(question) in §5.2); Explore's category chip row (`1:4149`) isn't added; `core/utils/bidi_text.dart` listed in §4.2 doesn't exist, so prices are kept LTR with `TextDirection.ltr` instead |
 | 2026-10-14 | Search field: clear button | 🟡 Implemented on `feat/add_filter`, uncommitted | Your request: an × to delete the typed search text. `AppSearchField` shows `_ClearButton` (between the input and the filter icon) while its controller has text; hidden on the read-only Home bar and when no controller is given. Tap clears the controller and reports `''` through `onChanged`, so Explore returns to the browse listing (or the filtered catalog) at once. Not in Figma: built from existing tokens (`smallIconSize`, `black03`, `searchFieldIconGap`, 44 px tap target) with a new 24×24 stroke icon `assets/svg/close.svg` (`ImagePath.close`). New key `common.clear_search` (en/ar) as its semantics label. Tests: `app_search_field_test.dart` (hidden when empty, hidden when read-only, clears and reports an empty query in en/ar). `flutter analyze` 0; `flutter test` 963/963 |
 | 2026-10-14 | 5: Profile (`1:3786`) | 🟡 Implemented on `feature/profile` (from `feat/add_filter` `c2ddd38`), **uncommitted**, no GitHub issue (your choice) | Your request: apply the Profile design with the recorded decisions. Decisions asked first (4): Q17 as recorded (only the Language row), picker = bottom sheet like the Filter sheet, current language shown on the row, new branch without an issue. **Figma:** no MCP call (budget used up); geometry from the saved Phase 1 `get_metadata` of `1:3786` and typography from §5.3. **Feature `profile` (presentation only):** `ProfileScreen` replaces the placeholder at `/profile`; widgets `ProfileUserInfo` (`GuestAvatar` 140 + "Guest"), `ProfileMenuRow` (icon 28, label, optional value, mirrored chevron, 44 px target reaching 8 px past the 28 px row), `showLanguageSheet` / `LanguageSheet` (completes with the picked `Locale` or `null`; the screen calls `context.setLocale` only when it differs). Bell, edit badge and the eight other rows hidden (Q13, Q17). **Core:** `GuestAvatar` extracted from Home's private avatar and reused by Home; temporary `LanguageSwitcher` deleted; tokens `AppSizes.profile*`, `AppTextStyles.profile{Title,Name,MenuLabel}`; key `profile.guest_name` (en/ar); `assets/svg/check.svg` (`ImagePath.check`, not in Figma). **Tests:** Profile screen (Figma geometry at 430×932 in en/ar within 1.5 px, only one row, exactly 3 SVGs so no bell/badge, header semantics, 4 viewports × en/ar × 1.0/1.3 with the sheet open, current value, sheet over the nav bar, pick Arabic → RTL + persisted, pick current → no change, dismiss → no change), `LanguageSheet` (both options in each locale, check + Primary on the current one, single-choice semantics, result on tap, `null` on dismiss, 44 px targets), `ProfileMenuRow` (sides per direction, Figma sizes, 44 px target, value, tap, merged button semantics, ellipsis at 280 px × 2.0), `ProfileUserInfo`, `GuestAvatar`; `language_switch_test` and `app_shell_responsive_test` moved from the placeholder to the real flow; helpers `profile_finders.dart`, `svg_finders.dart`. Temporary real-font renders of the screen and sheet in en/ar checked, then deleted. `flutter analyze` 0; `flutter test` 1020/1020 |
+| 2026-10-14 | Audit + 9: Documentation | 🟡 Implemented on `docs/final-audit` (from `origin/main` `24ea3ce`, the squash merge of PR #13, same tree as `feature/profile`), **uncommitted** | Your request: audit every file against the brief, fix what's missing, write the README in English. **Audit:** greps for hard-coded `Text('…')`, physical `left/right` paddings/alignments, empty tap handlers, `print`/TODO, secrets/PDF in git; all clean (the one `EdgeInsets.fromLTRB` in `DetailsTopBar` applies physical safe-area insets on purpose). **Fixed:** missing unit tests for search logic (E4): `search_query_test` (normalization, 2-character minimum in runes), `search_results_local_data_source_test` (LRU, freshness), `search_repository_impl_test` (offline, cache hit, cancellation pass-through, failures not cached, empty cached, timeout/cancel mapping, stale flag, next page offset + dedupe, stop at max, failed page keeps items, refresh range + failure keeps cache); `pubspec.yaml` template description; `*.pdf` in `.gitignore`; §4.2/§4.7 listed files that don't exist (`debouncer`, `bidi_text`, `core/function`). **Docs:** `README.md` (screens, setup, `API_BASE_URL`, architecture, state management, API/errors/caching, search & filter, language switch + RTL, responsive, packages, tests, assumptions and limitations incl. C9), `AI_USAGE.md` (F1–F6 from §11), §3 ticked with the open items noted. **Open:** G7 screenshots (README links `docs/screenshots/{en,ar}/*.png`, not captured yet), G1 merge + push. `flutter analyze` 0; `flutter test` 1051/1051 (31 new) |
 
 
 ---
@@ -889,4 +893,5 @@ Manual checklist:
 | 2026-10-13 | Cursor Agent | Filter sheet (`1:3867`), Explore filter icon, filter backend decision | `lib/feature/search/{domain/entities,presentation}/**` (filter files), `SearchCubit`/`SearchState`, `PropertiesRepositoryImpl` memory, `FilterPropertiesUseCase`, `SearchPropertiesUseCase`, shared widgets (`AppBackButton`, `CategoryChip`, `AppSearchField`), tokens/keys/translations, DI, test helpers and tests, reference §4.2/§4.3/§4.5/§4.5.1/§4.5.2/§4.7/§4.8/§5.1/§5.2/§5.4/Q14/§10, `data-layer.mdc` | Figma budget exhausted, so **no MCP call**: values read from the saved Phase 1 `get_design_context(1:3867)` output in an earlier transcript, and its asset SVGs fetched with `curl` for reference (no new assets added; the back arrow and filter icon already exist in `assets/svg/`). API limits taken from the verified §4.5.1 notes. Geometry asserted in widget tests at 430×932 (en/ar); temporary real-font renders in en/ar, deleted afterwards; `flutter analyze` 0; `flutter test` 958/958 | **Rejected** (backend): paged category requests (one category only, can't combine with search), filtering only the loaded pages (wrong results and count), sharing in-flight requests between the sheet and Explore (a cancel from one would cancel the other), persisting full sets (outside §4.5.2). **Rejected** a linear price scale (DummyJSON prices are heavily skewed). **Modified** a planned bidi helper: `core/utils/bidi_text.dart` doesn't exist despite §4.2, so prices are forced LTR instead. Tests caught the nested-navigator sheet, the off-center header, the 48 px Reset target and the single-price slider; all four fixed in code, not by loosening tests. One test expectation was wrong (field border not counted in the icon inset) and was corrected |
 | 2026-10-14 | Cursor Agent | Clear (×) button in the search field | `app_search_field.dart`, `assets/svg/close.svg`, `ImagePath.close`, `common.clear_search` (en/ar), `app_search_field_test.dart`, reference §10 | `flutter analyze` 0; `flutter test` 963/963 (the SVG inventory test caught the missing `ImagePath.icons` entry) | No Figma close icon exists, so a simple stroke × in the Iconly style was drawn instead of using a Material icon (project uses SVG icons only) |
 | 2026-10-14 | Cursor Agent | Profile screen (`1:3786`) with the recorded decisions, on a new branch | `lib/feature/profile/**`, `core/widget/guest_avatar.dart`, Home header, router, tokens/keys/translations, `check.svg`, tests + helpers, reference §4.2/§5.1/§5.2/§5.4/Q11/Q13/Q17/§10 | Figma budget used up, so **no MCP call**: frame geometry read from the Phase 1 `get_metadata` output saved in the agent tools folder (the `get_design_context(1:3786)` response wasn't saved), typography from §5.3. Geometry asserted in widget tests at 430×932 (en/ar); temporary real-font renders of the screen and sheet in en/ar, deleted afterwards; `flutter analyze` 0; `flutter test` 1020/1020 | Asked 4 questions before coding because the picker and the row value aren't in Figma. **Rejected** a Cubit/use case for the locale (easy_localization already holds and persists it, so the screen stays UI only like Auth). **Rejected** Material `Icons.check` (project uses SVG icons only); drew a stroke check like `close.svg`. Tests found that `ProfileUserInfo` shrank to the avatar's width under loose constraints (name off-center); fixed in the widget. Title finders were scoped to the screen because the title and the nav label share the same text in both languages. A `dart format` whitespace change in an unrelated test file was reverted to keep the diff scoped |
+| 2026-10-14 | Cursor Agent | Requirements audit, search unit tests, README, AI_USAGE.md | `test/feature/search/{domain/entities/search_query, data/datasource/search_results_local_data_source, data/repositories/search_repository_impl}_test.dart`, `README.md`, `AI_USAGE.md`, `pubspec.yaml`, `.gitignore`, reference header/§3/§4.2/§4.7/§10 | Code greps per requirement (strings, directional APIs, dead handlers, secrets); every README claim checked against the code (endpoints, timeouts, cache sizes, debounce, plural setting, `matchTextDirection`, `TextDirection.ltr` uses); `flutter analyze` 0; `flutter test` 1051/1051 | **Modified** two README claims the agent couldn't verify: "tested on iPhone 16/16e/16 Pro Max and an Android emulator" (only the iOS simulator run is recorded) and a link to a demo video that doesn't exist. Kept the screenshot table but flagged that the images must be captured before delivery, instead of generating test renders without network photos |
 
