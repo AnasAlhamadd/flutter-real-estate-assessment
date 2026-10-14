@@ -198,7 +198,7 @@ User types "phone" in Explore
 | Cubit | Responsibility |
 | --- | --- |
 | `HomeCubit` | Featured, categories and recommendations in parallel, each with its own status and retry; category switching; pagination; pull to refresh; one automatic refresh when the device comes back online |
-| `SearchCubit` | Browse / search / filtered modes, debounce, cancellation, stale-response protection, pagination, refresh |
+| `SearchCubit` | Browse / search / filtered modes, debounce, cancellation, stale-response protection, pagination, refresh; retries or refreshes once when the device comes back online |
 | `FilterCubit` | Filter sheet draft (categories, price range), price histogram, Reset; nothing is applied until "Set Filter" |
 | `PropertyDetailsCubit` | Shows the tapped list item at once, then loads full details and the extras in parallel |
 | `FavoritesCubit` | One app-wide instance above the router, so a heart has the same state on every screen |
@@ -250,14 +250,14 @@ Every data-driven area has loading (shimmer skeletons shaped like the real cards
 
 - **Pagination failures** keep the loaded items and show a small retry row under them.
 - **Pull to refresh** keeps the current content if the refresh fails and shows a snackbar.
-- **Offline launch:** Home's first "All" page and the categories are saved on the device, so Home still shows them offline (less than 24 h old) with an "offline: showing saved results" notice.
+- **Offline launch:** the first "All" page and the categories are saved on the device. Home and Explore show the saved page when it is less than 24 h old, with an "offline: showing saved results" notice; the saved categories are used at any age when the API can't be reached. Featured, later pages and category pages have no saved copy and show their error with Retry. Coming back online refreshes once.
 - **Broken or missing images** never crash a screen: `AppNetworkImage` (`cached_network_image`) shows a placeholder and an error widget, and handles `null` or empty URLs.
 
 ### Avoiding unnecessary requests
 
 - 300 ms debounce, normalized queries (trimmed, lower case), unchanged text ignored, 2-character minimum.
 - The previous request is **cancelled** when a new query starts (`CancellationSignal`, converted to a Dio `CancelToken` in the data layer), and late responses are dropped.
-- Session memory caches: search pages (last 20 queries, 10 min), full filtered sets (last 5, 10 min), details (last 20), categories (memory, then 24 h on disk).
+- Session memory caches: search pages (last 20 queries; a repeated query is shown without a request, and after 10 min it is shown and then refreshed in the background), full filtered sets (last 5; fetched again after 10 min), details (last 20), categories (memory, then on disk: no request while under 24 h old).
 - Pagination is guarded (`isLoadingMore`, `hasReachedMax`), and the Details screen reuses the tapped list item instead of waiting for the network.
 - No request is ever started from `build()`.
 

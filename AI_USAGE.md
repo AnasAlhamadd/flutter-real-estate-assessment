@@ -47,6 +47,22 @@ The day-by-day record (date, tool, purpose, output, verification, changes) is in
 - "Apply the Profile design with the recorded decisions; the Language row must switch the language instantly."
 - "After the features are done, audit every file against the assessment requirements, fix what's missing, and write the README in English."
 
+The quotes above are short summaries of longer briefs, not verbatim prompts.
+
+**Who decided what (search cache, pagination, connectivity):** the full records, with code paths and tests, are in [`docs/PROJECT_REFERENCE.md` §4.9](docs/PROJECT_REFERENCE.md#49-decision-records-search-pagination-connectivity).
+
+- **My requirements:**
+  - Search: a 2-character minimum, a configurable debounce of about 300 ms, normalized queries, a late "ca" response never replacing "car", and a session cache per query that keeps loaded pages, caches empty results and never caches errors.
+  - Paged, lazy-loaded Home listings.
+  - Saved data when a request fails or there's no internet, limited to the first "All" page and the categories.
+  - `connectivity_plus`, with real request failures handled separately because a connection doesn't prove internet access.
+- **Agent choices:** the cache limits (20 queries, 10 minutes, least recently used evicted), lower-casing queries, the request generation counter, refreshing all loaded pages in one request, the 5-set / 10-minute memory for filtered results, and a single refresh when the device comes back online.
+
+**Who decided what (UI/UX additions not in Figma):** see [§4.10](docs/PROJECT_REFERENCE.md#410-decision-records-uiux-additions-not-in-figma).
+
+- **My requests:** the Details hero zoom, blur and gradient tied to the drag; a back-to-top button on Home; a clear (×) button in the search field; an appear animation for product cards with pagination; tabs that keep their scroll position and data when switching, so the product requests aren't sent again (`StatefulShellRoute.indexedStack` instead of rebuilding the screen for each tab); a search bar pinned on Explore, with pull to refresh moving only the results.
+- **Agent choices:** the values (timings, sizes, thresholds), and blurring the hero as it scrolls away rather than while pulling, so the zoomed photo stays sharp.
+
 ## 4. How the output was verified
 
 - **Static analysis:** `flutter analyze` had to report 0 issues at the end of every task.

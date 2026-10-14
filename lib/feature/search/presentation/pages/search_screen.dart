@@ -33,6 +33,10 @@ class SearchScreen extends StatelessWidget {
 
 /// Explore content for a [SearchCubit] provided above it. The tab stays
 /// mounted, so the query, results and scroll position survive Details.
+///
+/// Not in Figma: the header and search field stay pinned and the results
+/// scroll under them; pull to refresh belongs to the results only, so its
+/// spinner starts below the field (reference §4.10 U7).
 class SearchView extends StatefulWidget {
   const SearchView({super.key});
 
@@ -59,16 +63,22 @@ class _SearchViewState extends State<SearchView> {
         bottom: false,
         child: FavoritesFailureListener(
           child: _RefreshFailureListener(
-            child: RefreshIndicator(
-              color: ColorsApp.primary,
-              onRefresh: cubit.refresh,
-              child: LoadMoreScrollListener(
-                onLoadMore: cubit.loadMore,
-                child: _SearchScrollView(
-                  scrollController: _scrollController,
-                  queryController: _queryController,
+            child: Column(
+              children: [
+                _SearchTopBar(queryController: _queryController),
+                Expanded(
+                  child: RefreshIndicator(
+                    color: ColorsApp.primary,
+                    onRefresh: cubit.refresh,
+                    child: LoadMoreScrollListener(
+                      onLoadMore: cubit.loadMore,
+                      child: _ResultsScrollView(
+                        scrollController: _scrollController,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -77,33 +87,29 @@ class _SearchViewState extends State<SearchView> {
   }
 }
 
-class _SearchScrollView extends StatelessWidget {
-  const _SearchScrollView({
-    required this.scrollController,
-    required this.queryController,
-  });
+/// Header and search field, pinned above the results.
+class _SearchTopBar extends StatelessWidget {
+  const _SearchTopBar({required this.queryController});
 
-  final ScrollController scrollController;
   final TextEditingController queryController;
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<SearchCubit>();
     final horizontal = AppSizes.screenHorizontalPadding.w;
-    return CustomScrollView(
-      controller: scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      slivers: [
-        _padded(
-          horizontal,
-          top: AppSizes.searchHeaderTop.h,
-          child: SearchHeader(onBack: () => context.go(AppRouter.home)),
-        ),
-        _padded(
-          horizontal,
-          top: AppSizes.sectionGap.h,
-          child: BlocSelector<SearchCubit, SearchState, bool>(
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(
+        horizontal,
+        AppSizes.searchHeaderTop.h,
+        horizontal,
+        0,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SearchHeader(onBack: () => context.go(AppRouter.home)),
+          SizedBox(height: AppSizes.sectionGap.h),
+          BlocSelector<SearchCubit, SearchState, bool>(
             selector: (state) => state.filter.isActive,
             builder: (context, filterActive) => AppSearchField(
               controller: queryController,
@@ -113,17 +119,8 @@ class _SearchScrollView extends StatelessWidget {
               filterActive: filterActive,
             ),
           ),
-        ),
-        SliverPadding(
-          padding: EdgeInsetsDirectional.fromSTEB(
-            horizontal,
-            0,
-            horizontal,
-            AppSizes.sectionGap.h,
-          ),
-          sliver: const SearchResultsSection(),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -140,15 +137,34 @@ class _SearchScrollView extends StatelessWidget {
     if (filter == null || cubit.isClosed) return;
     await cubit.applyFilter(filter);
   }
+}
 
-  static Widget _padded(
-    double horizontal, {
-    required double top,
-    required Widget child,
-  }) => SliverPadding(
-    padding: EdgeInsetsDirectional.fromSTEB(horizontal, top, horizontal, 0),
-    sliver: SliverToBoxAdapter(child: child),
-  );
+/// "Found {n}", the results and their footer, scrolling under the top bar.
+class _ResultsScrollView extends StatelessWidget {
+  const _ResultsScrollView({required this.scrollController});
+
+  final ScrollController scrollController;
+
+  @override
+  Widget build(BuildContext context) {
+    final horizontal = AppSizes.screenHorizontalPadding.w;
+    return CustomScrollView(
+      controller: scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsetsDirectional.fromSTEB(
+            horizontal,
+            0,
+            horizontal,
+            AppSizes.sectionGap.h,
+          ),
+          sliver: const SearchResultsSection(),
+        ),
+      ],
+    );
+  }
 }
 
 /// Snackbar when a refresh couldn't update the results already shown.
