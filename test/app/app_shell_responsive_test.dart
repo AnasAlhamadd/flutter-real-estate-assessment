@@ -4,6 +4,7 @@ import 'package:flutter_real_estate_assessment/core/localization/app_localizatio
 import 'package:flutter_real_estate_assessment/core/widget/app_back_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_bottom_nav_bar.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/profile/presentation/pages/profile_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/pages/search_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,13 +14,6 @@ import '../helpers/layout_expectations.dart';
 import '../helpers/pump_app.dart';
 import '../helpers/test_viewports.dart';
 import '../helpers/translations.dart';
-
-typedef _TabRoute = ({String path, String titleKey});
-
-/// Tabs that are still placeholders.
-const List<_TabRoute> _tabRoutes = [
-  (path: AppRouter.profile, titleKey: 'profile.title'),
-];
 
 const List<String> _navKeys = ['nav.home', 'nav.explore', 'nav.profile'];
 
@@ -38,36 +32,12 @@ void _expectNavInReach(WidgetTester tester, Locale locale) {
 }
 
 /// The router shell on every viewport. Home has its own matrix in
-/// `test/feature/properties/presentation/pages/home_screen_test.dart`.
+/// `test/feature/home/presentation/pages/home_screen_test.dart`.
 void main() {
   for (final locale in AppLocalization.supportedLocales) {
     for (final viewport in testViewports) {
       for (final textScale in _textScales) {
         final variant = '$viewport · ${locale.languageCode} · x$textScale';
-
-        for (final route in _tabRoutes) {
-          testWidgets('${route.path} lays out on $variant', (tester) async {
-            await pumpApp(
-              tester,
-              locale: locale,
-              viewport: viewport,
-              textScale: textScale,
-              initialLocation: route.path,
-            );
-
-            expectNoLayoutErrors(tester);
-            expectDirectionFor(tester, locale);
-            expect(
-              find.widgetWithText(AppBar, translate(locale, route.titleKey)),
-              findsOneWidget,
-            );
-            expect(
-              find.text(translate(locale, 'common.coming_soon')),
-              findsOneWidget,
-            );
-            _expectNavInReach(tester, locale);
-          });
-        }
 
         testWidgets('/ shows Home inside the shell on $variant', (
           tester,
@@ -99,6 +69,23 @@ void main() {
           expectNoLayoutErrors(tester);
           expectDirectionFor(tester, locale);
           expect(find.byType(SearchScreen), findsOneWidget);
+          _expectNavInReach(tester, locale);
+        });
+
+        testWidgets('/profile shows Profile inside the shell on $variant', (
+          tester,
+        ) async {
+          await pumpApp(
+            tester,
+            locale: locale,
+            viewport: viewport,
+            textScale: textScale,
+            initialLocation: AppRouter.profile,
+          );
+
+          expectNoLayoutErrors(tester);
+          expectDirectionFor(tester, locale);
+          expect(find.byType(ProfileScreen), findsOneWidget);
           _expectNavInReach(tester, locale);
         });
 
@@ -158,12 +145,6 @@ void main() {
       find.text(translate(AppLocalization.english, 'nav.profile')),
     );
     await tester.pumpAndSettle();
-    expect(
-      find.widgetWithText(
-        AppBar,
-        translate(AppLocalization.english, 'profile.title'),
-      ),
-      findsOneWidget,
-    );
+    expect(find.byType(ProfileScreen), findsOneWidget);
   });
 }

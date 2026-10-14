@@ -1,12 +1,19 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/localization/app_localization.dart';
+import 'package:flutter_real_estate_assessment/feature/profile/presentation/pages/profile_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/layout_expectations.dart';
+import '../helpers/profile_finders.dart';
 import '../helpers/pump_app.dart';
 import '../helpers/translations.dart';
+
+Finder _profileTitle(Locale locale) => find.descendant(
+  of: find.byType(ProfileScreen),
+  matching: find.text(translate(locale, 'profile.title')),
+);
 
 void main() {
   const en = AppLocalization.english;
@@ -18,15 +25,11 @@ void main() {
     await pumpApp(tester, initialLocation: AppRouter.profile);
     expectDirectionFor(tester, en);
 
-    await tester.tap(find.text(translate(en, 'language.arabic')));
-    await tester.pumpAndSettle();
+    await pickLanguageOnProfile(tester, from: en, optionKey: 'language.arabic');
 
     expectNoLayoutErrors(tester);
     expectDirectionFor(tester, ar);
-    expect(
-      find.widgetWithText(AppBar, translate(ar, 'profile.title')),
-      findsOneWidget,
-    );
+    expect(_profileTitle(ar), findsOneWidget);
     expect(find.text(translate(ar, 'nav.home')), findsOneWidget);
     final preferences = await SharedPreferences.getInstance();
     expect(preferences.getString('locale'), 'ar');
@@ -36,14 +39,14 @@ void main() {
     await pumpApp(tester, locale: ar, initialLocation: AppRouter.profile);
     expectDirectionFor(tester, ar);
 
-    await tester.tap(find.text(translate(ar, 'language.english')));
-    await tester.pumpAndSettle();
+    await pickLanguageOnProfile(
+      tester,
+      from: ar,
+      optionKey: 'language.english',
+    );
 
     expectDirectionFor(tester, en);
-    expect(
-      find.widgetWithText(AppBar, translate(en, 'profile.title')),
-      findsOneWidget,
-    );
+    expect(_profileTitle(en), findsOneWidget);
     final preferences = await SharedPreferences.getInstance();
     expect(preferences.getString('locale'), 'en');
   });
@@ -65,8 +68,7 @@ void main() {
 
     await tester.tap(find.text(translate(en, 'nav.profile')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(translate(en, 'language.arabic')));
-    await tester.pumpAndSettle();
+    await pickLanguageOnProfile(tester, from: en, optionKey: 'language.arabic');
     await tester.tap(find.text(translate(ar, 'nav.home')));
     await tester.pumpAndSettle();
 
@@ -80,12 +82,9 @@ void main() {
   testWidgets('language switch keeps the current tab', (tester) async {
     await pumpApp(tester, initialLocation: AppRouter.profile);
 
-    await tester.tap(find.text(translate(en, 'language.arabic')));
-    await tester.pumpAndSettle();
+    await pickLanguageOnProfile(tester, from: en, optionKey: 'language.arabic');
 
-    expect(
-      find.widgetWithText(AppBar, translate(ar, 'profile.title')),
-      findsOneWidget,
-    );
+    expect(find.byType(ProfileScreen), findsOneWidget);
+    expect(_profileTitle(ar), findsOneWidget);
   });
 }

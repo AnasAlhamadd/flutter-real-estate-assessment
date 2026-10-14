@@ -123,7 +123,8 @@
     }
   },
   "profile": {
-    "title": "Profile"
+    "title": "Profile",
+    "guest_name": "Guest"
   },
   "language": {
     "title": "Language",
