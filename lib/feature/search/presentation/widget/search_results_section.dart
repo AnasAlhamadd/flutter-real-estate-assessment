@@ -5,6 +5,7 @@ import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dart';
+import 'package:flutter_real_estate_assessment/core/enums/data_source.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_shimmer.dart';
@@ -37,7 +38,7 @@ class SearchResultsSection extends StatelessWidget {
           previous.items != current.items ||
           previous.total != current.total ||
           previous.failure != current.failure ||
-          previous.isFromCache != current.isFromCache ||
+          previous.source != current.source ||
           previous.categories != current.categories,
       builder: (context, state) => switch (state.status) {
         RequestStatus.initial ||
@@ -110,7 +111,7 @@ class _Results extends StatelessWidget {
             child: SearchResultsCount(total: state.total),
           ),
         ),
-        if (state.isFromCache) const _OfflineNotice(),
+        if (state.source == DataSource.saved) const _OfflineNotice(),
         SliverPropertyList(
           properties: state.items,
           categoryNameFor: state.categoryNameFor,

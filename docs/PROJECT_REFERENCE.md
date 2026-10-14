@@ -1,7 +1,7 @@
 # PROJECT_REFERENCE: Flutter Real Estate Assessment
 
 > **Single source of truth for this project.** Agent rules live in `.cursor/rules/*.mdc` and point here.
-> Last updated: 2026-10-13 · Status: **Home screen (Figma `1:4426`) implemented on `feature/home` (from `feature/auth` `34700e4`), with its own domain + data layers (`HomeRepository`, remote + local data sources). Flow: Splash → Auth → Home (guest). Property Details (Figma `1:4236`) implemented on `feature/property-details` (from `origin/main` `d0646e1`). Explore (Figma `1:4120`, Search-v1) implemented on `feature/search`, uncommitted (paged search, §4.5.1 update). Filter sheet (Figma `1:3867`) implemented on `feat/add_filter`, uncommitted, opened from Explore's filter icon (`1:4146`); backend interaction in §4.5.1 "Filter sheet". Profile is still a placeholder; the rest of Phase 5 waits for your go-ahead.**
+> Last updated: 2026-10-14 · Status: **All approved screens are built (Splash, Auth, Home, Explore, Filter sheet, Property Details, Profile). Phase 9 docs written 2026-10-14: `README.md`, `AI_USAGE.md`, §3 ticked. Screenshots added (G7). Before delivery: merge into `main` and push (G1).** Earlier status: **Home screen (Figma `1:4426`) implemented on `feature/home` (from `feature/auth` `34700e4`), with its own domain + data layers (`HomeRepository`, remote + local data sources). Flow: Splash → Auth → Home (guest). Property Details (Figma `1:4236`) implemented on `feature/property-details` (from `origin/main` `d0646e1`). Explore (Figma `1:4120`, Search-v1) implemented on `feature/search`, uncommitted (paged search, §4.5.1 update). Filter sheet (Figma `1:3867`) implemented on `feat/add_filter`, uncommitted, opened from Explore's filter icon (`1:4146`); backend interaction in §4.5.1 "Filter sheet". Profile is still a placeholder; the rest of Phase 5 waits for your go-ahead.**
 
 ---
 
@@ -81,67 +81,69 @@ Execute ONLY Phase {{N}}: {{PHASE NAME}} exactly as defined in reference §7.
 ## 3. Requirements checklist (from the assessment brief)
 
 Each phase in §7 references these IDs. Tick them in Phase 9.
-⚠️ The repo is **public**: don't commit the assessment PDF without permission.
+⚠️ The repo is **public**: don't commit the assessment PDF without permission (`*.pdf` is in `.gitignore` since 2026-10-14).
+
+**Audit 2026-10-14** (all features done, branch `docs/final-audit`): ticked items were checked against the code and tests. Still open: **G1** (merge `docs/final-audit` into `main` through a PR), **F6**. G7 done: 12 simulator screenshots (1320×2868) in `docs/screenshots/{en,ar}/` (`home`, `explore`, `filter`, `property_details`, `profile`, `auth`), all linked from README §2 (yours: be ready to explain the code). Partial, documented in README §14: A1/A2 for Explore (category chip row `1:4149` not shown, pixel values not re-checked against Figma), Home's filter icon hidden and "See All" without category/sort.
 
 ### A. Implement the Figma design
-- [ ] **A1** Implement the **screens specified by the recruiter** from the Figma design.
-- [ ] **A2** Match the design as closely as possible: colors, spacing, sizes, fonts, icons, borders, shadows, images, and image cropping.
-- [ ] **A3** Reusable widgets for repeated elements (property cards, buttons, section headers).
-- [ ] **A4** Support different phone sizes with **no clipped content and no overflow errors**.
-- [ ] **A5** Don't replace design elements with generic ones that visibly change the look.
+- [x] **A1** Implement the **screens specified by the recruiter** from the Figma design.
+- [x] **A2** Match the design as closely as possible: colors, spacing, sizes, fonts, icons, borders, shadows, images, and image cropping.
+- [x] **A3** Reusable widgets for repeated elements (property cards, buttons, section headers).
+- [x] **A4** Support different phone sizes with **no clipped content and no overflow errors**.
+- [x] **A5** Don't replace design elements with generic ones that visibly change the look.
 
 ### B. Arabic/English and RTL/LTR
-- [ ] **B1** Both languages, **switchable in-app without restarting**.
-- [ ] **B2** Arabic → RTL layout; English → LTR.
-- [ ] **B3** Translate **all** static text: buttons, titles, error messages, loading states, navigation.
-- [ ] **B4** Correct direction for lists, arrows, back buttons, fields, alignment, content cards.
-- [ ] **B5** Long text handled without overlapping or overflowing its container.
-- [ ] **B6** Readable mixed content: numbers, prices, phone numbers, Latin text inside the Arabic UI.
-- [ ] **B7** **Persist the language choice** and restore it on next launch.
+- [x] **B1** Both languages, **switchable in-app without restarting**.
+- [x] **B2** Arabic → RTL layout; English → LTR.
+- [x] **B3** Translate **all** static text: buttons, titles, error messages, loading states, navigation.
+- [x] **B4** Correct direction for lists, arrows, back buttons, fields, alignment, content cards.
+- [x] **B5** Long text handled without overlapping or overflowing its container.
+- [x] **B6** Readable mixed content: numbers, prices, phone numbers, Latin text inside the Arabic UI.
+- [x] **B7** **Persist the language choice** and restore it on next launch.
 
 ### C. API integration
-- [ ] **C0** Dynamic data comes from the API and is never hard-coded in UI. DummyJSON products may be used as card data.
-- [ ] **C1** JSON → clear **models**.
-- [ ] **C2** Network calls **separated from widgets**.
-- [ ] **C3** Loading, success, empty, and error states.
-- [ ] **C4** **Retry** on failure where appropriate.
-- [ ] **C5** Handle **no internet, timeouts, server errors, unexpected responses**.
-- [ ] **C6** Unavailable images must not crash the screen.
-- [ ] **C7** **Avoid repeated or unnecessary requests**.
-- [ ] **C8** **Search and filtering**.
-- [ ] **C9** DummyJSON simulates POST/PATCH/DELETE but **does not persist them**. State this in README and never claim data survives restarts.
+- [x] **C0** Dynamic data comes from the API and is never hard-coded in UI. DummyJSON products may be used as card data.
+- [x] **C1** JSON → clear **models**.
+- [x] **C2** Network calls **separated from widgets**.
+- [x] **C3** Loading, success, empty, and error states.
+- [x] **C4** **Retry** on failure where appropriate.
+- [x] **C5** Handle **no internet, timeouts, server errors, unexpected responses**.
+- [x] **C6** Unavailable images must not crash the screen.
+- [x] **C7** **Avoid repeated or unnecessary requests**.
+- [x] **C8** **Search and filtering**.
+- [x] **C9** DummyJSON simulates POST/PATCH/DELETE but **does not persist them**. State this in README and never claim data survives restarts.
 
 ### D. UX & navigation
-- [ ] **D1** Clear navigation between required screens.
-- [ ] **D2** Selected language preserved while navigating.
-- [ ] **D3** User-friendly messages, never raw technical errors.
-- [ ] **D4** **No buttons that look active but do nothing.**
+- [x] **D1** Clear navigation between required screens.
+- [x] **D2** Selected language preserved while navigating.
+- [x] **D3** User-friendly messages, never raw technical errors.
+- [x] **D4** **No buttons that look active but do nothing.**
 
 ### E. Code quality & tests
-- [ ] **E1** Organized files; UI separated from data logic and app state.
-- [ ] **E2** A suitable state management approach applied consistently.
-- [ ] **E3** Clear names, minimal duplication, no giant hard-to-maintain widgets.
-- [ ] **E4** Basic tests for important logic (e.g., JSON parsing, search logic).
-- [ ] **E5** Document important external packages and why they're used.
+- [x] **E1** Organized files; UI separated from data logic and app state.
+- [x] **E2** A suitable state management approach applied consistently.
+- [x] **E3** Clear names, minimal duplication, no giant hard-to-maintain widgets.
+- [x] **E4** Basic tests for important logic (e.g., JSON parsing, search logic).
+- [x] **E5** Document important external packages and why they're used.
 
 ### F. AI usage policy (documented in `AI_USAGE.md`)
-- [ ] **F1** AI tools used and the purpose of each.
-- [ ] **F2** Parts AI helped create or review (planning, components, tests, debugging, API).
-- [ ] **F3** Short examples or summaries of the most important prompts.
-- [ ] **F4** How outputs were verified (tests, reviews, experiments).
-- [ ] **F5** **At least one** AI output that was modified or rejected, and why.
+- [x] **F1** AI tools used and the purpose of each.
+- [x] **F2** Parts AI helped create or review (planning, components, tests, debugging, API).
+- [x] **F3** Short examples or summaries of the most important prompts.
+- [x] **F4** How outputs were verified (tests, reviews, experiments).
+- [x] **F5** **At least one** AI output that was modified or rejected, and why.
 - [ ] **F6** Be able to explain and modify all delivered code. Full responsibility for correctness, security, and quality.
 
 ### G. Deliverables
 - [ ] **G1** Git repository link with the complete code.
-- [ ] **G2** README: requirements, install & run steps, **API base URL setup**.
-- [ ] **G3** Short explanation of architecture, state management, key packages.
-- [ ] **G4** `AI_USAGE.md`.
-- [ ] **G5** How language switching works and how RTL/LTR is implemented.
-- [ ] **G6** AI usage summary per section F.
-- [ ] **G7** Screenshots of required screens **in both languages**, or a short video showing navigation + language switch.
-- [ ] **G8** Assumptions and known limitations, especially the demo API's behavior.
-- [ ] **G9** Clear, meaningful commit messages reflecting a natural work history (commit count isn't a quality metric).
+- [x] **G2** README: requirements, install & run steps, **API base URL setup**.
+- [x] **G3** Short explanation of architecture, state management, key packages.
+- [x] **G4** `AI_USAGE.md`.
+- [x] **G5** How language switching works and how RTL/LTR is implemented.
+- [x] **G6** AI usage summary per section F.
+- [x] **G7** Screenshots of required screens **in both languages**, or a short video showing navigation + language switch.
+- [x] **G8** Assumptions and known limitations, especially the demo API's behavior.
+- [x] **G9** Clear, meaningful commit messages reflecting a natural work history (commit count isn't a quality metric).
 
 ---
 
@@ -202,8 +204,7 @@ lib/
 │   ├── usecase/usecase.dart          # UseCase<T, Params>, NoParams
 │   ├── enums/request_status.dart
 │   ├── services/phone_dialer.dart    # PhoneDialer (tel: through url_launcher); faked in tests
-│   ├── function/show_snack_bar.dart
-│   ├── utils/{debouncer, formatters, bidi_text, cancellation_signal, relative_time}.dart
+│   ├── utils/{formatters, cancellation_signal, relative_time}.dart  # debounce lives in SearchCubit (Timer); Latin/number runs use TextDirection.ltr (no bidi_text helper)
 │   └── widget/                       # CustomText (translated key / .plain), AppButton, SectionHeader, AppNetworkImage, LoadingView,
 │                                     # ErrorView, EmptyView, AppSearchField, AppBackButton (+ .plain), AppSvgIcon,
 │                                     # CircleIconButton, CategoryChip, RatingBadge, AppBottomNavBar, AppDivider,
@@ -361,7 +362,7 @@ DummyJSON can't combine them server-side (verified 2026-10-13): `/products/searc
 
 Rules:
 - **Fetched once:** in full-set mode, changing the category or price range only re-filters the in-memory set (no request). A new request happens only when the search text changes, or when entering full-set mode.
-- **Query changes:** 400 ms debounce, trimmed, unchanged text ignored; the previous request is cancelled through its `CancellationSignal` (pure Dart, `core/utils/cancellation_signal.dart`; one signal per request) and its `CancelledFailure` is ignored. The remote data source converts the signal into a Dio `CancelToken`: an already cancelled signal sends no request, and cancelling in flight aborts it. A response that arrives just before cancellation can still succeed, so the Cubit must also check that the result belongs to the latest request before updating the state.
+- **Query changes:** 300 ms debounce (`SearchCubit.defaultDebounce`, the same timer in search and filtered mode; the original plan said 400 ms, corrected 2026-10-14 to match the code), normalized, unchanged text ignored; the previous request is cancelled through its `CancellationSignal` (pure Dart, `core/utils/cancellation_signal.dart`; one signal per request) and its `CancelledFailure` is ignored. The remote data source converts the signal into a Dio `CancelToken`: an already cancelled signal sends no request, and cancelling in flight aborts it. A response that arrives just before cancellation can still succeed, so the Cubit must also check that the result belongs to the latest request before updating the state.
 - **Mode switches** reset pagination. Clearing the text with no price filter returns to paged mode (page 0, with the persisted fallback for "All").
 - **Changed 2026-10-13 (your Search brief, `feature/search`):** Explore searches **page by page** instead of fetching the full set: `GET /products/search?q=<normalized>&limit=20&skip=…`, debounce **300 ms** (`SearchCubit.defaultDebounce`, configurable), at least **2 characters** after trimming (`SearchQuery.minLength`; shorter text shows browse mode, the "All" pages through `GetRecommendationsUseCase`, and sends no search). The query is normalized (trimmed, inner spaces collapsed, lower case). Results live in a session memory cache per normalized query (`SearchResultsMemoryDataSource`: last 20 queries, fresh for 10 minutes, only successful pages, deduped by id), so going back to a query restores its loaded pages without a request. Stale responses are dropped by a request generation plus `CancellationSignal`. The count uses the API `total`. The full-set rules above apply to the Filter sheet (next bullet).
 - **Filter sheet: backend interaction (decided 2026-10-13 by the agent at your request, `feat/add_filter`):**
@@ -471,7 +472,7 @@ test/
 ├── core/
 │   ├── error/failure_message_test.dart
 │   ├── network/dio_exception_mapping_test.dart
-│   └── utils/{formatters, debouncer, bidi_text, relative_time}_test.dart
+│   └── utils/{formatters, cancellation_signal, relative_time}_test.dart
 ├── feature/property_details/presentation/
 │   ├── cubit/property_details_cubit_test.dart
 │   ├── widget/<one file per widget>_test.dart
@@ -485,7 +486,9 @@ test/
 │   └── presentation/pages/home_screen_test.dart, home_screen_interactions_test.dart  # finders in helpers/home_screen_finders.dart
 ├── feature/favorites/            # one test file per lib file, e.g. domain/usecases/toggle_favorite_usecase_test.dart
 ├── feature/search/
-│   ├── domain/entities/price_histogram_test.dart     # log buckets, rounding, open ends, single price
+│   ├── domain/entities/{price_histogram, search_query}_test.dart  # log buckets, open ends; normalization, 2-char minimum
+│   ├── data/datasource/search_results_local_data_source_test.dart # LRU 20, freshness window
+│   ├── data/repositories/search_repository_impl_test.dart         # offline, cache hit, failures not cached, next page, dedupe, refresh
 │   ├── presentation/cubit/{filter_cubit, search_cubit_filter}_test.dart
 │   ├── presentation/widget/filter_sheet_test.dart    # Figma geometry at 430, en/ar mirror, price states, layout matrix
 │   └── presentation/pages/search_screen_test.dart    # incl. filter icon, apply, back, reset, typing, clear
@@ -515,6 +518,272 @@ integration_test/app_test.dart                     # optional: browse → detail
 | T11 | Every tappable element works or is removed (decision per button in §5) | D4 |
 | T12 | `API_BASE_URL` via `--dart-define`, default `https://dummyjson.com` | G2 |
 | T13 | Light theme only unless Figma includes dark | Scope |
+
+### 4.9 Decision records: search, pagination, connectivity
+
+Audited 2026-10-14 against the code on `docs/final-audit`. Each record traces a decision to the code and tests that implement it. **Decided by** separates your recorded requirements from choices the agent made while implementing them (see `AI_USAGE.md` §3). **Verification** lists existing tests; on 2026-10-14 the test folders `test/feature/search`, `test/feature/home/presentation/cubit`, `test/feature/home/data`, `test/core/network` and `test/feature/properties/data/{repositories,datasource}` were run: 288 passed. Behavior with no test is marked *inspection only*. Figma was not consulted and the app was not run for this audit.
+
+#### D1. Debounced search with a per-query session cache
+
+- **Decision:** Explore searches 300 ms after the last keystroke, needs at least 2 characters, and keeps every successful page of each normalized query in memory for the app session. Going back to a query shows its results again without a request.
+- **Decided by:** you (Search brief, 2026-10-13): a minimum of 2 characters, a configurable debounce of about 300 ms, normalized queries, a late response never overwriting a newer query ("ca" vs "car"), and an in-memory cache keyed by query that keeps pagination state, removes duplicate ids, caches empty results, never caches errors, has bounded memory and shows cached results while refreshing. Agent: the bounds (20 queries, 10 minutes), least-recently-used eviction, lower-casing, and refreshing all loaded pages in one request.
+- **Context:** Without a debounce every keystroke sends a request, and responses can arrive out of order. People also edit a query back and forth ("ca" → "cap" → "ca"), so the same request would be sent again.
+- **Reasoning:** The debounce waits for typing to pause. The minimum skips one-letter queries, which match almost the whole catalog (`q=a` returns all 194, §4.5.1). Normalizing (trim, collapse spaces, lower case) gives "Ca " and "ca" one cache entry; this is safe because DummyJSON search is case-insensitive (§4.5.1). The cache makes going back instant and saves data.
+- **Implementation:**
+  - `SearchCubit.onQueryChanged` normalizes the text with `SearchQuery.normalize` and `isSearchable` (`minLength = 2`, counted in characters, not UTF-16 units). Text that normalizes to the last query does nothing. A shorter query shows the browse listing at once: it is restored from a snapshot without a request, or the filtered catalog when a filter is active. Otherwise a `Timer(debounce, …)` starts. `defaultDebounce` is 300 ms and can be changed through the constructor. `submitQuery` (the keyboard search action) skips the wait.
+  - Each new query calls `_invalidate()`: it cancels the timer, cancels the in-flight request's `CancellationSignal` (a Dio `CancelToken` in `PropertiesRemoteDataSource`) and bumps `_generation`. Responses from an older generation are dropped, and `CancelledFailure` is never shown.
+  - `_search` checks `GetCachedSearchResultsUseCase` first. It reads memory only, with no connectivity check, so cached queries also work offline. A hit is shown at once with no loading state and no request.
+  - `SearchResultsMemoryDataSource` is a lazy singleton (`injection_container.dart`), so the cache outlives the screen. The key is the normalized query. It holds at most 20 queries, evicts the least recently used one, and a read counts as use. An entry is stale after 10 minutes. `SearchRepositoryImpl` stores only successful pages; an empty result is stored as finished (`hasReachedMax`).
+  - A stale entry is still shown at once. `_refreshShown` then requests every loaded page in one call (`refreshResults`, `limit = max(loaded, 20)`). If that fails, the results stay and the snackbar `searchRefreshFailed` appears.
+- **Walk-through ("ca"):**
+  1. "c" is too short: the browse listing stays and no search is sent.
+  2. "ca": after 300 ms, `GET /products/search?q=ca&limit=20&skip=0&select=…`. The page is stored under `ca`.
+  3. "cap": a new 300 ms wait, then a request for `cap`. If the `ca` request is still running it is cancelled, and a late `ca` response is dropped.
+  4. Back to "ca": after 300 ms the `ca` entry is shown from memory, with no request, no loading state, every loaded page, and the next offset for pagination.
+  - **Exceptions:** an entry older than 10 minutes is shown and then refreshed with one request. An entry evicted by 20 newer queries, or lost on app restart, needs a normal request. If the `ca` request was cancelled before it finished (fast typing), nothing was stored. With a filter active, queries use the full-set memory instead (D4).
+- **Alternatives and trade-offs:**
+  - A request per keystroke: rejected. Cancellation alone still sends every request.
+  - Full-set search with `limit=0` (the earlier plan in §4.5.1): replaced by paged search in your brief.
+  - Persisting search results: outside the approved storage scope (§4.5.2).
+  - An unbounded cache: memory would grow for the whole session.
+  - Trade-off: the debounce also applies to cached queries, so cached results appear 300 ms after the last keystroke, even though no request is sent.
+- **Verification:**
+  - `search_query_test.dart`: normalization, the minimum, and characters vs UTF-16 units.
+  - `search_results_local_data_source_test.dart`: "evicts the least recently written query beyond the bound", "reading a query keeps it from being evicted next", and the `isStale` group.
+  - `search_repository_impl_test.dart`: "serves a cached query again without a request", "caches an empty result as a finished answer", "maps a server error and caches nothing", "flags a cached query as stale after the freshness window", "passes the cancellation signal to the request", "fetches the loaded range in one request and replaces it", "a failed refresh leaves the cached pages as they were".
+  - `search_screen_test.dart`: "one character sends no request"; "two characters search after the debounce…" (no request at 299 ms, one at 300 ms; the test types `mirror`); "a result opens its details, and Back keeps the query and…" (no second request).
+  - `properties_remote_data_source_test.dart`: an already cancelled signal sends no request, and cancelling in flight aborts the request.
+  - *Inspection only*, with no Cubit or screen test: the full "ca" → "cap" → "ca" sequence through `SearchCubit` (the screen test "a stale cached query refreshes in the background without skeletons", added 2026-10-14 for U8, covers the stale-entry background refresh); a late response from an older query being dropped by `SearchCubit`; text that normalizes to the same query being ignored.
+- **Limitations:**
+  - Memory only: the cache is empty after a restart.
+  - At most 20 queries are kept.
+  - A request cancelled before it finishes stores nothing.
+  - A stale entry costs one refresh request.
+  - Scroll position is not part of the cache (only the loaded pages and the next offset are).
+
+#### D2. Paginated browsing (Home and Explore)
+
+- **Decision:** Home's recommendations and Explore's browse and search listings load 20 items per page as the user nears the end of the list. Filtered Explore shows the whole filtered set at once.
+- **Decided by:** you: "pagination products, lazy loading home" (Home data brief), and paged search (Search brief). Page size 20 is part of the approved strategy (§4.5). Agent: the trigger distance, the guards, removing duplicate ids, and the rule for stale pages.
+- **Context:** DummyJSON pages with `limit`/`skip` and returns `total` (194 products). A listing shows a grid or list that can grow.
+- **Reasoning:** A small first page appears faster. Loading near the end avoids a "load more" tap. The full set is used only where the API can't filter (§4.5.1).
+- **Implementation:**
+  - `LoadMoreScrollListener` (`core/widget/`) calls `onLoadMore` when the outer vertical scroll view is less than one screen from its end (`extentAfter < viewportDimension`). It fires on every qualifying scroll event, so the Cubits guard each call with `canLoadMore`. That requires a success state, more pages, no page loading, no failed page, no refresh running and no saved copy on screen (`DataSource.saved`). The guard is in `HomeState` and `SearchState`.
+  - End of list: `hasReachedMax` is `skip + limit >= total`, because DummyJSON echoes the returned count in `limit` (`PropertiesResponseModel`). An empty page also ends the list.
+  - Home: `HomeRepositoryImpl` sends `skip = page × 20` to `/products` ("All") or `/products/category/{slug}`. `HomeCubit` skips ids already in the grid. One request counter (`_recommendationsRequest`) drops pages that arrive after a category change or a refresh.
+  - Explore browse uses the same `GetRecommendationsUseCase`, guarded by `SearchCubit`'s `_generation`.
+  - Explore search: `SearchRepositoryImpl.loadNextPage` continues from the cache entry's `nextSkip`. It sends nothing once `hasReachedMax` is set, removes duplicate ids, and appends only if `nextSkip` hasn't changed meanwhile, so two overlapping loads can't append twice. A cancelled next page clears the loading flag without showing an error.
+  - Failure: the loaded items stay, and a footer with Retry appears (`retryLoadMore`). Automatic loading pauses until Retry or a reconnect (D3).
+  - Filtered mode: no pagination (`hasReachedMax: true`); see the reasons in §4.5.1.
+- **Alternatives and trade-offs:** loading the full set (`limit=0`) for every listing was kept only for filtered mode. Nothing else is recorded.
+- **Verification:**
+  - `home_cubit_pagination_test.dart`:
+    - groups `canLoadMore`, `loadMore` (append, "skips items whose id is already in the grid", "stops requesting after the last page", "an empty page ends the list…", "ignores calls while a page is loading", "does nothing on saved results") and "load more failure";
+    - "drops a next page that arrives after the change" and "drops a next page that arrives after the refresh".
+  - `home_cubit_test.dart`: "a slow response for an older selection is dropped".
+  - `home_repository_impl_test.dart`: "later pages use skip and are never cached" and "use skip and never touch the cache".
+  - `search_repository_impl_test.dart`: the `loadNextPage` group, including "drops ids a later page repeats", "sends nothing once the last page is loaded" and "a failed page keeps the loaded pages".
+  - `search_screen_test.dart`: "shows a skeleton card while the next page loads" and "a failed next page keeps the results and offers a retry".
+  - *Inspection only*: `LoadMoreScrollListener` has no test of its own.
+- **Limitations:**
+  - Home and Explore-browse page requests are not cancelled. A late page is ignored, but its request still completes.
+  - Quick category taps each send a request; older ones are dropped, not debounced.
+  - Paging stops while a saved copy is shown.
+  - A saved copy covers only the first "All" page (§4.5.2).
+
+#### D3. Connectivity awareness and offline handling (`connectivity_plus`)
+
+- **Decision:** `connectivity_plus` (`^6.0.3` in `pubspec.yaml`, 6.1.5 resolved) sits behind `NetworkInfo`. Repositories fail fast when no interface is up. Real request failures are mapped separately. Home and Explore act once when the connection comes back.
+- **Decided by:** you: the package and its version, with the note "connectivity status does not guarantee internet access. Handle actual API request failures separately". Also yours: saved data when the request fails or there's no internet (Home data brief), cache option B (§4.5.2), and the fallback on any failure except cancellation (§4.5.2, changed 2026-10-13). Agent: one action on an offline → online change, filtering repeated events (`.distinct()`), and what each Cubit does on reconnect.
+- **Context:** `connectivity_plus` reports network interfaces, not internet access; its README warns about Wi-Fi without internet such as captive portals. Users still need data offline and a way to recover.
+- **Implementation:**
+  - `NetworkInfoImpl`: `isConnected` is true when any reported interface isn't `none`. `onStatusChange` maps changes to a `bool` and drops repeats.
+  - `HomeRepositoryImpl`, `SearchRepositoryImpl` and `PropertiesRepositoryImpl` check `isConnected` first and return `NetworkFailure` without a request.
+  - Real failures: `DioClient` (connect 10 s, send 10 s, receive 15 s) maps every error type to its own `Failure` (§4.5.2 "Error mapping"). An HTML page from a captive portal is not a JSON object, so it becomes "unexpected response". Every failure shows a localized message with Retry.
+  - Saved data offline:
+    - Home and Explore browse: the "All" first page (saved copy under 24 h old; the entity's `isFromCache` becomes `DataSource.saved` in the Cubit state, U8; an offline notice on both screens).
+    - Categories: served without a request when under 24 h old; any age when the API fails.
+    - Details: the remembered copy from this session.
+    - Search: cached queries (D1).
+    - Featured, later pages and category pages have no saved copy; they show their error with Retry.
+  - Reconnect: `injection_container.dart` passes `sl<NetworkInfo>().onStatusChange` to `HomeCubit` and `SearchCubit`. They act only on a change from offline to online. The first event only records the state, and `connectivity_plus` sends the current state first on Android and iOS (plugin source), so starting offline and then connecting counts.
+    - `HomeCubit`: refresh if Featured or recommendations failed or a saved copy is shown; otherwise retry a failed next page.
+    - `SearchCubit`: retry a failed first load, otherwise refresh a saved copy, otherwise retry a failed next page.
+    - These refreshes keep the section status, so they show no skeletons (U8).
+    - Both cancel the subscription when closed.
+- **Alternatives and trade-offs:**
+  - Trusting connectivity as proof of internet: rejected by your note.
+  - An extra reachability package or pinging the API: not used. The stack allows no alternatives without approval, and real request errors already cover it.
+  - Refreshing on every connectivity event: avoided by acting only on the offline → online change.
+- **Verification:**
+  - `network_info_test.dart`: "is connected when any interface is up", "is disconnected when only \"none\" is reported", "status stream emits only real changes".
+  - `home_repository_impl_test.dart`: "offline page 0 serves a fresh cache without calling the API", "falls back to the cache on …" (one case per failure type), "a cancelled request never falls back to the cache", "ignores a cache that is 24 hours old", "ignores a cache timestamped in the future", "offline fails fast with NetworkFailure" (Featured), "uses stale categories when the refresh fails".
+  - `search_repository_impl_test.dart`: "returns NetworkFailure without a request when offline".
+  - `home_cubit_pagination_test.dart`, connectivity group: "coming back online refreshes a failed section once", "…replaces saved results", "the reconnect refresh keeps the saved results visible", "…retries a failed next page", "does nothing when the first event is online", "does nothing when every section is fine", "stops listening when closed".
+  - `dio_exception_mapping_test.dart` and `dio_client_test.dart`: error mapping.
+  - *Inspection only*: `SearchCubit`'s reconnect handling (no test; the shared `showLoading: false` path is covered by the stale-cache test in `search_cubit_refresh_test.dart`); the plugin sending the current state first was read from the plugin source, not tested on a device.
+- **Limitations:**
+  - On Wi-Fi without internet, `isConnected` is true, so the request runs and fails only after its timeout.
+  - A categories-only failure doesn't trigger the reconnect refresh.
+  - Featured has no offline copy.
+  - Saved copies are best-effort (writes may not reach disk).
+
+#### D4. Other decisions found in the code
+
+| Decision | Decided by | Where | Verified by |
+| --- | --- | --- | --- |
+| Session memory vs disk: only the "All" first page, categories and favorites go to disk; search pages, full sets and details stay in memory | You (cache option B, Q8) | §4.5.2; `HomeLocalDataSource`, `SearchResultsMemoryDataSource`, `PropertiesRepositoryImpl` | `home_repository_impl_test`, `properties_repository_impl_test`, `search_results_local_data_source_test` |
+| Filtered Explore loads the full matching set once and filters on the device (last 5 sets, 10 minutes; unlike D1, a stale set is fetched again, not shown) | Agent, at your request | §4.5.1 "Filter sheet"; `PropertiesRepositoryImpl`, `FilterPropertiesUseCase` | `properties_repository_impl_test`, `search_cubit_filter_test` ("applying the same filter again sends nothing", "a query while filtered loads its full set, not search pages") |
+| Home sections load in parallel and fail and retry separately | Agent (Home phase, §10) | `HomeCubit.load`, `retryFeatured`, `retryRecommendations` | `home_cubit_test` ("a Featured failure leaves the other sections loaded", retry group) |
+| A failed pull to refresh keeps the loaded data in the state, which is shown again with a snackbar (during the pull the status is `loading` and the screen shows skeletons, U8); a saved copy counts as a failed refresh | Agent (Home phase, §10) | `HomeCubit._refresh`, `SearchCubit._refreshShown` | `home_cubit_pagination_test` ("a failed request brings the shown content back and reports it", "does not replace live results with the saved copy"); `search_cubit_refresh_test` ("a failed pull to refresh brings the results back"); `home_screen_interactions_test` ("a failure keeps what is shown and says so"); `search_screen_test` ("a failed pull to refresh brings the results back and says so") |
+| No request starts from `build()`; Cubits are created in `BlocProvider.create` with `..load()`, and the tabs stay mounted (`StatefulShellRoute.indexedStack`) | Rules (`data-layer.mdc`: never call the network from `build()`) | `HomeScreen`, `SearchScreen`, `app_router.dart` | *Inspection only*; "a result opens its details, and Back keeps the query and…" checks that coming back from Details sends nothing |
+
+**Discrepancies found by this audit:** §4.5.1 "Query changes" said 400 ms; the code has a single 300 ms debounce, now corrected there. `.cursor/rules/presentation-layer.mdc` still says "~400 ms", and `.cursor/rules/testing.mdc` lists a `utils/debouncer` that doesn't exist (the debounce is a `Timer` in `SearchCubit`). The rules files were left unchanged; this task was documentation-only.
+
+### 4.10 Decision records: UI/UX additions not in Figma
+
+Audited 2026-10-14 like §4.9. None of these behaviors is specified in the Figma file. Each record says who decided it; values chosen by the agent live in `AppSizes` / `ColorsApp` / widget constants, not in Figma. On 2026-10-14 the tests listed below were run: 51 passed for U1–U5, and the two app test files for U6 passed 71/71. Figma was not consulted and the app was not run for this audit.
+
+#### U1. Details hero: zoom on pull, blur on scroll, bottom gradient
+
+- **Decision:** On Property Details, pulling the page down past the top zooms the photo. Scrolling the hero away blurs it. A dark gradient sits at the bottom of the photo.
+- **Decided by:** you (2026-10-13): a custom flexible space instead of `FlexibleSpaceBar`'s defaults, zoom with `Transform.scale` while pulling down, blur with `ImageFiltered`, a dark gradient at the bottom, and both effects tied to the real drag rather than a timer. Agent: the values (blur up to σ 10, gradient 120 high), bouncing physics on every platform, and one change to your request: the blur follows scrolling away, not the pull.
+- **Context:** The Figma hero is a static 460-high photo. A large photo with no feedback on overscroll feels flat, and the white page dots can disappear on light photos.
+- **Reasoning:** Zoom on pull is the usual "stretchy header" feedback. Blurring while the hero scrolls away fades the photo out behind the content. Blurring during the pull was not used because it would blur the very photo the user is pulling to see. The gradient is at the bottom only: it keeps the white dots readable, while the top-bar icons are dark, so a dark top gradient would hide them.
+- **Implementation:** `DetailsHero` (`feature/property_details/presentation/widget/details_hero.dart`) is a `SliverAppBar` (`expandedHeight` = `AppSizes.detailsHeroHeight` 460, `stretch: true`). `_HeroSpace` reads the real header height from its constraints and the full height from `FlexibleSpaceBarSettings.maxExtent`:
+  - `pulled` = extra height when stretched → `Transform.scale(1 + pulled / expanded)` anchored at the top edge.
+  - `scrolledAway` = lost height → `ImageFiltered` blur σ = `detailsHeroMaxBlur` (10) × `scrolledAway / expanded`, switched off at rest (`enabled: blur > 0`).
+  - `_BottomGradient`: `heroGradientStart` → `ColorsApp.overlay`, `detailsHeroGradientHeight` 120, under the dots, and it ignores taps.
+  - `PropertyDetailsScreen` uses `BouncingScrollPhysics` on every platform, so the stretch also works on Android.
+- **Alternatives and trade-offs:** blur on pull was changed to blur on scroll-away (reason above). `BackdropFilter` (your second option) was not used; `ImageFiltered` blurs only the photo. A top gradient was not added. Trade-off: Android also gets iOS-style bounce on this screen.
+- **Verification:** `details_hero_test.dart`: "at rest: no zoom, no blur", "pulling down zooms with the drag, release settles back", "scrolling away blurs in step with the offset", "a dark gradient sits at the bottom, under the dots".
+- **Limitations:** the effects follow the finger, so they are not turned off when the system reduces motion (they are direct manipulation, not animations). Blur costs GPU time while the hero is partly visible.
+
+#### U2. Back-to-top button on Home
+
+- **Decision:** After the Home page has scrolled more than one screen, a round button appears. Tapping it scrolls back to the top.
+- **Decided by:** you (2026-10-13): a back-to-top button once the user has scrolled far down. Agent: the threshold (one screen), its place, the look, and the timing.
+- **Context:** Home grows with pagination (D2), so the way back to the header, the search bar and the category chips gets long.
+- **Implementation:**
+  - `ScrollToTopButton` (`core/widget/scroll_to_top_button.dart`) listens to Home's `ScrollController`. It is visible when `pixels > viewportDimension` and appears with an `AnimatedScale` (200 ms).
+  - Tap: `animateTo(0)` over 500 ms with `easeOutCubic`, or `jumpTo(0)` when the system disables animations.
+  - While hidden it ignores taps and is excluded from semantics.
+  - It is placed in `HomeScreen`'s `floatingActionButton` slot: end side (right in English, left in Arabic), above the bottom navigation bar.
+  - It is built only from existing parts: `CircleIconButton` (`core/widget/circle_icon_button.dart`, the shared 44 px round button with a semantics label, also used by `AppBackButton`) in `ColorsApp.primary`, `AppSizes.buttonShadow`, and the Figma chevron `ImagePath.arrowRight` turned up with `RotatedBox`. No new asset. Its semantics label is `common.back_to_top` (en/ar).
+- **Alternatives and trade-offs:** a Material `FloatingActionButton` (default look, not the design tokens) and a new up-arrow asset (the rotated Figma chevron is enough) were rejected (§11). The one-screen threshold is a judgment call; Figma has no value for it.
+- **Verification:**
+  - `scroll_to_top_button_test.dart`: "is hidden and not focusable at the top", "stays hidden within the first screen", "appears past one screen and scrolls back to the top" (en, ar), "jumps without animating when animations are off".
+  - `home_screen_interactions_test.dart`: "appears at the end side above the nav bar and returns to the top" (en, ar).
+  - `CircleIconButton` has no test of its own; it is covered through these tests.
+- **Limitations:** Home only. Explore's long list has no back-to-top button.
+
+#### U3. Clear (×) button in the search field
+
+- **Decision:** While the Explore search field has text, an × appears at its end. Tapping it empties the field, and Explore returns to the listing without a query.
+- **Decided by:** you (2026-10-14): an × to delete the typed search text. Agent: where it sits (between the text and the filter icon), when it shows, the icon, and reporting the clear as a normal edit.
+- **Context:** Without it, clearing a query means deleting it character by character.
+- **Implementation:**
+  - `_ClearButton` in `AppSearchField` (`core/widget/app_search_field.dart`) rebuilds from the `TextEditingController` (`ValueListenableBuilder`). It is shown only while there is text, never on the read-only Home bar, and never when no controller is given.
+  - Tap: `controller.clear()`, then `onChanged('')`, so `SearchCubit.onQueryChanged('')` runs as for any edit. The browse listing comes back at once from its snapshot, without a request (or the filtered catalog when a filter is active; see D1).
+  - The icon is `AppSvgIcon(ImagePath.close)` (`core/widget/app_svg_icon.dart`, the shared SVG icon widget, tinted with `colorFilter`), 20 px in `ColorsApp.black03`, like the search and filter icons. `assets/svg/close.svg` is a new 24×24 stroke icon in the Iconly style, because Figma has no close icon and the project uses SVG icons only.
+  - Its semantics label is `common.clear_search` (en/ar).
+- **Alternatives and trade-offs:** Material `Icons.close` was rejected (SVG icons only, §11).
+- **Verification:** `app_search_field_test.dart`: "hides the clear button while the field is empty", "hides the clear button on the read-only Home bar", "clears the text and reports an empty query" (en, ar). `search_screen_test.dart` "clearing the query returns to the \"All\" listing" covers the same path by editing the text, not by tapping ×.
+- **Limitations:** the tap area is 44 px tall but only as wide as the 16 px gap plus the 20 px icon (about 36 px at the design width); no test checks its size. The §10 entry called it a "44 px tap target", which is accurate for the height only.
+
+#### U4. Grid cards: appear animation with pagination
+
+- **Decision:** Recommendation cards on Home fade in, slide up and grow slightly when they first appear, column after column. Each new page animates the same way.
+- **Decided by:** you (2026-10-13): an animation for the product cards that goes with pagination. Agent: the motion values, the stagger, and the no-replay rule.
+- **Implementation:**
+  - `AppearAnimation` (`core/widget/appear_animation.dart`): 450 ms `easeOutCubic`, opacity 0 → 1, slide from 12 % of the card height, scale 0.94 → 1. The delay is the start of an `Interval` on one controller (no timers). The card is at rest immediately when `animate` is false or the system disables animations.
+  - `SliverPropertyGrid` wraps each `PropertyGridCard` with a 70 ms stagger per column in reading order, so it mirrors in Arabic.
+  - Ids already shown are remembered, so cards rebuilt after scrolling back don't replay.
+  - A replaced list (new category, refresh) clears that memory and bumps a key generation, so it animates again even when the same id stays in the same place.
+- **Alternatives and trade-offs:** `Future.delayed` for the stagger was rejected: a pending timer can't be cancelled and fails widget tests (§11). No animation package was added.
+- **Verification:**
+  - `appear_animation_test.dart`: "starts hidden, lower and smaller, then comes to rest", "waits for the delay before moving", "is at rest at once when animate is false", "is at rest at once when the system disables animations".
+  - `sliver_property_grid_test.dart`: "a new page animates in while loaded cards stay put", "the second column starts after the first", "scrolling back does not replay it", "a replaced list (new category) animates again".
+- **Limitations:** grid cards only (Home). Explore's list cards and the Featured cards don't animate.
+
+#### U5. 44 px tap targets without moving the Figma layout
+
+- **Decision:** Small Figma icons keep their drawn size and position, but each gets a tap area of at least 44 px (`AppSizes.minTapTarget`, unscaled so small screens don't shrink it).
+- **Decided by:** agent, within the 44 px minimum recorded in §5.2. The overlay placement on cards is the agent's choice (§11, Home favorites entry).
+- **Implementation:**
+  - `FavoriteButton` centers the 20 px Figma heart in a 44 px square.
+  - `PropertyGridCard` doesn't put it in the price row (that would push the row taller than Figma). The card reserves the heart's 20 px in the row and draws the 44 px button as an overlay centered on that spot (`PositionedDirectional`, mirrored in Arabic).
+  - `CircleIconButton` is a 44 px circle.
+  - The search field's filter and clear icons get a 44 px-tall `InkResponse`.
+- **Verification:** `favorite_button_test.dart`: "has a 44 px tap target around the Figma-sized heart".
+- **Limitations:** Android's guideline is 48 px; the project uses 44 (§11). The heart's 44 px square lies over part of the card, so a tap there toggles the favorite instead of opening the card.
+
+#### U6. Tabs keep their state: no jump back to the first product, no new request
+
+- **Decision:** Switching between Home, Explore and Profile keeps each tab as it was left: scroll position, loaded pages, the typed query and filter. Returning to a tab sends no API request.
+- **Decided by:** you; recorded as a UX decision on 2026-10-14. The tab shell has used `StatefulShellRoute` since Phase 2 (§5.2 "Switch tabs").
+- **Context:** The common pattern of a bottom bar that swaps the `Scaffold` body by index (or go_router's plain `ShellRoute`) disposes the screen that is left. Here each screen creates its Cubit in `BlocProvider(create: (_) => sl<XCubit>()..load())` and the Cubits are factories. A disposed screen would therefore come back with a new Cubit: scroll back at the first product, paged items lost, and the first-load requests sent again.
+- **Reasoning:** Users switch tabs to check something and come back. Losing their place in a long paginated list, and paying for the same requests again, is worse than keeping one more screen in memory.
+- **Implementation:**
+  - `AppRouter.create` (`core/constant/app_router.dart`) uses `StatefulShellRoute.indexedStack` with one `StatefulShellBranch` per tab. Each branch has its own `Navigator`, and go_router 18 puts the built branches in an `IndexedStack`. A hidden tab stays mounted with its `ScrollController`, its Cubit and its state.
+  - A branch is built on its first visit only (`StatefulShellBranch.preload` defaults to `false`, read in the go_router 18.0.2 source). Explore therefore sends its first requests when it is first opened, not at launch.
+  - `AppShell` (`core/widget/app_shell.dart`) switches with `navigationShell.goBranch(index, initialLocation: index == currentIndex)`. Another tab is restored as it was; tapping the current tab resets that branch to its first route, without resetting the scroll.
+  - The bar is the custom `AppBottomNavBar` drawn from Figma `1:4489`; tab state comes from the router, not from the bar widget.
+- **Alternatives and trade-offs:** swapping the body by index or using a plain `ShellRoute` (loses the state, as above). Saving the scroll offset with `PageStorageKey` would keep only the position: the Cubit, its pages and its requests would still be recreated. Trade-off: every visited tab stays in memory (three tabs at most), and the data on a hidden tab isn't refreshed by itself: pull to refresh, or a reconnect (D3).
+- **Verification:**
+  - `app_shell_responsive_test.dart` "bottom navigation switches tabs" checks the switch only.
+  - `language_switch_test.dart` "language switch keeps the current tab" checks the current tab after a language change.
+  - *Inspection only*: no test checks that the scroll position, the loaded pages or the request count survive a Home → Explore → Home round trip.
+- **Limitations:**
+  - Tapping the active tab doesn't scroll to the top (Home has the back-to-top button, U2).
+  - Property Details is outside the shell, so it is rebuilt on each open (it starts from the tapped item, §4.5).
+
+#### U7. Explore: pinned search bar, refresh limited to the results
+
+- **Decision (UX):** keep the search field reachable at all times, so after scrolling down through products the user can search for another product, or open the filter, right away, without scrolling back to the top. On Explore, the header (back button and title) and the search field stay pinned at the top, and the results scroll under them. Pull to refresh moves only the results: its spinner appears under the search field and the header and field don't move. During the pull the results show skeletons (U8).
+- **Decided by:** you (2026-10-14): pin the search area and let the products pass under it. You also reported that refresh pulled and redrew the whole screen; you chose to pin the header and field together and to limit refresh to the results. Agent: the layout (a fixed top area above the list instead of a pinned sliver).
+- **Context:** Before, the header, the field and the results were one `CustomScrollView` inside one `RefreshIndicator`. Scrolling hid the search field, and pull to refresh dragged the whole screen, the field included.
+- **Reasoning:** Explore exists to find a product. With pagination the list grows as the user scrolls (D2), so a field that scrolls away gets further out of reach the more results are browsed; changing the query would mean scrolling back up first. Pinning it makes a new search, a correction, the clear × (U3) or the filter one tap away from any scroll position. Refreshing is about the results, so only the results move.
+- **Implementation:**
+  - `SearchView` (`feature/search/presentation/pages/search_screen.dart`) is a `Column`: `_SearchTopBar` (`SearchHeader`, a `sectionGap` gap, then `AppSearchField`, with the same paddings as before), then an `Expanded` `RefreshIndicator` → `LoadMoreScrollListener` → `_ResultsScrollView` (a `CustomScrollView` with only `SearchResultsSection`).
+  - The results viewport starts at the field's bottom edge and clips there, so cards slide under the field. The 24 px gap above "Found {n}" is inside the list, so the layout at rest is unchanged (the Figma layout test still passes).
+  - **Superseded the same day by U8:** at first the shown results stayed during a refresh (`SearchResultsSection`'s `buildWhen` ignores `isRefreshing`). Now the user's pull sets `SearchState.status` to `loading`, so the results show skeletons, and they come back after it ends (D4).
+  - Pinned with a plain `Column` rather than a `SliverPersistentHeader`: the header's height grows with the text scale, and a persistent header needs fixed extents.
+- **Alternatives and trade-offs:** a pinned `SliverPersistentHeader` (fixed extents, see above). Pinning the field only, with the header scrolling away, was offered and not chosen. Trade-off: the pinned area always takes about 136 px at the design size (16 + 44 + 24 + 52), so on small screens with the keyboard open fewer results are visible. No divider or shadow under the field: Figma has none, and inventing one was avoided.
+- **Verification** (`search_screen_test.dart`, pinned header and search field group):
+  - "results scroll under the header and the search field": the list scrolls, the header and field don't move, and the list starts at the field's bottom edge.
+  - "pull to refresh moves only the results, shows skeletons until the new results arrive, and refreshes once": the spinner is below the field, the header and field don't move, and exactly one `refresh:` request is sent (the skeleton part belongs to U8).
+  - Existing layout, responsive (4 viewports × en/ar × text scale 1.0/1.3) and pagination tests pass unchanged.
+- **Limitations:** Home is unchanged: its search bar is a read-only shortcut to Explore and still scrolls away.
+
+#### U8. Pull to refresh shows a fresh shimmer (Home and Explore)
+
+- **Decision (UX):** when the user pulls to refresh, the content is replaced by skeletons (shimmer) until the new data arrives, so the screen visibly reloads. On Home this covers Featured and the recommendation grid; on Explore, "Found {n}" and the results. If the refresh fails, the previous content comes back with the refresh-failed snackbar.
+- **Decided by:** you (2026-10-14): refresh the page and show a new shimmer loading on pull to refresh, on Home and Explore. Then, the same day, you asked for the loading to live in the Cubit (status `loading` → `success`/`failure`, the builder shows the skeleton) instead of a view-level flag, and for the offline state to be an enum (`DataSource`). Agent: showing skeletons only for the user's pull (not background refreshes), keeping the old data in the state so a failure restores it, and leaving the chips and the Explore header/field in place.
+- **Context:** Before, a refresh kept the old content on screen and swapped it silently when the answer came. Apart from the spinner, nothing showed that the content was being replaced.
+- **Reasoning:**
+  - Skeletons make the reload visible and match the first load. The section status is the single source of what the screen shows, so the existing `BlocBuilder`s render `loading` with the same skeletons as the first load; the views hold no extra state.
+  - Only the user's pull changes the status. Refreshes the user didn't ask for (a stale cached search entry, D1, and the reconnect refresh, D3) keep it, because covering those with skeletons would hide results that should appear instantly. `isRefreshing` stays set for every refresh; it guards paging and drives the snackbar.
+- **Implementation:**
+  - `HomeCubit.refresh()` (the pull) runs `_refresh(showLoading: true)`; the reconnect runs `_refresh(showLoading: false)`. With `showLoading`, Featured and the recommendations go to `RequestStatus.loading` if they were `success`, with their items kept in the state. A failed request (or a saved copy) sets that section back to `success`, and `refreshFailed` is set.
+  - `SearchCubit.refresh()` runs `_refreshShown(showLoading: true)`: the status goes to `loading` with `items` kept; a failure or a cancelled refresh restores the previous status (`success` or `empty`). The stale-cache and reconnect refreshes pass `showLoading: false`.
+  - Views: `RefreshIndicator.onRefresh` is `cubit.refresh` again. `_FeaturedSection`, `_RecommendationsSection` and `SearchResultsSection` build from the status as for the first load (`FeaturedPropertyListSkeleton`, `SliverPropertyGridSkeleton`, `_LoadingResults`). The category chips and the Explore header/field stay (U7).
+  - Offline: `HomeState.recommendationsSource` and `SearchState.source` are a `DataSource` enum (`remote`, `saved`, `core/enums/data_source.dart`) instead of the `isFromCache` bool. The offline notice and `canLoadMore` check `DataSource.saved`. The domain `PropertiesPageEntity.isFromCache` is unchanged and mapped by the Cubits. `RequestStatus` keeps its five values.
+  - After the skeletons the grid is built anew, so its cards play the appear animation (U4). The `RefreshIndicator` spinner shows during the pull, together with the skeletons.
+- **Alternatives and trade-offs:**
+  - First implementation (same day, replaced): a `ValueNotifier<bool>` in each view, set around `await cubit.refresh()`. It worked, but the UI state was split between the view and the Cubit, and the Cubit tests couldn't see the loading.
+  - Driving the skeletons from `isRefreshing` was rejected: background refreshes set it too (see Reasoning).
+  - Clearing the data in the Cubit was rejected: a failed refresh would leave nothing to show, against D4.
+  - An `offline` value in `RequestStatus` was rejected: saved data is still a success with content, and the source is per listing, not per request.
+  - Trade-off: the old content disappears during every pull, even when the new data turns out the same. The spinner and the skeletons both show at once. A section's `loading` no longer always means "nothing loaded yet"; widgets that need that check the items.
+- **Verification:**
+  - `home_cubit_pagination_test.dart`: "shows loading on every section while keeping its data" (exact states), "a failed request brings the shown content back and reports it", "does not replace live results with the saved copy", and "the reconnect refresh keeps the saved results visible" (no `loading` status emitted).
+  - `search_cubit_refresh_test.dart` (new): loading with the results kept then success; failure restores the results; a saved copy counts as a failed refresh; saved browse results block paging until a refresh succeeds; a stale cached query refreshes without a `loading` status.
+  - `home_screen_interactions_test.dart`: "shows skeletons until the new data arrives", plus "a failure keeps what is shown and says so" (en, ar) and "shows the new results".
+  - `search_screen_test.dart`: "pull to refresh moves only the results, shows skeletons until the new results arrive, and refreshes once", "a failed pull to refresh brings the results back and says so", and "a stale cached query refreshes in the background without skeletons".
+- **Limitations:**
+  - If a background refresh is already running, the user's pull returns at once and shows no skeletons.
+  - The pull usually starts at the top of the page, but if the list is longer than the skeletons, the scroll position can change when the content returns.
 
 ---
 
@@ -696,6 +965,7 @@ Install in Phase 2 with `flutter pub add`, and only the packages confirmed by Ph
 | `cached_network_image` | Image caching + error widget | C6, C7. `^4.0.3` (Phase 4; pulls in `sqflite` and `path_provider`, hence the regenerated macOS/Linux/Windows plugin registrants) |
 | `flutter_svg` | SVG icons from Figma | A2: Figma icons are SVG. `^2.3.0` (Phase 4) |
 | `url_launcher` | Agent "call" opens the phone dialer (`tel:`) | `^6.3.3`, added 2026-10-13 with your approval (dialer option). Behind `PhoneDialer`; Android `<queries>` DIAL/tel and iOS `LSApplicationQueriesSchemes` tel added |
+| `device_preview` | Preview the app on simulated devices, locales and text scales | `^1.3.1`, added 2026-10-14 at your request. Debug/profile only (`enabled: !kReleaseMode` in `main.dart`); the locale still comes from easy_localization, not from the preview's language tool |
 | dev: `bloc_test`, `mocktail` | Cubit tests, mocks | E4 |
 
 Fonts are bundled in `assets/fonts/` (no runtime `google_fonts`). Only Rubik (`Rubik[wght].ttf`, OFL) is needed, for both English and Arabic (Q6). Inter and Urbanist appear only in elements hidden under Q4 (filter steppers, Building Size) and in the Details map's street names, which use Rubik instead (2026-10-13), so they aren't bundled.
@@ -855,7 +1125,13 @@ Manual checklist:
 | 2026-10-13 | 5: Filter sheet (`1:3867`) + Explore filter icon (`1:4146`) | 🟡 Implemented on `feat/add_filter` (from `a4a0236`), **uncommitted** | Your request: build the sheet, open it from the icon in Explore's search field, decide the backend interaction and record it. **Backend decision (§4.5.1 "Filter sheet"):** any active filter → full matching set of the current query (`limit=0`), filtered on the device (several categories + open-ended price range); no filter → Explore unchanged (paged). Full sets kept in `PropertiesRepositoryImpl` memory (last 5, 10 min, successes only, `forceRefresh` for pull to refresh), so the sheet's histogram load and "Set Filter" share one request. **Domain:** `PropertyFilter`, `PriceHistogram` (20 log-scale buckets, whole-dollar bounds, open ends, disabled with < 2 different prices); `FilterParams.categorySlugs` (set) replaces `categorySlug`; `forceRefresh` on the full-set repository calls. **Presentation:** `FilterCubit` (draft, categories ‖ prices in parallel, retry, Reset, cancels on close), `SearchCubit` filtered mode (`applyFilter`, typing while filtered re-filters the new query's full set, clearing restores the paged listing, retry/refresh per mode), `showFilterSheet` on the root navigator (overlay covers the nav bar), `FilterSheetHeader`, `FilterPriceSection` (skeleton / retry / chart), `PriceRangeChart` (bars + themed `RangeSlider` + labels that merge when the thumbs are close), `FilterCategorySection`, `AppBackButton.compact`, `CategoryChip.verticalPadding`, `AppSearchField.filterActive` (Primary tint, not in Figma), filtered empty state with "Clear filters". Bedrooms/Bathrooms/Building Size hidden (Q4/Q14). Tokens from the saved Phase 1 `1:3867` design context (no Figma call this chat). 8 keys `filter.*` (en/ar). **Bugs found by tests and fixed:** the sheet opened in Explore's branch navigator and stopped above the nav bar (fixed with `useRootNavigator`); the loose title `Flexible` packed the header to the start, so "Filter" wasn't centered and Reset didn't reach the edge; Reset's 48 px Material tap target made the header 2 px too tall; a single $9.99 price produced a selectable $9–$10 range. Tests: histogram, full-set memory (fresh, `forceRefresh`, stale, failure not kept, LRU 5), `FilterCubit`, `SearchCubit` filter flows, sheet (Figma geometry at 430×932, Arabic mirror, chips, skeleton, retry, single price, 4 viewports × en/ar × 1.0/1.3), Explore (icon position and tint, apply, slider drag, back, reopen + Reset, typing while filtered, clear filters), DI (shared repository, new `FilterCubit` per sheet). Temporary real-font renders in en/ar checked, then deleted. `flutter analyze` 0; `flutter test` 958/958. **Gaps:** Home's filter icon stays hidden (TODO(question) in §5.2); Explore's category chip row (`1:4149`) isn't added; `core/utils/bidi_text.dart` listed in §4.2 doesn't exist, so prices are kept LTR with `TextDirection.ltr` instead |
 | 2026-10-14 | Search field: clear button | 🟡 Implemented on `feat/add_filter`, uncommitted | Your request: an × to delete the typed search text. `AppSearchField` shows `_ClearButton` (between the input and the filter icon) while its controller has text; hidden on the read-only Home bar and when no controller is given. Tap clears the controller and reports `''` through `onChanged`, so Explore returns to the browse listing (or the filtered catalog) at once. Not in Figma: built from existing tokens (`smallIconSize`, `black03`, `searchFieldIconGap`, 44 px tap target) with a new 24×24 stroke icon `assets/svg/close.svg` (`ImagePath.close`). New key `common.clear_search` (en/ar) as its semantics label. Tests: `app_search_field_test.dart` (hidden when empty, hidden when read-only, clears and reports an empty query in en/ar). `flutter analyze` 0; `flutter test` 963/963 |
 | 2026-10-14 | 5: Profile (`1:3786`) | 🟡 Implemented on `feature/profile` (from `feat/add_filter` `c2ddd38`), **uncommitted**, no GitHub issue (your choice) | Your request: apply the Profile design with the recorded decisions. Decisions asked first (4): Q17 as recorded (only the Language row), picker = bottom sheet like the Filter sheet, current language shown on the row, new branch without an issue. **Figma:** no MCP call (budget used up); geometry from the saved Phase 1 `get_metadata` of `1:3786` and typography from §5.3. **Feature `profile` (presentation only):** `ProfileScreen` replaces the placeholder at `/profile`; widgets `ProfileUserInfo` (`GuestAvatar` 140 + "Guest"), `ProfileMenuRow` (icon 28, label, optional value, mirrored chevron, 44 px target reaching 8 px past the 28 px row), `showLanguageSheet` / `LanguageSheet` (completes with the picked `Locale` or `null`; the screen calls `context.setLocale` only when it differs). Bell, edit badge and the eight other rows hidden (Q13, Q17). **Core:** `GuestAvatar` extracted from Home's private avatar and reused by Home; temporary `LanguageSwitcher` deleted; tokens `AppSizes.profile*`, `AppTextStyles.profile{Title,Name,MenuLabel}`; key `profile.guest_name` (en/ar); `assets/svg/check.svg` (`ImagePath.check`, not in Figma). **Tests:** Profile screen (Figma geometry at 430×932 in en/ar within 1.5 px, only one row, exactly 3 SVGs so no bell/badge, header semantics, 4 viewports × en/ar × 1.0/1.3 with the sheet open, current value, sheet over the nav bar, pick Arabic → RTL + persisted, pick current → no change, dismiss → no change), `LanguageSheet` (both options in each locale, check + Primary on the current one, single-choice semantics, result on tap, `null` on dismiss, 44 px targets), `ProfileMenuRow` (sides per direction, Figma sizes, 44 px target, value, tap, merged button semantics, ellipsis at 280 px × 2.0), `ProfileUserInfo`, `GuestAvatar`; `language_switch_test` and `app_shell_responsive_test` moved from the placeholder to the real flow; helpers `profile_finders.dart`, `svg_finders.dart`. Temporary real-font renders of the screen and sheet in en/ar checked, then deleted. `flutter analyze` 0; `flutter test` 1020/1020 |
+| 2026-10-14 | Audit + 9: Documentation | 🟡 Implemented on `docs/final-audit` (from `origin/main` `24ea3ce`, the squash merge of PR #13, same tree as `feature/profile`), **uncommitted** | Your request: audit every file against the brief, fix what's missing, write the README in English. **Audit:** greps for hard-coded `Text('…')`, physical `left/right` paddings/alignments, empty tap handlers, `print`/TODO, secrets/PDF in git; all clean (the one `EdgeInsets.fromLTRB` in `DetailsTopBar` applies physical safe-area insets on purpose). **Fixed:** missing unit tests for search logic (E4): `search_query_test` (normalization, 2-character minimum in runes), `search_results_local_data_source_test` (LRU, freshness), `search_repository_impl_test` (offline, cache hit, cancellation pass-through, failures not cached, empty cached, timeout/cancel mapping, stale flag, next page offset + dedupe, stop at max, failed page keeps items, refresh range + failure keeps cache); `pubspec.yaml` template description; `*.pdf` in `.gitignore`; §4.2/§4.7 listed files that don't exist (`debouncer`, `bidi_text`, `core/function`). **Docs:** `README.md` (screens, setup, `API_BASE_URL`, architecture, state management, API/errors/caching, search & filter, language switch + RTL, responsive, packages, tests, assumptions and limitations incl. C9), `AI_USAGE.md` (F1–F6 from §11), §3 ticked with the open items noted. **Open:** G7 screenshots (README links `docs/screenshots/{en,ar}/*.png`, not captured yet), G1 merge + push. `flutter analyze` 0; `flutter test` 1051/1051 (31 new) |
 
+| 2026-10-14 | Decision log audit | 🟡 Documentation only on `docs/final-audit`, uncommitted | Your request: audit and complete the decision log for search caching, pagination and connectivity. §11 is the AI usage log, so the records went to the new §4.9 next to §4.8. Traced `SearchCubit`, `SearchRepositoryImpl`, `SearchResultsMemoryDataSource`, `HomeCubit`, `HomeRepositoryImpl`, `PropertiesRepositoryImpl`, `NetworkInfoImpl`, `DioClient`, `LoadMoreScrollListener`, the DI setup and the `connectivity_plus` 6.1.5 plugin source. Corrected §4.5.1 (400 → 300 ms); clarified README §8 (offline copies, cache freshness) and §7 (`SearchCubit` reconnect); `AI_USAGE.md` §3 now separates your requirements from the agent's choices. No Dart, test, dependency or config changes. Targeted tests run: 288 passed (folders listed in §4.9). Gaps listed in §4.9 as *inspection only*. **Follow-up (your request):** UI/UX decisions not in Figma recorded as §4.10 (Details hero zoom/blur/gradient, Home back-to-top, search clear ×, grid appear animation, 44 px tap targets, tabs keeping their state with `StatefulShellRoute.indexedStack`); their widget tests run: 51 passed, plus 71/71 in the two app shell test files |
+| 2026-10-14 | Explore: pinned search bar | 🟡 Implemented on `docs/final-audit`, uncommitted | Your request: pin the search area and let the products pass under it; refresh was pulling and redrawing the whole screen. Decisions asked first (2): pin the header and field together; limit refresh to the results. `SearchView` is now a pinned `_SearchTopBar` above an `Expanded` `RefreshIndicator` + `_ResultsScrollView`; same paddings, so the Figma layout is unchanged at rest. Recorded as §4.10 U7. Tests: 2 new in `search_screen_test.dart` (results scroll under the pinned bar; pull to refresh moves only the results, keeps them shown, one request). `flutter analyze` 0; `flutter test` 1053/1053 |
+| 2026-10-14 | Pull to refresh: fresh shimmer | 🟡 Implemented on `docs/final-audit`, uncommitted | Your request: on pull to refresh, Home and Explore reload with a new shimmer. The views track the user's pull (`_pullRefreshing`) and show the first-load skeletons in place of Featured + the grid (Home) and the results (Explore). Background refreshes (stale cached search, reconnect) show none. Cubits unchanged: a failed refresh brings the old content back with the snackbar. Replaces the earlier "content stays during refresh" behavior (U7, D4 updated). Recorded as §4.10 U8; README §8 updated. Tests: 1 new on Home, 2 new on Explore, 1 Explore test changed to expect skeletons. `flutter analyze` 0; `flutter test` 1056/1056 |
+| 2026-10-14 | Refresh loading in the Cubits + `DataSource` | 🟡 Implemented on `docs/final-audit`, uncommitted | Your request: drive the pull-to-refresh skeletons from the Cubit status (loading → success/failure, the builder shows the skeleton) instead of a view flag, and make the offline state an enum. You chose: the user's pull sets the section status to `loading` with the old data kept; a failure goes back to `success` + `refreshFailed`; background refreshes keep the status; a separate `DataSource { remote, saved }` replaces the `isFromCache` bool in `HomeState`/`SearchState` (`RequestStatus` unchanged). `HomeCubit._refresh(showLoading:)`, `SearchCubit._refreshShown(showLoading:)`; the views' `ValueNotifier`s and `showSkeleton` parameters removed. U8, D3, D4 updated. Tests: Home refresh expectations updated to the loading states, 1 new reconnect test, new `search_cubit_refresh_test.dart` (5). `flutter analyze` 0; `flutter test` 1062/1062 |
+| 2026-10-14 | Device Preview | 🟡 Implemented on `docs/final-audit`, uncommitted | Your request. `device_preview ^1.3.1` via `flutter pub add` (3.0.0 not resolvable with the current constraints). `main.dart` wraps `AppLocalization.wrap(const App())` in `DevicePreview(enabled: !kReleaseMode)`; `MaterialApp.router` gets `builder: DevicePreview.appBuilder`. Locale stays on easy_localization. `flutter analyze` 0; `flutter test` 1062/1062 |
 
 ---
 
@@ -889,4 +1165,10 @@ Manual checklist:
 | 2026-10-13 | Cursor Agent | Filter sheet (`1:3867`), Explore filter icon, filter backend decision | `lib/feature/search/{domain/entities,presentation}/**` (filter files), `SearchCubit`/`SearchState`, `PropertiesRepositoryImpl` memory, `FilterPropertiesUseCase`, `SearchPropertiesUseCase`, shared widgets (`AppBackButton`, `CategoryChip`, `AppSearchField`), tokens/keys/translations, DI, test helpers and tests, reference §4.2/§4.3/§4.5/§4.5.1/§4.5.2/§4.7/§4.8/§5.1/§5.2/§5.4/Q14/§10, `data-layer.mdc` | Figma budget exhausted, so **no MCP call**: values read from the saved Phase 1 `get_design_context(1:3867)` output in an earlier transcript, and its asset SVGs fetched with `curl` for reference (no new assets added; the back arrow and filter icon already exist in `assets/svg/`). API limits taken from the verified §4.5.1 notes. Geometry asserted in widget tests at 430×932 (en/ar); temporary real-font renders in en/ar, deleted afterwards; `flutter analyze` 0; `flutter test` 958/958 | **Rejected** (backend): paged category requests (one category only, can't combine with search), filtering only the loaded pages (wrong results and count), sharing in-flight requests between the sheet and Explore (a cancel from one would cancel the other), persisting full sets (outside §4.5.2). **Rejected** a linear price scale (DummyJSON prices are heavily skewed). **Modified** a planned bidi helper: `core/utils/bidi_text.dart` doesn't exist despite §4.2, so prices are forced LTR instead. Tests caught the nested-navigator sheet, the off-center header, the 48 px Reset target and the single-price slider; all four fixed in code, not by loosening tests. One test expectation was wrong (field border not counted in the icon inset) and was corrected |
 | 2026-10-14 | Cursor Agent | Clear (×) button in the search field | `app_search_field.dart`, `assets/svg/close.svg`, `ImagePath.close`, `common.clear_search` (en/ar), `app_search_field_test.dart`, reference §10 | `flutter analyze` 0; `flutter test` 963/963 (the SVG inventory test caught the missing `ImagePath.icons` entry) | No Figma close icon exists, so a simple stroke × in the Iconly style was drawn instead of using a Material icon (project uses SVG icons only) |
 | 2026-10-14 | Cursor Agent | Profile screen (`1:3786`) with the recorded decisions, on a new branch | `lib/feature/profile/**`, `core/widget/guest_avatar.dart`, Home header, router, tokens/keys/translations, `check.svg`, tests + helpers, reference §4.2/§5.1/§5.2/§5.4/Q11/Q13/Q17/§10 | Figma budget used up, so **no MCP call**: frame geometry read from the Phase 1 `get_metadata` output saved in the agent tools folder (the `get_design_context(1:3786)` response wasn't saved), typography from §5.3. Geometry asserted in widget tests at 430×932 (en/ar); temporary real-font renders of the screen and sheet in en/ar, deleted afterwards; `flutter analyze` 0; `flutter test` 1020/1020 | Asked 4 questions before coding because the picker and the row value aren't in Figma. **Rejected** a Cubit/use case for the locale (easy_localization already holds and persists it, so the screen stays UI only like Auth). **Rejected** Material `Icons.check` (project uses SVG icons only); drew a stroke check like `close.svg`. Tests found that `ProfileUserInfo` shrank to the avatar's width under loose constraints (name off-center); fixed in the widget. Title finders were scoped to the screen because the title and the nav label share the same text in both languages. A `dart format` whitespace change in an unrelated test file was reverted to keep the diff scoped |
+| 2026-10-14 | Cursor Agent | Requirements audit, search unit tests, README, AI_USAGE.md | `test/feature/search/{domain/entities/search_query, data/datasource/search_results_local_data_source, data/repositories/search_repository_impl}_test.dart`, `README.md`, `AI_USAGE.md`, `pubspec.yaml`, `.gitignore`, reference header/§3/§4.2/§4.7/§10 | Code greps per requirement (strings, directional APIs, dead handlers, secrets); every README claim checked against the code (endpoints, timeouts, cache sizes, debounce, plural setting, `matchTextDirection`, `TextDirection.ltr` uses); `flutter analyze` 0; `flutter test` 1051/1051 | **Modified** two README claims the agent couldn't verify: "tested on iPhone 16/16e/16 Pro Max and an Android emulator" (only the iOS simulator run is recorded) and a link to a demo video that doesn't exist. Kept the screenshot table but flagged that the images must be captured before delivery, instead of generating test renders without network photos |
+| 2026-10-14 | Cursor Agent | Decision log audit: search cache, pagination, connectivity (documentation only) | Reference §4.9 (new), §4.5.1 debounce line, §10; `README.md` §7/§8; `AI_USAGE.md` §3 | Every claim traced to the source files named in §4.9; `connectivity_plus` 6.1.5 plugin source read in the pub cache (README warning, Android/iOS emit the current status on listen); your original Search, Home-data and connectivity briefs re-read from the chat transcripts to attribute decisions; targeted `flutter test` run: 288/288. Figma not used, app not run | **Corrected** the reference's 400 ms debounce (the code has 300 ms). **Not documented as tested:** `SearchCubit` behaviors with no Cubit or screen test (listed in §4.9 D1/D3/D4 as inspection only). The rules files' "~400 ms" and `utils/debouncer` were reported, not edited (documentation-only scope). **Follow-up §4.10 (UI/UX):** your original requests for the hero, back-to-top, clear × and card animation re-read from the chat transcripts; code and tests traced; 51/51 widget tests run. **Corrected** the clear button's "44 px tap target" (§10): 44 px tall only, about 36 px wide. U6 (tab state): `StatefulShellBranch.preload` default read in the go_router 18.0.2 source; no test covers scroll or request count across a tab round trip, marked *inspection only* |
+| 2026-10-14 | Cursor Agent | Explore: pinned header and search field, refresh limited to the results | `search_screen.dart`, `search_screen_test.dart`, reference §4.10 U7/§10 | Asked 2 questions first (what to pin; what "refresh stretches and rebuilds" meant). `flutter analyze` 0; `flutter test` 1053/1053, including the unchanged Figma layout test and the responsive matrix. Figma not used, app not run | **Rejected** a pinned `SliverPersistentHeader`: it needs fixed extents, but the header grows with the text scale. Did not add a divider or shadow under the field (not in Figma) |
+| 2026-10-14 | Cursor Agent | Pull to refresh shows a fresh shimmer on Home and Explore | `home_screen.dart`, `search_screen.dart`, `search_results_section.dart`, `home_state.dart` (doc comment), tests, reference §4.10 U7/U8/D1/D4/§10, `README.md`, `AI_USAGE.md` | `flutter analyze` 0; `flutter test` 1056/1056. Figma not used, app not run | **Rejected** driving the skeletons from the Cubits' `isRefreshing`: a stale cached search and the reconnect refresh also set it, so cached results would be hidden behind skeletons (a new test covers the stale case). **Rejected** clearing the data in the Cubit: a failed refresh would leave nothing to show. An existing Explore test that expected the cards to stay during refresh was changed to expect skeletons, because the requested behavior changed, not to make it pass |
+| 2026-10-14 | Cursor Agent | Pull-to-refresh loading moved into the Cubits; `DataSource` enum for saved data | `core/enums/data_source.dart` (new), `home_state.dart`, `home_cubit.dart`, `search_state.dart`, `search_cubit.dart`, `home_screen.dart`, `search_screen.dart`, `search_results_section.dart`, `home_cubit_pagination_test.dart`, `home_cubit_test.dart`, `search_cubit_refresh_test.dart` (new), reference §4.10 U7/U8, D3, D4, §4.6, §10 | `flutter analyze` 0; `flutter test` 1062/1062. Figma not used, app not run | You rejected the agent's view-level `ValueNotifier` (previous row) in favor of the Cubit status. The agent's earlier argument against `isRefreshing` still holds, so the user-vs-background split is a `showLoading` parameter inside the Cubits. **Rejected** an `offline` value in `RequestStatus` (saved data is still a success). The Home refresh test "never shows a loading state over content" was replaced, because the requested behavior changed: a pull now shows `loading` by design |
+| 2026-10-14 | Cursor Agent | Device Preview setup | `pubspec.yaml`, `main.dart`, `app.dart`, reference §6/§10 | Read `device_preview` 1.3.1 source in the pub cache (`appBuilder`, `locale`, the `useInheritedMediaQuery` assert falls back to true for non-app widgets); `flutter analyze` 0; `flutter test` 1062/1062 | **Rejected** `DevicePreview.locale(context)` for `MaterialApp.locale`: it would override the in-app language switch. Disabled in release builds |
 

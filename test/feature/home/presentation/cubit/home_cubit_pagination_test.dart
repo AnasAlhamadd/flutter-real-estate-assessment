@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
+import 'package:flutter_real_estate_assessment/core/enums/data_source.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/core/usecase/usecase.dart';
@@ -99,7 +100,10 @@ void main() {
         paged.copyWith(loadMoreFailure: () => _failure).canLoadMore,
         isFalse,
       );
-      expect(paged.copyWith(isFromCache: true).canLoadMore, isFalse);
+      expect(
+        paged.copyWith(recommendationsSource: DataSource.saved).canLoadMore,
+        isFalse,
+      );
       expect(paged.copyWith(isRefreshing: true).canLoadMore, isFalse);
       expect(
         paged
@@ -187,7 +191,7 @@ void main() {
     blocTest<HomeCubit, HomeState>(
       'does nothing on saved results',
       build: build,
-      seed: () => paged.copyWith(isFromCache: true),
+      seed: () => paged.copyWith(recommendationsSource: DataSource.saved),
       act: (cubit) => cubit.loadMore(),
       expect: () => const <HomeState>[],
       verify: (_) => verifyNever(() => getRecommendations(any())),
@@ -306,7 +310,7 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
-      'never shows a loading state over content',
+      'shows loading on every section while keeping its data',
       setUp: () => when(
         () => getFeatured(any()),
       ).thenAnswer((_) async => Right(_refreshed)),
@@ -314,14 +318,23 @@ void main() {
       seed: () => paged,
       act: (cubit) => cubit.refresh(),
       expect: () => [
-        paged.copyWith(isRefreshing: true),
+        paged.copyWith(
+          isRefreshing: true,
+          featuredStatus: RequestStatus.loading,
+          recommendationsStatus: RequestStatus.loading,
+        ),
+        paged.copyWith(
+          isRefreshing: true,
+          featured: _refreshed,
+          recommendationsStatus: RequestStatus.loading,
+        ),
         paged.copyWith(isRefreshing: true, featured: _refreshed),
         paged.copyWith(featured: _refreshed),
       ],
     );
 
     blocTest<HomeCubit, HomeState>(
-      'keeps the shown content and reports a failed request',
+      'a failed request brings the shown content back and reports it',
       setUp: () => when(
         () => getFeatured(any()),
       ).thenAnswer((_) async => const Left(_failure)),
@@ -331,6 +344,7 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.featured, sampleProperties);
         expect(cubit.state.featuredStatus, RequestStatus.success);
+        expect(cubit.state.recommendationsStatus, RequestStatus.success);
         expect(cubit.state.refreshFailed, isTrue);
         expect(cubit.state.isRefreshing, isFalse);
       },
@@ -348,7 +362,7 @@ void main() {
       act: (cubit) => cubit.refresh(),
       verify: (cubit) {
         expect(cubit.state.recommendations, hasLength(8));
-        expect(cubit.state.isFromCache, isFalse);
+        expect(cubit.state.recommendationsSource, DataSource.remote);
         expect(cubit.state.refreshFailed, isTrue);
       },
     );
@@ -372,10 +386,13 @@ void main() {
     blocTest<HomeCubit, HomeState>(
       'replaces saved results once the API answers',
       build: build,
-      seed: () => paged.copyWith(isFromCache: true, hasReachedMax: true),
+      seed: () => paged.copyWith(
+        recommendationsSource: DataSource.saved,
+        hasReachedMax: true,
+      ),
       act: (cubit) => cubit.refresh(),
       verify: (cubit) {
-        expect(cubit.state.isFromCache, isFalse);
+        expect(cubit.state.recommendationsSource, DataSource.remote);
         expect(cubit.state.canLoadMore, isTrue);
       },
     );
@@ -439,14 +456,37 @@ void main() {
     });
 
     test('coming back online replaces saved results', () async {
-      final cubit = await cubitWith(paged.copyWith(isFromCache: true));
+      final cubit = await cubitWith(
+        paged.copyWith(recommendationsSource: DataSource.saved),
+      );
 
       changes
         ..add(false)
         ..add(true);
       await _flush();
 
-      expect(cubit.state.isFromCache, isFalse);
+      expect(cubit.state.recommendationsSource, DataSource.remote);
+    });
+
+    test('the reconnect refresh keeps the saved results visible', () async {
+      final cubit = await cubitWith(
+        paged.copyWith(recommendationsSource: DataSource.saved),
+      );
+      final statuses = <RequestStatus>[];
+      final subscription = cubit.stream.listen((state) {
+        statuses
+          ..add(state.featuredStatus)
+          ..add(state.recommendationsStatus);
+      });
+      addTearDown(subscription.cancel);
+
+      changes
+        ..add(false)
+        ..add(true);
+      await _flush();
+
+      expect(statuses, isNotEmpty);
+      expect(statuses, everyElement(RequestStatus.success));
     });
 
     test('coming back online retries a failed next page', () async {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
+import 'package:flutter_real_estate_assessment/core/enums/data_source.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/core/usecase/usecase.dart';
@@ -201,7 +202,8 @@ void main() {
       ),
       build: build,
       act: (cubit) => cubit.load(),
-      verify: (cubit) => expect(cubit.state.isFromCache, isTrue),
+      verify: (cubit) =>
+          expect(cubit.state.recommendationsSource, DataSource.saved),
     );
   });
 

@@ -491,6 +491,142 @@ void main() {
     });
   });
 
+  group('pinned header and search field', () {
+    final listings = [
+      for (var id = 100; id < 115; id++)
+        PropertyEntity(
+          id: id,
+          title: 'Listing $id',
+          price: id.toDouble(),
+          rating: 4,
+          category: 'beauty',
+        ),
+    ];
+    final resultsScrollable = find
+        .descendant(
+          of: find.byType(CustomScrollView),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+
+    testWidgets('results scroll under the header and the search field', (
+      tester,
+    ) async {
+      final search = FakeSearchRepository(
+        firstPages: {'listing': Right(_results('listing', listings))},
+      );
+      await _pumpExplore(tester, search: search);
+      await _type(tester, 'listing');
+      await tester.pumpAndSettle();
+      final header = _rectOf(tester, find.byType(SearchHeader));
+      final field = _rectOf(tester, find.byType(AppSearchField));
+
+      await tester.drag(
+        find.byType(PropertyListCard).first,
+        const Offset(0, -400),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.state<ScrollableState>(resultsScrollable).position.pixels,
+        greaterThan(0),
+      );
+      expect(_rectOf(tester, find.byType(SearchHeader)), header);
+      expect(_rectOf(tester, find.byType(AppSearchField)), field);
+      expect(
+        tester.getRect(find.byType(CustomScrollView)).top,
+        closeTo(field.bottom, 0.01),
+      );
+      expectNoLayoutErrors(tester);
+    });
+
+    testWidgets('pull to refresh moves only the results, shows skeletons '
+        'until the new results arrive, and refreshes once', (tester) async {
+      final search = FakeSearchRepository();
+      await _pumpExplore(tester, search: search);
+      await _type(tester, 'mirror');
+      await tester.pumpAndSettle();
+      final header = _rectOf(tester, find.byType(SearchHeader));
+      final field = _rectOf(tester, find.byType(AppSearchField));
+      final gate = Completer<void>();
+      search.gate = gate.future;
+
+      await tester.fling(
+        find.byType(PropertyListCard).first,
+        const Offset(0, 300),
+        1000,
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+
+      final spinner = tester.getRect(find.byType(RefreshProgressIndicator));
+      expect(spinner.top, greaterThanOrEqualTo(field.bottom));
+      expect(_rectOf(tester, find.byType(SearchHeader)), header);
+      expect(_rectOf(tester, find.byType(AppSearchField)), field);
+      expect(find.byType(PropertyListCardSkeleton), findsWidgets);
+      expect(find.byType(PropertyListCard), findsNothing);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+
+      expect(search.requests, ['first:mirror', 'refresh:mirror']);
+      expect(find.byType(PropertyListCardSkeleton), findsNothing);
+      expect(find.byType(PropertyListCard), findsNWidgets(2));
+    });
+
+    testWidgets('a failed pull to refresh brings the results back and says '
+        'so', (tester) async {
+      final search = FakeSearchRepository();
+      await _pumpExplore(tester, search: search);
+      await _type(tester, 'mirror');
+      await tester.pumpAndSettle();
+      search.firstPages = {'mirror': const Left(NetworkFailure())};
+
+      await tester.fling(
+        find.byType(PropertyListCard).first,
+        const Offset(0, 300),
+        1000,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PropertyListCard), findsNWidgets(2));
+      expect(find.byType(PropertyListCardSkeleton), findsNothing);
+      expect(
+        find.text(translate(_en, 'search.refresh_failed')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a stale cached query refreshes in the background without '
+        'skeletons', (tester) async {
+      final cached = _results('mirror', [sampleProperties.first]);
+      final search = FakeSearchRepository(
+        cached: {
+          'mirror': SearchResultsEntity(
+            query: cached.query,
+            items: cached.items,
+            total: cached.total,
+            hasReachedMax: true,
+            isStale: true,
+          ),
+        },
+      );
+      final gate = Completer<void>();
+      search.gate = gate.future;
+      await _pumpExplore(tester, search: search);
+
+      await _type(tester, 'mirror');
+
+      expect(search.requests, ['refresh:mirror']);
+      expect(find.byType(PropertyListCard), findsOneWidget);
+      expect(find.byType(PropertyListCardSkeleton), findsNothing);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(find.byType(PropertyListCard), findsNWidgets(2));
+    });
+  });
+
   group('navigation and favorites', () {
     testWidgets('a result opens its details, and Back keeps the query and '
         'results', (tester) async {

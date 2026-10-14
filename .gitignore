@@ -39,6 +39,9 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
+# Assessment brief and other private documents (the repository is public)
+*.pdf
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile

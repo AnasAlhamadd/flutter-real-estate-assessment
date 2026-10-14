@@ -5,6 +5,7 @@ import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dart';
+import 'package:flutter_real_estate_assessment/core/enums/data_source.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_search_field.dart';
 import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
@@ -197,6 +198,7 @@ class _HomeSectionHeader extends StatelessWidget {
   }
 }
 
+/// `loading` covers the first load and the user's pull to refresh.
 class _FeaturedSection extends StatelessWidget {
   const _FeaturedSection();
 
@@ -249,6 +251,7 @@ class _CategoryChips extends StatelessWidget {
   }
 }
 
+/// `loading` covers the first load and the user's pull to refresh.
 class _RecommendationsSection extends StatelessWidget {
   const _RecommendationsSection();
 
@@ -259,7 +262,7 @@ class _RecommendationsSection extends StatelessWidget {
       buildWhen: (previous, current) =>
           previous.recommendationsStatus != current.recommendationsStatus ||
           previous.recommendations != current.recommendations ||
-          previous.isFromCache != current.isFromCache ||
+          previous.recommendationsSource != current.recommendationsSource ||
           previous.categories != current.categories,
       builder: (context, state) => switch (state.recommendationsStatus) {
         RequestStatus.initial ||
@@ -276,7 +279,8 @@ class _RecommendationsSection extends StatelessWidget {
         ),
         RequestStatus.success => SliverMainAxisGroup(
           slivers: [
-            if (state.isFromCache) const _OfflineNotice(),
+            if (state.recommendationsSource == DataSource.saved)
+              const _OfflineNotice(),
             SliverPropertyGrid(
               properties: state.recommendations,
               categoryNameFor: state.categoryNameFor,

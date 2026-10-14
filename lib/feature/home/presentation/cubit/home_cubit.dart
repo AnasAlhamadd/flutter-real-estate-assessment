@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_real_estate_assessment/core/enums/data_source.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/core/usecase/usecase.dart';
@@ -77,15 +78,40 @@ class HomeCubit extends Cubit<HomeState> {
     await _loadNextPage();
   }
 
-  /// Pull to refresh. Sections that show content keep it when their request
-  /// fails ([HomeState.refreshFailed]); sections without content load again.
-  Future<void> refresh() async {
+  /// The user's pull to refresh: sections with content show `loading`
+  /// (skeletons) while their data stays in the state.
+  Future<void> refresh() => _refresh(showLoading: true);
+
+  @override
+  Future<void> close() async {
+    await _connectivity?.cancel();
+    return super.close();
+  }
+
+  /// Sections that show content keep it when their request fails
+  /// ([HomeState.refreshFailed]); sections without content load again.
+  /// [showLoading] is false for refreshes the user didn't ask for.
+  Future<void> _refresh({required bool showLoading}) async {
     if (state.isRefreshing) return;
-    emit(state.copyWith(isRefreshing: true, refreshFailed: false));
+    final hadFeatured = state.featuredStatus == RequestStatus.success;
+    final hadRecommendations =
+        state.recommendationsStatus == RequestStatus.success;
+    emit(
+      state.copyWith(
+        isRefreshing: true,
+        refreshFailed: false,
+        featuredStatus: showLoading && hadFeatured
+            ? RequestStatus.loading
+            : null,
+        recommendationsStatus: showLoading && hadRecommendations
+            ? RequestStatus.loading
+            : null,
+      ),
+    );
     final updated = await Future.wait([
-      _refreshFeatured(),
+      _refreshFeatured(hadContent: hadFeatured),
       _refreshCategories(),
-      _refreshRecommendations(),
+      _refreshRecommendations(hadContent: hadRecommendations),
     ]);
     if (isClosed) return;
     emit(
@@ -96,12 +122,6 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
-  @override
-  Future<void> close() async {
-    await _connectivity?.cancel();
-    return super.close();
-  }
-
   /// Retries once when the device reconnects after being offline, and only
   /// if something is missing or stale.
   void _onConnectivityChanged(bool connected) {
@@ -110,8 +130,8 @@ class HomeCubit extends Cubit<HomeState> {
     if (!restored || isClosed) return;
     if (state.featuredStatus == RequestStatus.failure ||
         state.recommendationsStatus == RequestStatus.failure ||
-        state.isFromCache) {
-      unawaited(refresh());
+        state.recommendationsSource == DataSource.saved) {
+      unawaited(_refresh(showLoading: false));
     } else if (state.loadMoreFailure != null) {
       unawaited(retryLoadMore());
     }
@@ -176,7 +196,7 @@ class HomeCubit extends Cubit<HomeState> {
         hasReachedMax: false,
         isLoadingMore: false,
         loadMoreFailure: () => null,
-        isFromCache: false,
+        recommendationsSource: DataSource.remote,
       ),
     );
     final result = await _fetchPage(0);
@@ -221,8 +241,8 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
-  Future<bool> _refreshFeatured() async {
-    if (state.featuredStatus != RequestStatus.success) {
+  Future<bool> _refreshFeatured({required bool hadContent}) async {
+    if (!hadContent) {
       await _loadFeatured();
       return true;
     }
@@ -230,17 +250,23 @@ class HomeCubit extends Cubit<HomeState> {
       const FeaturedParams(limit: featuredLimit),
     );
     if (isClosed) return true;
-    return result.fold((_) => false, (items) {
-      emit(
-        state.copyWith(
-          featuredStatus: items.isEmpty
-              ? RequestStatus.empty
-              : RequestStatus.success,
-          featured: items,
-        ),
-      );
-      return true;
-    });
+    return result.fold(
+      (_) {
+        emit(state.copyWith(featuredStatus: RequestStatus.success));
+        return false;
+      },
+      (items) {
+        emit(
+          state.copyWith(
+            featuredStatus: items.isEmpty
+                ? RequestStatus.empty
+                : RequestStatus.success,
+            featured: items,
+          ),
+        );
+        return true;
+      },
+    );
   }
 
   /// Chips are secondary: a failed refresh keeps the current ones silently.
@@ -257,8 +283,8 @@ class HomeCubit extends Cubit<HomeState> {
     return true;
   }
 
-  Future<bool> _refreshRecommendations() async {
-    if (state.recommendationsStatus != RequestStatus.success) {
+  Future<bool> _refreshRecommendations({required bool hadContent}) async {
+    if (!hadContent) {
       await _loadRecommendations();
       return true;
     }
@@ -268,7 +294,12 @@ class HomeCubit extends Cubit<HomeState> {
     final page = result.toOption().toNullable();
     // A saved copy means the remote request failed: keep what is shown.
     if (page == null || page.isFromCache) {
-      emit(state.copyWith(isLoadingMore: false));
+      emit(
+        state.copyWith(
+          recommendationsStatus: RequestStatus.success,
+          isLoadingMore: false,
+        ),
+      );
       return false;
     }
     emit(_withFirstPage(page));
@@ -285,7 +316,9 @@ class HomeCubit extends Cubit<HomeState> {
     hasReachedMax: page.hasReachedMax,
     isLoadingMore: false,
     loadMoreFailure: () => null,
-    isFromCache: page.isFromCache,
+    recommendationsSource: page.isFromCache
+        ? DataSource.saved
+        : DataSource.remote,
   );
 
   Future<Either<Failure, PropertiesPageEntity>> _fetchPage(int page) =>

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_real_estate_assessment/core/enums/data_source.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/category_entity.dart';
@@ -8,9 +9,10 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/entitie
 /// Home has three independent sections, so a failure in one never hides the
 /// others: Featured, the category chips, and the recommendation grid.
 ///
-/// Each section's status describes its first load only. Background work on
-/// visible content has its own flags ([isRefreshing], [isLoadingMore]), so
-/// content is never replaced by a loading state.
+/// A section's status is `loading` during its first load and during the
+/// user's pull to refresh; the refresh keeps the loaded data in the state, so
+/// a failure goes back to `success` with the same items ([refreshFailed]).
+/// Background refreshes (reconnect) keep the status as it is.
 class HomeState extends Equatable {
   const HomeState({
     this.featuredStatus = RequestStatus.initial,
@@ -26,7 +28,7 @@ class HomeState extends Equatable {
     this.hasReachedMax = false,
     this.isLoadingMore = false,
     this.loadMoreFailure,
-    this.isFromCache = false,
+    this.recommendationsSource = DataSource.remote,
     this.isRefreshing = false,
     this.refreshFailed = false,
   });
@@ -57,11 +59,11 @@ class HomeState extends Equatable {
   /// The next page failed; loaded items stay and a retry is offered.
   final Failure? loadMoreFailure;
 
-  /// The recommendations are the persisted "All" first page, shown after a
-  /// remote failure. Pagination waits for a successful refresh.
-  final bool isFromCache;
+  /// [DataSource.saved]: the persisted "All" first page, shown after a remote
+  /// failure.
+  final DataSource recommendationsSource;
 
-  /// Pull to refresh in progress.
+  /// A refresh is in progress (the user's pull or a reconnect).
   final bool isRefreshing;
 
   /// The last refresh couldn't update content that was already shown.
@@ -72,7 +74,7 @@ class HomeState extends Equatable {
       !hasReachedMax &&
       !isLoadingMore &&
       loadMoreFailure == null &&
-      !isFromCache &&
+      recommendationsSource == DataSource.remote &&
       !isRefreshing;
 
   /// Display name for a category slug, used by the card location fallback.
@@ -97,7 +99,7 @@ class HomeState extends Equatable {
     bool? hasReachedMax,
     bool? isLoadingMore,
     ValueGetter<Failure?>? loadMoreFailure,
-    bool? isFromCache,
+    DataSource? recommendationsSource,
     bool? isRefreshing,
     bool? refreshFailed,
   }) => HomeState(
@@ -122,7 +124,7 @@ class HomeState extends Equatable {
     loadMoreFailure: loadMoreFailure != null
         ? loadMoreFailure()
         : this.loadMoreFailure,
-    isFromCache: isFromCache ?? this.isFromCache,
+    recommendationsSource: recommendationsSource ?? this.recommendationsSource,
     isRefreshing: isRefreshing ?? this.isRefreshing,
     refreshFailed: refreshFailed ?? this.refreshFailed,
   );
@@ -142,7 +144,7 @@ class HomeState extends Equatable {
     hasReachedMax,
     isLoadingMore,
     loadMoreFailure,
-    isFromCache,
+    recommendationsSource,
     isRefreshing,
     refreshFailed,
   ];
