@@ -60,7 +60,7 @@ Screenshots of every screen in both languages are in [`docs/screenshots/`](docs/
 | Home | ![Home EN](docs/screenshots/en/home.png) | ![Home AR](docs/screenshots/ar/home.png) |
 | Explore | ![Explore EN](docs/screenshots/en/explore.png) | ![Explore AR](docs/screenshots/ar/explore.png) |
 | Filter sheet | ![Filter EN](docs/screenshots/en/filter.png) | ![Filter AR](docs/screenshots/ar/filter.png) |
-| Property Details | ![Details EN](docs/screenshots/en/details.png) | ![Details AR](docs/screenshots/ar/details.png) |
+| Property Details | ![Property Details EN](docs/screenshots/en/property_details.png) | ![Property Details AR](docs/screenshots/ar/property_details.png) |
 | Profile + language picker | ![Profile EN](docs/screenshots/en/profile.png) | ![Profile AR](docs/screenshots/ar/profile.png) |
 | Splash / Auth | ![Auth EN](docs/screenshots/en/auth.png) | ![Auth AR](docs/screenshots/ar/auth.png) |
 

@@ -1,7 +1,7 @@
 # PROJECT_REFERENCE: Flutter Real Estate Assessment
 
 > **Single source of truth for this project.** Agent rules live in `.cursor/rules/*.mdc` and point here.
-> Last updated: 2026-10-14 · Status: **All approved screens are built (Splash, Auth, Home, Explore, Filter sheet, Property Details, Profile). Phase 9 docs written 2026-10-14: `README.md`, `AI_USAGE.md`, §3 ticked. Before delivery: screenshots (G7), merge into `main` and push (G1).** Earlier status: **Home screen (Figma `1:4426`) implemented on `feature/home` (from `feature/auth` `34700e4`), with its own domain + data layers (`HomeRepository`, remote + local data sources). Flow: Splash → Auth → Home (guest). Property Details (Figma `1:4236`) implemented on `feature/property-details` (from `origin/main` `d0646e1`). Explore (Figma `1:4120`, Search-v1) implemented on `feature/search`, uncommitted (paged search, §4.5.1 update). Filter sheet (Figma `1:3867`) implemented on `feat/add_filter`, uncommitted, opened from Explore's filter icon (`1:4146`); backend interaction in §4.5.1 "Filter sheet". Profile is still a placeholder; the rest of Phase 5 waits for your go-ahead.**
+> Last updated: 2026-10-14 · Status: **All approved screens are built (Splash, Auth, Home, Explore, Filter sheet, Property Details, Profile). Phase 9 docs written 2026-10-14: `README.md`, `AI_USAGE.md`, §3 ticked. Screenshots added (G7). Before delivery: merge into `main` and push (G1).** Earlier status: **Home screen (Figma `1:4426`) implemented on `feature/home` (from `feature/auth` `34700e4`), with its own domain + data layers (`HomeRepository`, remote + local data sources). Flow: Splash → Auth → Home (guest). Property Details (Figma `1:4236`) implemented on `feature/property-details` (from `origin/main` `d0646e1`). Explore (Figma `1:4120`, Search-v1) implemented on `feature/search`, uncommitted (paged search, §4.5.1 update). Filter sheet (Figma `1:3867`) implemented on `feat/add_filter`, uncommitted, opened from Explore's filter icon (`1:4146`); backend interaction in §4.5.1 "Filter sheet". Profile is still a placeholder; the rest of Phase 5 waits for your go-ahead.**
 
 ---
 
@@ -83,7 +83,7 @@ Execute ONLY Phase {{N}}: {{PHASE NAME}} exactly as defined in reference §7.
 Each phase in §7 references these IDs. Tick them in Phase 9.
 ⚠️ The repo is **public**: don't commit the assessment PDF without permission (`*.pdf` is in `.gitignore` since 2026-10-14).
 
-**Audit 2026-10-14** (all features done, branch `docs/final-audit`): ticked items were checked against the code and tests. Still open: **G1** (merge `docs/final-audit` into `main` through a PR), **G7** (capture the screenshots the README links to in `docs/screenshots/{en,ar}/`), **F6** (yours: be ready to explain the code). Partial, documented in README §14: A1/A2 for Explore (category chip row `1:4149` not shown, pixel values not re-checked against Figma), Home's filter icon hidden and "See All" without category/sort.
+**Audit 2026-10-14** (all features done, branch `docs/final-audit`): ticked items were checked against the code and tests. Still open: **G1** (merge `docs/final-audit` into `main` through a PR), **F6**. G7 done: 12 simulator screenshots (1320×2868) in `docs/screenshots/{en,ar}/` (`home`, `explore`, `filter`, `property_details`, `profile`, `auth`), all linked from README §2 (yours: be ready to explain the code). Partial, documented in README §14: A1/A2 for Explore (category chip row `1:4149` not shown, pixel values not re-checked against Figma), Home's filter icon hidden and "See All" without category/sort.
 
 ### A. Implement the Figma design
 - [x] **A1** Implement the **screens specified by the recruiter** from the Figma design.
@@ -141,7 +141,7 @@ Each phase in §7 references these IDs. Tick them in Phase 9.
 - [x] **G4** `AI_USAGE.md`.
 - [x] **G5** How language switching works and how RTL/LTR is implemented.
 - [x] **G6** AI usage summary per section F.
-- [ ] **G7** Screenshots of required screens **in both languages**, or a short video showing navigation + language switch.
+- [x] **G7** Screenshots of required screens **in both languages**, or a short video showing navigation + language switch.
 - [x] **G8** Assumptions and known limitations, especially the demo API's behavior.
 - [x] **G9** Clear, meaningful commit messages reflecting a natural work history (commit count isn't a quality metric).
 
