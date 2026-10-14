@@ -10,14 +10,15 @@ import 'package:flutter_real_estate_assessment/core/widget/load_more_scroll_list
 import 'package:flutter_real_estate_assessment/feature/favorites/presentation/widget/favorites_failure_listener.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/search_cubit.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/search_state.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/widget/filter_sheet.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/widget/search_header.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/widget/search_results_section.dart';
 import 'package:flutter_real_estate_assessment/injection_container.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
-/// Explore tab (Figma `1:4120`, "Search-v1"). The category chips and the
-/// filter icon wait for the Filter task; the bell is hidden (Q13).
+/// Explore tab (Figma `1:4120`, "Search-v1"). The filter icon opens the
+/// Filter sheet (`1:3867`); the bell is hidden (Q13).
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
 
@@ -102,10 +103,15 @@ class _SearchScrollView extends StatelessWidget {
         _padded(
           horizontal,
           top: AppSizes.sectionGap.h,
-          child: AppSearchField(
-            controller: queryController,
-            onChanged: cubit.onQueryChanged,
-            onSubmitted: cubit.submitQuery,
+          child: BlocSelector<SearchCubit, SearchState, bool>(
+            selector: (state) => state.filter.isActive,
+            builder: (context, filterActive) => AppSearchField(
+              controller: queryController,
+              onChanged: cubit.onQueryChanged,
+              onSubmitted: cubit.submitQuery,
+              onFilterTap: () => _openFilter(context),
+              filterActive: filterActive,
+            ),
           ),
         ),
         SliverPadding(
@@ -119,6 +125,20 @@ class _SearchScrollView extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// The sheet describes the latest typed query, even one still waiting for
+  /// the debounce, so applying it never shows another query's results.
+  static Future<void> _openFilter(BuildContext context) async {
+    FocusScope.of(context).unfocus();
+    final cubit = context.read<SearchCubit>();
+    final filter = await showFilterSheet(
+      context,
+      query: cubit.requestedQuery,
+      applied: cubit.state.filter,
+    );
+    if (filter == null || cubit.isClosed) return;
+    await cubit.applyFilter(filter);
   }
 
   static Widget _padded(

@@ -7,6 +7,7 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/reposit
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/filter_properties_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/get_property_details_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/search_properties_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/filter_cubit.dart';
 import 'package:flutter_real_estate_assessment/injection_container.dart' as di;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,6 +41,29 @@ void main() {
 
     final first = di.sl<HomeCubit>();
     final second = di.sl<HomeCubit>();
+    addTearDown(() async {
+      await first.close();
+      await second.close();
+    });
+
+    expect(identical(first, second), isFalse);
+  });
+
+  test('the Filter sheet and Explore share one properties repository, so '
+      'its full-set memory serves both', () async {
+    await di.init();
+
+    expect(
+      identical(di.sl<PropertiesRepository>(), di.sl<PropertiesRepository>()),
+      isTrue,
+    );
+  });
+
+  test('creates a new FilterCubit for every Filter sheet', () async {
+    await di.init();
+
+    final first = di.sl<FilterCubit>();
+    final second = di.sl<FilterCubit>();
     addTearDown(() async {
       await first.close();
       await second.close();

@@ -152,6 +152,48 @@ abstract final class AppSizes {
   /// location next to the price.
   static const double inlineTextGap = 8;
 
+  // Filter sheet (Figma `1:3867`).
+
+  /// Sheet `1:3970`: 758 of the 932 design height, top corners 24. The sheet
+  /// is as tall as its content, up to this share of the screen.
+  static const double filterSheetMaxHeightFactor = 758 / 932;
+  static const double radiusFilterSheet = 24;
+
+  /// Content `1:3971` starts 24 below the sheet top.
+  static const double filterSheetTop = 24;
+
+  /// Back button `1:3973`: 32 circle with a 20 px arrow, kept in a
+  /// [minTapTarget] square centered on it.
+  static const double filterBackButtonSize = 32;
+
+  /// Popup title → sections 32, sections 30 apart, title → content 16.
+  static const double filterTitleSectionsGap = 32;
+  static const double filterSectionGap = 30;
+  static const double filterSectionTitleGap = 16;
+
+  /// Property Type chips `1:4014`: wrap with 10 px gaps, 4 px vertical
+  /// padding.
+  static const double filterChipGap = 10;
+  static const double filterChipVerticalPadding = 4;
+
+  /// Price range `1:3981`: bars 58 high, 15.47 wide at a 19.47 pitch; the
+  /// shortest bar is 3. Slider `1:4004` centered on the bars' bottom edge:
+  /// track 4, thumbs 24 with a 3 px border; labels 8 below the thumbs.
+  static const double filterHistogramHeight = 58;
+  static const double filterHistogramBarGap = 4;
+  static const double filterHistogramMinBarHeight = 3;
+  static const double filterSliderTrackHeight = 4;
+  static const double filterSliderThumbSize = 24;
+  static const double filterSliderThumbBorder = 3;
+  static const double filterPriceLabelGap = 8;
+
+  /// Not in Figma: below this distance (share of the track) the two price
+  /// labels would overlap, so one "min – max" label is shown instead.
+  static const double filterPriceLabelsMergeDistance = 0.25;
+
+  /// "Set Filter" `1:4053`: 14 above the 34 px home indicator.
+  static const double filterButtonBottom = 14;
+
   // Property Details (Figma `1:4236`).
 
   /// Hero `1:4239`. Figma draws the hero and body 428 wide in a 430 frame;

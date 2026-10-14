@@ -4,6 +4,7 @@ import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
 import 'package:flutter_real_estate_assessment/core/error/failures.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/category_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/entities/property_filter.dart';
 
 /// What the result list shows.
 enum SearchMode {
@@ -13,6 +14,10 @@ enum SearchMode {
 
   /// Results for [SearchState.query].
   search,
+
+  /// [SearchState.filter] applied on the device to the full matching set of
+  /// [SearchState.query] (the whole catalog when it is empty).
+  filtered,
 }
 
 /// One listing at a time (browse or one query). [status] describes its first
@@ -34,18 +39,20 @@ class SearchState extends Equatable {
     this.refreshFailed = false,
     this.isFromCache = false,
     this.categories = const [],
+    this.filter = PropertyFilter.none,
   });
 
   final SearchMode mode;
 
-  /// Normalized query of the shown results; empty in browse mode.
+  /// Normalized query of the shown results; empty in browse mode, and in
+  /// filtered mode without search text.
   final String query;
   final RequestStatus status;
 
   /// Every loaded page, unique ids.
   final List<PropertyEntity> items;
 
-  /// Matches reported by the API.
+  /// Matches reported by the API; in filtered mode, the filtered count.
   final int total;
   final bool hasReachedMax;
 
@@ -72,6 +79,9 @@ class SearchState extends Equatable {
 
   /// For the card location fallback (brand → category name → slug).
   final List<CategoryEntity> categories;
+
+  /// The applied Filter sheet choices; kept across queries.
+  final PropertyFilter filter;
 
   bool get canLoadMore =>
       status == RequestStatus.success &&
@@ -103,6 +113,7 @@ class SearchState extends Equatable {
     bool? refreshFailed,
     bool? isFromCache,
     List<CategoryEntity>? categories,
+    PropertyFilter? filter,
   }) => SearchState(
     mode: mode ?? this.mode,
     query: query ?? this.query,
@@ -120,15 +131,18 @@ class SearchState extends Equatable {
     refreshFailed: refreshFailed ?? this.refreshFailed,
     isFromCache: isFromCache ?? this.isFromCache,
     categories: categories ?? this.categories,
+    filter: filter ?? this.filter,
   );
 
-  /// A first load of [mode]/[query] with nothing shown yet. Categories stay.
+  /// A first load of [mode]/[query] with nothing shown yet. Categories and
+  /// the filter stay.
   SearchState loading({required SearchMode mode, String query = ''}) =>
       SearchState(
         mode: mode,
         query: query,
         status: RequestStatus.loading,
         categories: categories,
+        filter: filter,
       );
 
   @override
@@ -147,5 +161,6 @@ class SearchState extends Equatable {
     refreshFailed,
     isFromCache,
     categories,
+    filter,
   ];
 }

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_router.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dart';
 import 'package:flutter_real_estate_assessment/core/enums/request_status.dart';
+import 'package:flutter_real_estate_assessment/core/widget/app_button.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_shimmer.dart';
 import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
 import 'package:flutter_real_estate_assessment/core/widget/empty_view.dart';
@@ -13,6 +15,7 @@ import 'package:flutter_real_estate_assessment/core/widget/favorite_button.dart'
 import 'package:flutter_real_estate_assessment/core/widget/load_more_error_view.dart';
 import 'package:flutter_real_estate_assessment/feature/favorites/presentation/widget/property_favorite_button.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/presentation/widget/sliver_property_list.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/entities/property_filter.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/search_cubit.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit/search_state.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/widget/search_results_count.dart';
@@ -48,11 +51,13 @@ class SearchResultsSection extends StatelessWidget {
         ),
         RequestStatus.empty => SliverFillRemaining(
           hasScrollBody: false,
-          child: EmptyView(
-            messageKey: state.mode == SearchMode.search
-                ? AppTextKeys.searchNoResults
-                : AppTextKeys.commonEmpty,
-          ),
+          child: switch (state.mode) {
+            SearchMode.browse => const EmptyView(),
+            SearchMode.search => const EmptyView(
+              messageKey: AppTextKeys.searchNoResults,
+            ),
+            SearchMode.filtered => const _NoFilteredResults(),
+          },
         ),
         RequestStatus.success => _Results(state: state),
       },
@@ -152,6 +157,38 @@ class _LoadMoreFooter extends StatelessWidget {
                 ),
         );
       },
+    );
+  }
+}
+
+/// Nothing passes the filters: says so and offers to clear them, which
+/// returns to the paged listing of the same query.
+class _NoFilteredResults extends StatelessWidget {
+  const _NoFilteredResults();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(AppSizes.screenHorizontalPadding.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CustomText(
+              AppTextKeys.filterNoResults,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyRegular14,
+            ),
+            SizedBox(height: AppSizes.sectionGap.h),
+            AppButton(
+              label: context.tr(AppTextKeys.filterClear),
+              onPressed: () =>
+                  context.read<SearchCubit>().applyFilter(PropertyFilter.none),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

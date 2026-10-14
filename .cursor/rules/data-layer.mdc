@@ -15,8 +15,8 @@ alwaysApply: false
 - No price-range param exists → price filtering is local, pure, and unit-tested.
 
 ## Listing modes (reference §4.5.1)
-- **Paged:** no search text and no price filter → "All" (`/products`) or category endpoint, `limit=20`, `skip`.
-- **Full set:** search text or a price filter → one request with `limit=0` (`/products/search?q=` or `/products`), then `FilterPropertiesUseCase` applies category + price locally. Changing category/price never refetches; only a new search text does.
+- **Paged:** no Filter-sheet filter → "All" (`/products`), category endpoint, or paged search (`/products/search?q=&limit=20&skip`).
+- **Full set:** a Filter-sheet filter is active (categories and/or price) → one request with `limit=0` (`/products/search?q=` or `/products`), then `FilterPropertiesUseCase` applies the selected categories (any of them) + price locally. Changing categories/price never refetches; only a new search text does. The Filter sheet loads the same full set for its histogram, so both share one request.
 - The server can't combine search + category or filter by price. Don't send those params expecting them to work.
 - Featured: `/products?sortBy=rating&order=desc&limit=<n>`.
 
@@ -35,13 +35,14 @@ alwaysApply: false
 - Backed by `SharedPreferences`. **Only three keys**: `StorageKeys.productsFirstPage` and `StorageKeys.categories` (API cache), and `StorageKeys.favorites` (user data, Q8). All go through `VersionedPreferencesStore`. Never add a key without approval.
 - Envelope `{schemaVersion, cachedAt, data}`. Version mismatch or corrupt value → remove the key and throw `CacheException`.
 - Bounds: first page = "All" page 0, ≤ 20 items, listing fields only; categories list; skip any write over 32 KB.
-- Not persisted: details (in-memory only, last 20 in the session), Featured, pages > 0, category pages, search/full-set results.
+- Not persisted: details (in-memory only, last 20 in the session), Featured, pages > 0, category pages, search/full-set results (full sets in memory only, last 5 for 10 min).
 
 ## Repository strategy (in `*_repository_impl.dart`)
 | Call | Strategy |
 | --- | --- |
 | "All" page 0 | Always remote when online → save → fresh. Any failure except `CancelledFailure` (offline, timeout, any non-2xx including 4xx, unreadable data, unknown) → cached page (< 24 h) with `isFromCache: true`; otherwise return that failure |
-| Pages > 0, category pages, search/full set, Featured | Remote only |
+| Pages > 0, category pages, Featured | Remote only |
+| Full sets (search, whole catalog) | Memory first (`PropertiesRepositoryImpl`: last 5, fresh 10 min, successes only) → remote; `forceRefresh` skips memory. Never persisted |
 | Categories | In-memory → persisted (< 24 h) → remote → save; remote failure → stale persisted copy if any |
 | Details | Remote → keep in memory; on failure, in-memory item, else the failure |
 - Check `NetworkInfo.isConnected` before remote calls (connectivity only, not proof the API is reachable).

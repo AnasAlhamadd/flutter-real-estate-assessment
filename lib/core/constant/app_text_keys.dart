@@ -39,6 +39,15 @@ abstract final class AppTextKeys {
   static const String searchFound = 'search.found';
   static const String searchNoResults = 'search.no_results';
   static const String searchRefreshFailed = 'search.refresh_failed';
+
+  static const String filterReset = 'filter.reset';
+  static const String filterPriceRange = 'filter.price_range';
+  static const String filterPropertyType = 'filter.property_type';
+  static const String filterApply = 'filter.apply';
+  static const String filterActive = 'filter.active';
+  static const String filterNoResults = 'filter.no_results';
+  static const String filterClear = 'filter.clear';
+  static const String filterPriceChart = 'filter.price_chart';
   static const String profileTitle = 'profile.title';
 
   static const String detailsOverview = 'details.overview';
@@ -98,6 +107,7 @@ abstract final class AppTextKeys {
   static const String commonComingSoon = 'common.coming_soon';
   static const String commonSeeAll = 'common.see_all';
   static const String commonSearchHint = 'common.search_hint';
+  static const String commonClearSearch = 'common.clear_search';
   static const String commonFilter = 'common.filter';
   static const String commonEmpty = 'common.empty';
   static const String commonAll = 'common.all';

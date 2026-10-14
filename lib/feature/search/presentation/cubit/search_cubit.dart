@@ -8,6 +8,10 @@ import 'package:flutter_real_estate_assessment/core/utils/cancellation_signal.da
 import 'package:flutter_real_estate_assessment/feature/home/domain/usecases/get_categories_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/home/domain/usecases/get_recommendations_usecase.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/properties_page_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/filter_properties_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/properties/domain/usecases/search_properties_usecase.dart';
+import 'package:flutter_real_estate_assessment/feature/search/domain/entities/property_filter.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/entities/search_query.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/entities/search_results_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/search/domain/usecases/get_cached_search_results_usecase.dart';
@@ -19,6 +23,10 @@ import 'package:flutter_real_estate_assessment/feature/search/presentation/cubit
 
 /// Explore: the paged "All" listing until the query has
 /// [SearchQuery.minLength] characters, then debounced, cached, paged search.
+/// While a [PropertyFilter] is active, the full matching set of the query
+/// (or the whole catalog) is loaded once and filtered on the device, because
+/// the API can't combine search, several categories and a price range
+/// (reference §4.5.1).
 ///
 /// Every request captures [_generation]; a new query, a mode switch or a
 /// refresh bumps it, so a late response (first page, next page or refresh)
@@ -32,6 +40,8 @@ class SearchCubit extends Cubit<SearchState> {
     required this._refreshResults,
     required this._getBrowsePage,
     required this._getCategories,
+    required this._getAllMatches,
+    this._filterProperties = const FilterPropertiesUseCase(),
     this.debounce = defaultDebounce,
     Stream<bool>? connectivityChanges,
   }) : super(const SearchState()) {
@@ -46,6 +56,8 @@ class SearchCubit extends Cubit<SearchState> {
   final RefreshSearchResultsUseCase _refreshResults;
   final GetRecommendationsUseCase _getBrowsePage;
   final GetCategoriesUseCase _getCategories;
+  final SearchPropertiesUseCase _getAllMatches;
+  final FilterPropertiesUseCase _filterProperties;
 
   /// Pause after the last keystroke before a search starts.
   final Duration debounce;
@@ -63,22 +75,27 @@ class SearchCubit extends Cubit<SearchState> {
   /// The browse listing as it was when a search replaced it.
   SearchState? _browseSnapshot;
 
+  /// The latest searchable query, including one still waiting for the
+  /// debounce; empty when the text is too short. The Filter sheet describes
+  /// this scope.
+  String get requestedQuery => _requestedQuery;
+
   Future<void> load() async {
     await Future.wait([_loadCategories(), _loadBrowse()]);
   }
 
-  /// Text field changes. Short queries switch to browse at once; others
-  /// search after [debounce].
+  /// Text field changes. Short queries switch to browse (or the filtered
+  /// catalog) at once; others search after [debounce].
   void onQueryChanged(String text) {
     final query = _searchQueryOf(text);
     if (query == _requestedQuery) return;
     _requestedQuery = query;
     _invalidate();
     if (query.isEmpty) {
-      unawaited(_showBrowse());
+      unawaited(_showWithoutQuery());
       return;
     }
-    _debounceTimer = Timer(debounce, () => unawaited(_search(query)));
+    _debounceTimer = Timer(debounce, () => unawaited(_runQuery(query)));
   }
 
   /// Keyboard search action: runs a pending search without waiting.
@@ -87,7 +104,17 @@ class SearchCubit extends Cubit<SearchState> {
     final timer = _debounceTimer;
     if (timer == null || !timer.isActive) return;
     timer.cancel();
-    await _search(_requestedQuery);
+    await _runQuery(_requestedQuery);
+  }
+
+  /// Filter sheet "Set Filter". An unchanged filter sends nothing; an empty
+  /// one returns to the paged listing of the current query.
+  Future<void> applyFilter(PropertyFilter filter) async {
+    if (filter == state.filter) return;
+    _invalidate();
+    emit(state.copyWith(filter: filter));
+    if (_requestedQuery.isEmpty) return _showWithoutQuery();
+    await _runQuery(_requestedQuery);
   }
 
   /// Next page, when one exists and nothing else is loading.
@@ -108,8 +135,11 @@ class SearchCubit extends Cubit<SearchState> {
   /// Retries a failed first load.
   Future<void> retry() async {
     if (state.status != RequestStatus.failure) return;
-    if (state.mode == SearchMode.browse) return _loadBrowse();
-    await _search(state.query);
+    return switch (state.mode) {
+      SearchMode.browse => _loadBrowse(),
+      SearchMode.search => _search(state.query),
+      SearchMode.filtered => _loadFiltered(state.query),
+    };
   }
 
   /// Pull to refresh. Shown results stay when the refresh fails
@@ -166,17 +196,31 @@ class SearchCubit extends Cubit<SearchState> {
     });
   }
 
+  Future<void> _runQuery(String query) =>
+      state.filter.isActive ? _loadFiltered(query) : _search(query);
+
+  Future<void> _showWithoutQuery() =>
+      state.filter.isActive ? _loadFiltered('') : _showBrowse();
+
   Future<void> _showBrowse() async {
     final snapshot = _browseSnapshot;
     if (snapshot == null) return _loadBrowse();
     emit(
       snapshot.copyWith(
         categories: state.categories,
+        filter: state.filter,
         isLoadingMore: false,
         isRefreshing: false,
         refreshFailed: false,
       ),
     );
+  }
+
+  /// Keeps the shown browse listing, so leaving search or filters restores
+  /// it without a request.
+  void _rememberBrowse() {
+    if (state.mode != SearchMode.browse) return;
+    _browseSnapshot = _hasResultsState(state) ? state : null;
   }
 
   Future<void> _loadBrowse() async {
@@ -200,9 +244,7 @@ class SearchCubit extends Cubit<SearchState> {
     _cancellation?.cancel();
     final cancellation = _cancellation = CancellationSignal();
     final generation = ++_generation;
-    if (state.mode == SearchMode.browse) {
-      _browseSnapshot = _hasResultsState(state) ? state : null;
-    }
+    _rememberBrowse();
     final base = state.loading(mode: SearchMode.search, query: query);
     final cached = _getCachedResults(query);
     if (cached != null) {
@@ -221,6 +263,28 @@ class SearchCubit extends Cubit<SearchState> {
         state.copyWith(status: RequestStatus.failure, failure: () => failure),
       );
     }, (results) => emit(_withResults(state, results)));
+  }
+
+  /// The full set comes from the repository's memory copy when it is fresh
+  /// (e.g. loaded by the Filter sheet), so applying or changing filters
+  /// usually sends no request.
+  Future<void> _loadFiltered(String query) async {
+    _debounceTimer?.cancel();
+    _cancellation?.cancel();
+    final cancellation = _cancellation = CancellationSignal();
+    final generation = ++_generation;
+    _rememberBrowse();
+    emit(state.loading(mode: SearchMode.filtered, query: query));
+    final result = await _getAllMatches(
+      SearchParams(query: query, cancellation: cancellation),
+    );
+    if (_isOutdated(generation)) return;
+    result.fold((failure) {
+      if (failure is CancelledFailure) return;
+      emit(
+        state.copyWith(status: RequestStatus.failure, failure: () => failure),
+      );
+    }, (page) => emit(_withFiltered(state, page.items)));
   }
 
   Future<void> _loadNextPage() async {
@@ -272,9 +336,11 @@ class SearchCubit extends Cubit<SearchState> {
   Future<void> _refreshShown() async {
     final generation = ++_generation;
     emit(state.copyWith(isRefreshing: true, refreshFailed: false));
-    final SearchState? updated = state.mode == SearchMode.browse
-        ? await _refreshedBrowse()
-        : await _refreshedSearch();
+    final SearchState? updated = switch (state.mode) {
+      SearchMode.browse => await _refreshedBrowse(),
+      SearchMode.search => await _refreshedSearch(),
+      SearchMode.filtered => await _refreshedFiltered(),
+    };
     if (_isOutdated(generation)) return;
     emit(
       (updated ?? state.copyWith(refreshFailed: true)).copyWith(
@@ -301,6 +367,44 @@ class SearchCubit extends Cubit<SearchState> {
       // A cancelled refresh belongs to a query that is no longer shown.
       (failure) => failure is CancelledFailure ? state : null,
       (results) => _withResults(state, results),
+    );
+  }
+
+  Future<SearchState?> _refreshedFiltered() async {
+    final result = await _getAllMatches(
+      SearchParams(
+        query: state.query,
+        cancellation: _cancellation,
+        forceRefresh: true,
+      ),
+    );
+    return result.fold(
+      (failure) => failure is CancelledFailure ? state : null,
+      (page) => _withFiltered(state, page.items),
+    );
+  }
+
+  /// [base] with [all] narrowed by its filter. Everything is shown at once,
+  /// so there is no next page.
+  SearchState _withFiltered(SearchState base, List<PropertyEntity> all) {
+    final filter = base.filter;
+    final items = _filterProperties(
+      FilterParams(
+        items: all,
+        categorySlugs: filter.categorySlugs,
+        priceRange: filter.priceRange,
+      ),
+    );
+    return base.copyWith(
+      mode: SearchMode.filtered,
+      status: items.isEmpty ? RequestStatus.empty : RequestStatus.success,
+      items: items,
+      total: items.length,
+      hasReachedMax: true,
+      failure: () => null,
+      isLoadingMore: false,
+      loadMoreFailure: () => null,
+      isFromCache: false,
     );
   }
 

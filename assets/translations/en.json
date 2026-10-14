@@ -45,6 +45,16 @@
     "no_results": "No results found. Try a different search.",
     "refresh_failed": "Couldn't refresh right now. Showing the results you already have."
   },
+  "filter": {
+    "reset": "Reset",
+    "price_range": "Price Range",
+    "property_type": "Property Type",
+    "apply": "Set Filter",
+    "active": "Filters applied",
+    "no_results": "Nothing matches these filters.",
+    "clear": "Clear filters",
+    "price_chart": "Number of results by price"
+  },
   "details": {
     "overview": "Overview",
     "gallery": "Gallery",
@@ -126,6 +136,7 @@
     "coming_soon": "This screen will be built in a later phase.",
     "see_all": "See All",
     "search_hint": "Search something",
+    "clear_search": "Clear search",
     "filter": "Filter",
     "empty": "Nothing to show here yet.",
     "all": "All",
