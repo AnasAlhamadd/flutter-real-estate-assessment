@@ -48,7 +48,9 @@ abstract final class AppTextKeys {
   static const String filterNoResults = 'filter.no_results';
   static const String filterClear = 'filter.clear';
   static const String filterPriceChart = 'filter.price_chart';
+
   static const String profileTitle = 'profile.title';
+  static const String profileGuestName = 'profile.guest_name';
 
   static const String detailsOverview = 'details.overview';
   static const String detailsGallery = 'details.gallery';

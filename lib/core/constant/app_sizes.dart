@@ -308,6 +308,25 @@ abstract final class AppSizes {
   static const double detailsPriceButtonGap = 60;
   static const double radiusPriceBar = 36;
 
+  // Profile (Figma `1:3786`).
+
+  /// Header `1:3808`: 16 below the status bar (60 − 44), 44 high, content
+  /// 16 below it.
+  static const double profileHeaderTop = 16;
+  static const double profileHeaderHeight = 44;
+  static const double profileHeaderContentGap = 16;
+
+  /// Avatar `1:3817` 140, avatar → name 14, name → divider → rows 24.
+  static const double profileAvatarSize = 140;
+  static const double profileAvatarNameGap = 14;
+  static const double profileDividerGap = 24;
+
+  /// Menu rows `1:3821`…`1:3854`: 28 high and 24 apart, icon 28
+  /// ([languageIconSize]), icon → label 12, chevron 20 ([smallIconSize]).
+  static const double profileMenuRowHeight = 28;
+  static const double profileMenuRowGap = 24;
+  static const double profileMenuIconGap = 12;
+
   // Rating badge: [S] padding, icon-text gap and inset from the image corner.
   static const double badgeLargePaddingHorizontal = 10;
   static const double badgeLargeGap = 4;

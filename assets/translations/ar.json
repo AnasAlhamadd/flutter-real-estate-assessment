@@ -158,7 +158,8 @@
     }
   },
   "profile": {
-    "title": "الملف الشخصي"
+    "title": "الملف الشخصي",
+    "guest_name": "ضيف"
   },
   "language": {
     "title": "اللغة",

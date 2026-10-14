@@ -1,10 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_shell.dart';
-import 'package:flutter_real_estate_assessment/core/widget/language_switcher.dart';
 import 'package:flutter_real_estate_assessment/core/widget/placeholder_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/auth/presentation/pages/auth_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/home/presentation/pages/home_screen.dart';
+import 'package:flutter_real_estate_assessment/feature/profile/presentation/pages/profile_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/property_details/presentation/pages/property_details_screen.dart';
 import 'package:flutter_real_estate_assessment/feature/search/presentation/pages/search_screen.dart';
@@ -50,13 +50,7 @@ abstract final class AppRouter {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: profile,
-                builder: (_, _) => const PlaceholderScreen(
-                  titleKey: AppTextKeys.profileTitle,
-                  child: LanguageSwitcher(),
-                ),
-              ),
+              GoRoute(path: profile, builder: (_, _) => const ProfileScreen()),
             ],
           ),
         ],

@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_sizes.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_keys.dart';
 import 'package:flutter_real_estate_assessment/core/constant/app_text_styles.dart';
-import 'package:flutter_real_estate_assessment/core/constant/colors_app.dart';
-import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
-import 'package:flutter_real_estate_assessment/core/widget/app_svg_icon.dart';
 import 'package:flutter_real_estate_assessment/core/widget/custom_text.dart';
+import 'package:flutter_real_estate_assessment/core/widget/guest_avatar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Home header (Figma `1:4448`). There is no signed-in user (Q11), so the
@@ -28,7 +26,7 @@ class HomeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const _GuestAvatar(),
+        const GuestAvatar(size: AppSizes.homeAvatarSize),
         SizedBox(width: AppSizes.homeAvatarTextGap.w),
         Expanded(
           child: Column(
@@ -50,30 +48,6 @@ class HomeHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _GuestAvatar extends StatelessWidget {
-  const _GuestAvatar();
-
-  @override
-  Widget build(BuildContext context) {
-    return ExcludeSemantics(
-      child: Container(
-        width: AppSizes.homeAvatarSize.r,
-        height: AppSizes.homeAvatarSize.r,
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: ColorsApp.greyscale400,
-          shape: BoxShape.circle,
-        ),
-        child: const AppSvgIcon(
-          ImagePath.profileLight,
-          size: AppSizes.iconSize,
-          color: ColorsApp.white,
-        ),
-      ),
     );
   }
 }

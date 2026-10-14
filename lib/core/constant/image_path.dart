@@ -6,6 +6,10 @@ abstract final class ImagePath {
 
   static const String arrowLeft = '$_svg/arrow_left.svg';
   static const String arrowRight = '$_svg/arrow_right.svg';
+
+  /// Selected language in the Language sheet. Not in Figma: a stroke check
+  /// drawn like [close].
+  static const String check = '$_svg/check.svg';
   static const String close = '$_svg/close.svg';
   static const String filter = '$_svg/filter.svg';
 
@@ -68,6 +72,7 @@ abstract final class ImagePath {
   static const List<String> icons = [
     arrowLeft,
     arrowRight,
+    check,
     close,
     filter,
     heart,

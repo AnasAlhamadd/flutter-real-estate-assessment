@@ -158,6 +158,12 @@ abstract final class AppTextStyles {
       _rubik(18, FontWeight.w400, 1.8, color: ColorsApp.black02);
   static TextStyle get authButton => _rubik(18, FontWeight.w500, 1.3);
 
+  /// Profile (Figma `1:3786`): title, name and menu labels. The Language
+  /// sheet reuses [profileMenuLabel] for its options.
+  static TextStyle get profileTitle => _rubik(20, FontWeight.w600, 1.3);
+  static TextStyle get profileName => _rubik(24, FontWeight.w600, 1.2);
+  static TextStyle get profileMenuLabel => _rubik(18, FontWeight.w500, 1.4);
+
   /// Home header greeting (Figma `1:4452`): `Paragraph/Regular/P12 - LH 180%`
   /// in Black/03. The name line below it uses [bodyMedium16].
   static TextStyle get homeGreeting =>
