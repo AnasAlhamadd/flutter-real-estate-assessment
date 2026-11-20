@@ -12,7 +12,6 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/entitie
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/properties_page_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 
-/// DEMO(logic-pr): remote/local orchestration + Failure mapping.
 class HomeRepositoryImpl implements HomeRepository {
   HomeRepositoryImpl({
     required this._remote,

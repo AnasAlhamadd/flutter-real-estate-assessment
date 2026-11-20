@@ -4,7 +4,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 /// reachable, so request failures are still handled separately.
 ///
 /// DEMO(stacked-pr): connectivity awareness only — used to practice stacked PRs.
-/// DEMO(logic-pr): connectivity gate used by repositories before remote calls.
 abstract interface class NetworkInfo {
   Future<bool> get isConnected;
 

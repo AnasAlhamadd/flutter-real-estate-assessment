@@ -15,8 +15,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// Explore result card (Figma `1:4170`): square image, two-line title and
 /// location, then an end column with the heart on top and the price at the
 /// bottom.
-///
-/// DEMO(ui-pr): presentation-only — layout/tokens, no Cubit or repository.
 class PropertyListCard extends StatelessWidget {
   const PropertyListCard({
     required this.property,

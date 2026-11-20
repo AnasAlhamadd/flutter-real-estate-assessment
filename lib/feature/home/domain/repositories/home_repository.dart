@@ -4,7 +4,6 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/entitie
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/properties_page_entity.dart';
 import 'package:flutter_real_estate_assessment/feature/properties/domain/entities/property_entity.dart';
 
-/// DEMO(logic-pr): domain contract for Featured, categories, recommendations.
 abstract interface class HomeRepository {
   /// Highest-rated products for the "Featured" section. Remote only.
   Future<Either<Failure, List<PropertyEntity>>> getFeaturedProperties({

@@ -18,8 +18,6 @@ import 'package:flutter_real_estate_assessment/feature/properties/domain/entitie
 /// Recommendation requests share one counter: selecting a category or
 /// refreshing makes every older response (first page or next page) stale, so
 /// it can't overwrite newer results.
-///
-/// DEMO(logic-pr): presentation cubit — use cases only, no UI widgets.
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit({
     required this._getFeaturedProperties,
