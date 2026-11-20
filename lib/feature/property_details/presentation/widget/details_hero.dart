@@ -16,6 +16,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// Pulling down past the top zooms the photo; scrolling the hero away blurs
 /// it. Both follow the hero's laid-out height, so they track the finger
 /// exactly. Overscroll needs bouncing physics on the scroll view.
+///
+/// DEMO(ui-pr): visual hero only — stretch/blur UI, no domain logic here.
 class DetailsHero extends StatelessWidget {
   const DetailsHero({
     required this.imageUrls,
