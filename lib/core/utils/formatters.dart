@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 /// Number formats for prices and ratings.
 ///
 /// Both use Western digits in every locale (Q7 proposal, confirmed in Phase 6).
+///
+/// DEMO(stacked-pr): price/rating formatting stays LTR-safe for mixed UI.
 abstract final class Formatters {
   static final NumberFormat _wholePrice = NumberFormat('#0', 'en_US');
   static final NumberFormat _centsPrice = NumberFormat('#0.00', 'en_US');
