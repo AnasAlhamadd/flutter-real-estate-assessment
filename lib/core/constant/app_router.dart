@@ -11,7 +11,6 @@ import 'package:flutter_real_estate_assessment/feature/search/presentation/pages
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
-/// DEMO(stacked-pr): go_router paths and shell; no auth gate yet.
 abstract final class AppRouter {
   /// Default `initialLocation`. Deep links open their own route instead.
   static const String splash = '/splash';

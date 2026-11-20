@@ -7,7 +7,6 @@ import 'package:flutter_real_estate_assessment/core/localization/app_localizatio
 import 'package:flutter_real_estate_assessment/feature/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter_real_estate_assessment/injection_container.dart' as di;
 
-/// DEMO(stacked-pr): app entry — DI, splash precache, then DevicePreview wrap.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();

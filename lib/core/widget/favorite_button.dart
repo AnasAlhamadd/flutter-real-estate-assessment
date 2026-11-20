@@ -7,8 +7,6 @@ import 'package:flutter_real_estate_assessment/core/constant/image_path.dart';
 import 'package:flutter_real_estate_assessment/core/widget/app_svg_icon.dart';
 
 /// Heart colors and size per card surface (Figma Iconly Light-Outline Heart).
-///
-/// DEMO(stacked-pr): shared favorite control used by Home, Explore, Details.
 enum FavoriteButtonVariant {
   /// Featured card: white over the photo gradient.
   onImage(

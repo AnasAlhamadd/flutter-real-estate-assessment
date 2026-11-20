@@ -6,8 +6,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Figma "Button / Primary / Rounded": primary pill, 54 px tall, fills the
 /// width it is given.
-///
-/// DEMO(stacked-pr): primary CTA; pair with ColorsApp.primary from PR1 slice.
 class AppButton extends StatelessWidget {
   const AppButton({required this.label, required this.onPressed, super.key});
 

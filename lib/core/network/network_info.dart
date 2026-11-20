@@ -2,8 +2,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 /// Reports whether a network interface is up. This does not prove the API is
 /// reachable, so request failures are still handled separately.
-///
-/// DEMO(stacked-pr): connectivity awareness only — used to practice stacked PRs.
 abstract interface class NetworkInfo {
   Future<bool> get isConnected;
 
