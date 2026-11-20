@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 
 /// Figma colors of the approved blue set (reference §5.3, Q10).
+///
+/// DEMO(stacked-pr): keep tokens here; never hard-code hex in widgets.
 abstract final class ColorsApp {
   // Named Figma variables.
   static const Color black01 = Color(0xFF191D31);
