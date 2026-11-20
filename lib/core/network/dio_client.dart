@@ -6,6 +6,7 @@ import 'package:flutter_real_estate_assessment/core/constant/api_constants.dart'
 import 'package:flutter_real_estate_assessment/core/error/exceptions.dart';
 import 'package:flutter_real_estate_assessment/core/network/api_log_interceptor.dart';
 
+/// DEMO(stacked-pr): thin Dio wrapper; maps transport errors to typed exceptions.
 class DioClient {
   const DioClient(this._dio);
 

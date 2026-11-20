@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+/// DEMO(stacked-pr): domain error types returned as Left from repositories.
 sealed class Failure extends Equatable {
   const Failure();
 
